@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Content</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    {% load static %}
+    <header class="bg-white shadow">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <a href="{% url 'dashboard' %}">
+                <img src="{% static 'logo.png' %}" alt="Logo" class="h-24">
+            </a>
+            <h1 class="text-xl font-bold ml-32">Welcome to ProdigiDesk</h1>
+            <div class="flex items-center">
+                <div class="flex flex-col items-center mx-2">
+                    <img src="{% static 'profile-icon.png' %}" alt="Profile Icon" class="h-12">
+                    <a href="{% url 'profile' %}" class="text-gray-800">{{ user.email }}</a>
+                </div>
+                <div class="flex flex-col items-center mx-2">
+                    <img src="{% static 'logout-icon.png' %}" alt="Logout Icon" class="h-12">
+                    <a href="{% url 'logout' %}" class="text-gray-800">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="container mx-auto mt-10 flex-grow">
+        <h2 class="text-2xl font-bold text-center mb-8">Generated Contents</h2>
+        {% if error %}
+        <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">
+            {{ error }}
+        </div>
+    {% endif %}
+
+        <div class="bg-white p-6 rounded shadow mb-8">
+            <h3 class="text-xl font-bold mb-4">Generated Content</h3>
+            <p>{{ generated_content }}</p>
+        </div>
+        <div class="bg-white p-6 rounded shadow mb-8">
+            <h3 class="text-xl font-bold mb-4">Translated Content</h3>
+            <form method="post" action="{% url 'translate_content' %}">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="block text-gray-700">Choose Language</label>
+                    <select name="language" class="w-full p-2 border rounded">
+                        <option value="Hindi" {% if selected_language == "Hindi" %}selected{% endif %}>Hindi</option>
+                        <option value="Telugu" {% if selected_language == "Telugu" %}selected{% endif %}>Telugu</option>
+                        <option value="Tamil" {% if selected_language == "Tamil" %}selected{% endif %}>Tamil</option>
+                        <option value="Marathi" {% if selected_language == "Marathi" %}selected{% endif %}>Marathi</option>
+                    </select>
+                </div>
+                <input type="hidden" name="generated_content" value="{{ generated_content }}">
+                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Translate</button>
+            </form>
+            {% if translated_content %}
+            <div class="mt-4">
+                <p>{{ translated_content }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+    <footer class="bg-white shadow mt-10 w-full">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <p>Esprit Analytique | <a href="https://espritanalytique.com">espritanalytique.com</a> | contact@espritanalytique.com</p>
+            <p>Copyright © 2024 EspritAnalytique - All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

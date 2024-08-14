@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    {% load static %}
+    <header class="bg-white shadow">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <a href="{% url 'dashboard' %}">
+                <img src="{% static 'logo.png' %}" alt="Logo" class="h-24">
+            </a>
+            <h1 class="text-xl font-bold ml-32">Welcome to ProdigiDesk</h1>
+            <div class="flex items-center">
+                <div class="flex flex-col items-center mx-2">
+                    <img src="{% static 'profile-icon.png' %}" alt="Profile Icon" class="h-12">
+                    <a href="{% url 'profile' %}" class="text-gray-800">{{ user.email }}</a>
+                </div>
+                <div class="flex flex-col items-center mx-2">
+                    <img src="{% static 'logout-icon.png' %}" alt="Logout Icon" class="h-12">
+                    <a href="{% url 'logout' %}" class="text-gray-800">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto mt-10 max-w-screen-lg">
+        <h2 class="text-2xl font-bold text-center mb-8">Content Generator</h2>
+        {% if error %}
+        <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">
+            {{ error }}
+        </div>
+        {% endif %}
+        <form method="post" action="{% url 'content_generator' %}" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 bg-white p-8 rounded shadow">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="block text-gray-700">Company Information</label>
+                <textarea name="company_info" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Content Purpose and Goals</label>
+                <select name="content_purpose" class="w-full p-2 border rounded">
+                    <option value="inform">Inform</option>
+                    <option value="educate">Educate</option>
+                    <option value="entertain">Entertain</option>
+                    <option value="persuade">Persuade</option>
+                    <option value="combination">Combination</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Desired Action from Audience</label>
+                <select name="desired_action" class="w-full p-2 border rounded">
+                    <option value="visit website">Visit Website</option>
+                    <option value="sign up for webinar">Sign Up for Webinar</option>
+                    <option value="use promo code">Use Promo Code</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700">Topic Details</label>
+                <textarea name="topic_details" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Keywords</label>
+                <textarea name="keywords" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Audience Profile</label>
+                <textarea name="audience_profile" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Format and Structure</label>
+                <select name="format_structure" class="w-full p-2 border rounded">
+                    <option value="listicle">Listicle</option>
+                    <option value="how-to guide">How-to Guide</option>
+                    <option value="interview">Interview</option>
+                    <option value="case study">Case Study</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Number of Words</label>
+                <input type="number" name="num_words" class="w-full p-2 border rounded">
+            </div>
+            <div class="mb-4 md:col-span-2">
+                <label class="block text-gray-700">SEO and Keywords</label>
+                <textarea name="seo_keywords" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4 md:col-span-2">
+                <label class="block text-gray-700">Call to Action (CTA)</label>
+                <textarea name="cta" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4 md:col-span-2">
+                <label class="block text-gray-700">References and Sources</label>
+                <textarea name="references" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="md:col-span-2 text-center mt-4">
+                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Generate</button>
+            </div>
+        </form>
+    </main>
+    <footer class="bg-white shadow mt-10 w-full">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <p>Esprit Analytique | <a href="https://espritanalytique.com">espritanalytique.com</a> | contact@espritanalytique.com</p>
+            <p>Copyright © 2024 EspritAnalytique - All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

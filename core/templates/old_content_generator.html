@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <header class="bg-white shadow">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <a href="{% url 'landing' %}">
+                <img src="{% static 'logo.png' %}" alt="Logo" class="h-12">
+            </a>
+            <h1 class="text-xl font-bold ml-24">Welcome to ProdigiDesk</h1>
+            <div>
+                <a href="{% url 'profile' %}" class="text-gray-800 mx-2">Profile</a>
+                <a href="{% url 'logout' %}" class="text-gray-800 mx-2">Logout</a>
+            </div>
+        </div>
+    </header>
+    <main class="container mx-auto mt-10">
+        <h2 class="text-3xl font-bold text-center">Content Generator</h2>
+        <form method="post" action="{% url 'content_generator' %}">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="block text-gray-700">Company Information</label>
+                <textarea name="company_info" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Content Purpose and Goals</label>
+                <select name="content_goal" class="w-full p-2 border rounded">
+                    <option value="inform">Inform</option>
+                    <option value="educate">Educate</option>
+                    <option value="entertain">Entertain</option>
+                    <option value="persuade">Persuade</option>
+                    <option value="combination">Combination</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Desired Action from Audience</label>
+                <select name="desired_action" class="w-full p-2 border rounded">
+                    <option value="visit website">Visit Website</option>
+                    <option value="sign up for webinar">Sign Up for Webinar</option>
+                    <option value="use promo code">Use Promo Code</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Topic Details</label>
+                <textarea name="topic_details" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Audience Profile</label>
+                <textarea name="audience_profile" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Format and Structure</label>
+                <select name="format" class="w-full p-2 border rounded">
+                    <option value="listicle">Listicle</option>
+                    <option value="how-to guide">How-to Guide</option>
+                    <option value="interview">Interview</option>
+                    <option value="case study">Case Study</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Number of Words</label>
+                <input type="number" name="num_words" class="w-full p-2 border rounded">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">SEO and Keywords</label>
+                <textarea name="seo_keywords" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Call to Action</label>
+                <textarea name="call_to_action" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">References and Sources</label>
+                <textarea name="references" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Generate</button>
+        </form>
+    </main>
+    <footer class="bg-white shadow mt-10">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <p>Esprit Analytique | <a href="https://espritanalytique.com">espritanalytique.com</a> | contact@espritanalytique.com</p>
+            <p>Copyright © 2024 EspritAnalytique - All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

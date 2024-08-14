@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    {% load static %}
+    <header class="bg-white shadow">
+        <div class="container mx-auto p-2 flex justify-between items-center">
+            <a href="{% url 'dashboard' %}">
+                <img src="{% static 'logo.png' %}" alt="Logo" class="h-24">
+            </a>
+            <h1 class="text-xl font-bold ml-24">Welcome to ProdigiDesk</h1>
+            <div class="flex items-center">
+                <div class="flex flex-col items-center mx-1">
+                    <img src="{% static 'profile-icon.png' %}" alt="Profile Icon" class="h-8">
+                    <a href="{% url 'profile' %}" class="text-gray-800 text-sm">{{ user.email }}</a>
+                </div>
+                <div class="flex flex-col items-center mx-1">
+                    <img src="{% static 'logout-icon.png' %}" alt="Logout Icon" class="h-8">
+                    <a href="{% url 'logout' %}" class="text-gray-800 text-sm">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="container mx-auto mt-4 max-w-screen-lg">
+        <h2 class="text-xl font-bold text-center mb-4">Profile</h2>
+        <div class="bg-white p-4 rounded shadow">
+            {% if errors %}
+            <div class="mb-2 p-2 bg-red-100 text-red-700 rounded">
+                <ul class="text-sm">
+                    {% for error in errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            <form method="post" action="{% url 'profile' %}" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                {% csrf_token %}
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm">First Name</label>
+                    <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full p-1 border rounded" required>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm">Last Name</label>
+                    <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full p-1 border rounded" required>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm">Email</label>
+                    <input type="email" name="email" value="{{ user.email }}" class="w-full p-1 border rounded" readonly>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm">Bio</label>
+                    <textarea name="bio" class="w-full p-1 border rounded text-sm">{{ profile.bio }}</textarea>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm">Location</label>
+                    <input type="text" name="location" value="{{ profile.location }}" class="w-full p-1 border rounded">
+                </div>
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm">Birth Date</label>
+                    <input type="date" name="birth_date" value="{{ profile.birth_date|date:'Y-m-d' }}" class="w-full p-1 border rounded">
+                </div>
+                <div class="md:col-span-2 text-center mt-2">
+                    <button type="submit" class="bg-blue-500 text-white py-1 px-3 rounded">Update Profile</button>
+                </div>
+            </form>
+
+            <h2 class="text-xl font-bold text-center mt-4 mb-2">Change Password</h2>
+            <form method="post" action="{% url 'change_password' %}" class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                {% csrf_token %}
+                <div class="mb-2 md:col-span-2">
+                    <label class="block text-gray-700 text-sm">Current Password</label>
+                    <input type="password" name="current_password" class="w-full p-1 border rounded" required>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm">New Password</label>
+                    <input type="password" name="new_password" class="w-full p-1 border rounded" required>
+                </div>
+                <div class="mb-2">
+                    <label class="block text-gray-700 text-sm">Confirm New Password</label>
+                    <input type="password" name="confirm_new_password" class="w-full p-1 border rounded" required>
+                </div>
+                <div class="md:col-span-2 text-center mt-2">
+                    <button type="submit" class="bg-blue-500 text-white py-1 px-3 rounded">Change Password</button>
+                </div>
+            </form>
+        </div>
+    </main>
+    <footer class="bg-white shadow mt-4 w-full">
+        <div class="container mx-auto p-2 flex justify-between items-center text-xs">
+            <p>Esprit Analytique | <a href="https://espritanalytique.com">espritanalytique.com</a> | contact@espritanalytique.com</p>
+            <p>Copyright © 2024 EspritAnalytique - All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

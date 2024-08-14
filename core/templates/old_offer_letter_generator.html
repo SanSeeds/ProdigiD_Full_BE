@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offer Letter Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    {% load static %}
+    <header class="bg-white shadow">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <a href="{% url 'dashboard' %}">
+                <img src="{% static 'logo.png' %}" alt="Logo" class="h-24">
+            </a>
+            <h1 class="text-xl font-bold ml-32">Welcome to ProdigiDesk</h1>
+            <div class="flex items-center">
+                <div class="flex flex-col items-center mx-2">
+                    <img src="{% static 'profile-icon.png' %}" alt="Profile Icon" class="h-12">
+                    <a href="{% url 'profile' %}" class="text-gray-800">{{ user.email }}</a>
+                </div>
+                <div class="flex flex-col items-center mx-2">
+                    <img src="{% static 'logout-icon.png' %}" alt="Logout Icon" class="h-12">
+                    <a href="{% url 'logout' %}" class="text-gray-800">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="container mx-auto mt-10 max-w-screen-lg">
+        <h2 class="text-2xl font-bold text-center mb-8">Offer Letter Generator</h2>
+        {% if error %}
+        <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">
+            {{ error }}
+        </div>
+        {% endif %}
+        <form method="post" action="{% url 'offer_letter_generator' %}" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 bg-white p-8 rounded shadow">
+            {% csrf_token %}
+            <div class="mb-4 md:col-span-2">
+                <label class="block text-gray-700">Company Details</label>
+                <input type="text" name="company_details" class="w-full p-2 border rounded">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Number of Words</label>
+                <input type="text" name="num_words" class="w-full p-2 border rounded">
+            </div>
+            <div>
+                <label class="block text-gray-700">Status</label>
+                <select name="status" class="w-full p-2 border rounded">
+                    <option value="full-time" selected>Full-time</option>
+                    <option value="part-time">Part-time</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700">Candidate's Full Name</label>
+                <input type="text" name="candidate_name" class="w-full p-2 border rounded">
+            </div>
+            <!-- <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4"> -->
+                <div>
+                    <label class="block text-gray-700">Position Title</label>
+                    <input type="text" name="position_title" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block text-gray-700">Department</label>
+                    <input type="text" name="department" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block text-gray-700">Supervisor</label>
+                    <input type="text" name="supervisor" class="w-full p-2 border rounded">
+                </div>
+                <!-- <div>
+                    <label class="block text-gray-700">Status</label>
+                    <input type="text" name="status" class="w-full p-2 border rounded">
+                </div> -->
+                <div>
+                    <label class="block text-gray-700">Location</label>
+                    <input type="text" name="location" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="block text-gray-700">Expected Start Date</label>
+                    <input type="date" name="start_date" class="w-full p-2 border rounded">
+                </div>
+            <!-- </div> -->
+            <div class="mb-4 md:col-span-2">
+                <label class="block text-gray-700">Offer Details</label>
+                <input type="text" name="compensation" placeholder="Compensation Package" class="w-full p-2 border rounded mb-2">
+                <input type="text" name="benefits" placeholder="Benefits (Health insurance, retirement plans, etc.)" class="w-full p-2 border rounded mb-2">
+                <!-- <input type="text" name="work_hours" placeholder="Work Hours and Schedule" class="w-full p-2 border rounded mb-2">
+                <input type="text" name="duration" placeholder="Duration (if applicable)" class="w-full p-2 border rounded mb-2"> -->
+                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div>
+                        <label class="block text-gray-700">Work Hours and Schedule</label>
+                        <input type="text" name="work_hours" class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Duration</label>
+                        <input type="text" name="duration" class="w-full p-2 border rounded">
+                    </div>
+                </div>
+            
+            </div>
+            <div class="mb-4 md:col-span-2">
+                <label class="block text-gray-700">Terms and Conditions</label>
+                <input type="text" name="terms" placeholder="Conditional aspects of the offer" class="w-full p-2 border rounded mb-2">
+                <!-- <input type="date" name="acceptance_deadline" placeholder="Deadline for accepting the offer" class="w-full p-2 border rounded mb-2"> -->
+                <!-- <div class="mb-4">
+                    <label class="block text-gray-700">Deadline for accepting the offer</label>
+                    <input type="date" name="acceptance_deadline" class="w-full p-2 border rounded mb-2">
+                </div> -->
+                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div>
+                        <label class="block text-gray-700">Deadline for accepting the offer</label>
+                        <input type="date" name="acceptance_deadline" class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700">Contact information for questions</label>
+                        <input type="text" name="contact_info" class="w-full p-2 border rounded">
+                    </div>
+                </div>
+                <!-- <input type="text" name="contact_info" placeholder="Contact information for questions" class="w-full p-2 border rounded mb-2"> -->
+                <input type="text" name="documents_needed" placeholder="Documents needed to submit" class="w-full p-2 border rounded mb-2">
+            </div>
+            <div class="mb-4 md:col-span-2">
+                <label class="block text-gray-700">Closing Remarks</label>
+                <textarea name="closing_remarks" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="md:col-span-2 text-center mt-4">
+                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Generate</button>
+            </div>
+        </form>
+    </main>
+    <footer class="bg-white shadow mt-10 w-full">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <p>Esprit Analytique | <a href="https://espritanalytique.com">espritanalytique.com</a> | contact@espritanalytique.com</p>
+            <p>Copyright © 2024 EspritAnalytique - All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

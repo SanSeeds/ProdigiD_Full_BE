@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Script Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    {% load static %}
+    <header class="bg-white shadow">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <a href="{% url 'landing' %}">
+                <img src="{% static 'logo.png' %}" alt="Logo" class="h-12">
+            </a>
+            <h1 class="text-xl font-bold">Welcome to ProdigiDesk</h1>
+            <div>
+                <a href="{% url 'profile' %}" class="text-gray-800 mx-2">Profile</a>
+                <a href="{% url 'logout' %}" class="text-gray-800 mx-2">Logout</a>
+            </div>
+        </div>
+    </header>
+    <main class="container mx-auto mt-10">
+        <h2 class="text-3xl font-bold text-center">Sales Script Generator</h2>
+        {% if error %}
+        <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">
+            {{ error }}
+        </div>
+    {% endif %}
+
+        <form method="post" action="{% url 'sales_script_generator' %}">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="block text-gray-700">Number of Words</label>
+                <input type="number" name="num_words" class="w-full p-2 border rounded">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Products or Services</label>
+                <textarea name="products_services" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Key Features and Benefits</label>
+                <textarea name="features_benefits" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Pricing Information</label>
+                <textarea name="pricing_info" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Current Promotions</label>
+                <textarea name="current_promotions" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Target Audience</label>
+                <textarea name="target_audience" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Sales Objectives</label>
+                <textarea name="sales_objectives" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Competitive Advantage</label>
+                <textarea name="competitive_advantage" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Compliance and Legal Considerations</label>
+                <textarea name="compliance" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700">Technological Integration</label>
+                <textarea name="tech_integration" class="w-full p-2 border rounded"></textarea>
+            </div>
+            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Generate</button>
+        </form>
+    </main>
+    <footer class="bg-white shadow mt-10">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <p>Esprit Analytique | <a href="https://espritanalytique.com">espritanalytique.com</a> | contact@espritanalytique.com</p>
+            <p>Copyright © 2024 EspritAnalytique - All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translate</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    {% load static %}
+    <!-- <header class="bg-white shadow">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'landing' %}">
+                    <img src="{% static 'logo.png' %}" alt="Logo" class="h-24">
+                </a>
+                <h1 class="text-xl font-bold ml-4">Welcome to ProdigiDesk</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'signin' %}" class="text-gray-800">Sign In</a>
+                <a href="{% url 'about' %}" class="text-gray-800">About</a>
+                <a href="{% url 'translate' %}" class="text-gray-800">Translate</a>
+            </div>
+        </div>
+    </header> -->
+    <header class="bg-white shadow">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <a href="{% url 'dashboard' %}">
+                <img src="{% static 'logo.png' %}" alt="Logo" class="h-24">
+            </a>
+            <h1 class="text-xl font-bold ml-24">Welcome to ProdigiDesk</h1>
+
+            <div class="flex items-center">
+                <a href="{% url 'signin' %}" class="text-gray-800 mx-2">Sign In</a>
+                <a href="{% url 'about' %}" class="text-gray-800 mx-2">About</a>
+                <a href="{% url 'translate' %}" class="text-gray-800 mx-2">Translate</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto flex-grow mt-10 px-4 md:px-8 lg:px-16 max-w-screen-lg">
+        <h2 class="text-xl font-bold text-center mb-8">Translate</h2>
+        {% if error %}
+        <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">
+            {{ error }}
+        </div>
+    {% endif %}
+
+        <form method="post" class="flex flex-col items-center">
+            {% csrf_token %}
+            {% if error %}
+                <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">
+                    {{ error }}
+                </div>
+            {% endif %}
+            <div class="flex w-full mb-8">
+                <div class="w-1/2 px-4">
+                    <label for="from_language" class="block text-gray-700">Input Language</label>
+                    <select name="from_language" id="from_language" class="w-full p-2 border rounded mb-4">
+                        <option value="English" {% if from_language == 'English' %}selected{% endif %}>English</option>
+                        <option value="Hindi" {% if from_language == 'Hindi' %}selected{% endif %}>Hindi</option>
+                        <option value="Telugu" {% if from_language == 'Telugu' %}selected{% endif %}>Telugu</option>
+                        <option value="Tamil" {% if from_language == 'Tamil' %}selected{% endif %}>Tamil</option>
+                        <option value="Marathi" {% if from_language == 'Marathi' %}selected{% endif %}>Marathi</option>
+
+                    </select>
+                    <textarea name="input_text" id="input_text" rows="10" class="w-full p-2 border rounded" required>{{ input_text }}</textarea>
+                </div>
+                <div class="w-1/2 px-4">
+                    <label for="to_language" class="block text-gray-700">Translated Language</label>
+                    <select name="to_language" id="to_language" class="w-full p-2 border rounded mb-4">
+                        <option value="English" {% if to_language == 'English' %}selected{% endif %}>English</option>
+                        <option value="Hindi" {% if to_language == 'Hindi' %}selected{% endif %}>Hindi</option>
+                        <option value="Telugu" {% if to_language == 'Telugu' %}selected{% endif %}>Telugu</option>
+                        <option value="Tamil" {% if to_language == 'Tamil' %}selected{% endif %}>Tamil</option>
+                        <option value="Marathi" {% if to_language == 'Marathi' %}selected{% endif %}>Marathi</option>
+
+                    </select>
+                    <textarea id="translated_text" rows="10" class="w-full p-2 border rounded" readonly>{% if translated_text %}{{ translated_text }}{% endif %}</textarea>
+                </div>
+            </div>
+            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded" id="translate_button">Translate</button>
+        </form>
+    </main>
+    <footer class="bg-white shadow mt-10 w-full">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <p>Esprit Analytique | <a href="https://espritanalytique.com">espritanalytique.com</a> | contact@espritanalytique.com</p>
+            <p>Copyright © 2024 EspritAnalytique - All Rights Reserved.</p>
+        </div>
+    </footer>
+    <script>
+        document.getElementById('input_text').addEventListener('input', function() {
+            document.getElementById('translate_button').disabled = this.value.trim() === '';
+        });
+    </script>
+</body>
+</html>

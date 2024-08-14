@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Content Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .compact-form .mb-4 { margin-bottom: 0.5rem; }
+        .compact-form label { margin-bottom: 0.25rem; }
+        .compact-form input,
+        .compact-form textarea,
+        .compact-form select { padding: 0.5rem; }
+    </style>
+
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    {% load static %}
+    <header class="bg-white shadow">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <a href="{% url 'dashboard' %}">
+                <img src="{% static 'logo.png' %}" alt="Logo" class="h-24">
+            </a>
+            <h1 class="text-xl font-bold ml-32">Welcome to ProdigiDesk</h1>
+            <div class="flex items-center">
+                <div class="flex flex-col items-center mx-2">
+                    <img src="{% static 'profile-icon.png' %}" alt="Profile Icon" class="h-12">
+                    <a href="{% url 'profile' %}" class="text-gray-800">{{ user.email }}</a>
+                </div>
+                <!-- <div class="flex flex-col items-center mx-2">
+                    <img src="{% static 'dashboard-icon.png' %}" alt="Dashboard Icon" class="h-6">
+                    <a href="{% url 'dashboard' %}" class="text-gray-800">Dashboard</a>
+                </div> -->
+                <div class="flex flex-col items-center mx-2">
+                    <img src="{% static 'logout-icon.png' %}" alt="Logout Icon" class="h-12">
+                    <a href="{% url 'logout' %}" class="text-gray-800">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="container mx-auto mt-4 max-w-screen-lg">
+        <h2 class="text-xl font-bold text-center mb-4">Email Content Generator</h2>
+        {% if error %}
+        <div class="mb-2 p-2 bg-red-100 text-red-700 text-sm rounded">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'email_generator' %}" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 bg-white p-8 rounded shadow">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm">Purpose (Optional)</label>
+                <select name="purpose" class="w-full p-2 border rounded">
+                    <option value="">Select Purpose</option>
+                    <option value="request information">Request Information</option>
+                    <option value="confirm details">Confirm Details</option>
+                    <option value="follow up on a previous discussion">Follow up on a Previous Discussion</option>
+                    <option value="new mail">New Mail</option>
+                    <option value="others">Others</option>
+                </select>
+                <input type="text" name="purpose_other" class="w-full p-2 border rounded mt-2" placeholder="If others, please specify">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm">Number of words</label>
+                <input type="number" name="num_words" class="w-full p-2 border rounded">
+            </div>
+            <div class="mb-4 md:col-span-2">
+                <label class="block text-gray-700 text-sm">Subject (Required)</label>
+                <input type="text" name="subject" class="w-full p-2 border rounded">
+                <label class="inline-flex items-center mt-2">
+                    <input type="checkbox" name="rephrase" class="form-checkbox">
+                    <span class="ml-2">Rephrase Subject</span>
+                </label>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm">To (Required)</label>
+                <input type="text" name="to" class="w-full p-2 border rounded" placeholder="e.g., manager, client, friend">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm">Tone (Required)</label>
+                <select name="tone" class="w-full p-2 border rounded">
+                    <option value="formal">Formal</option>
+                    <option value="informal">Informal</option>
+                    <option value="persuasive">Persuasive</option>
+                    <option value="friendly">Friendly</option>
+                </select>
+            </div>
+            <div class="mb-4 md:col-span-2">
+                <label class="block text-gray-700 text-sm">Keywords (Required 4, beyond that optional)</label>
+                <div class="grid grid-cols-2 gap-4">
+                    {% for i in "1234" %}
+                        <input type="text" name="keyword_{{ i }}" class="w-full p-2 border rounded mt-2" placeholder="Keyword {{ i }}">
+                    {% endfor %}
+                    {% for i in "5678" %}
+                        <input type="text" name="keyword_{{ i }}" class="w-full p-2 border rounded mt-2" placeholder="Keyword {{ i }}">
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="mb-4 md:col-span-2">
+                <label class="block text-gray-700 text-sm">Contextual Background (Optional)</label>
+                <textarea name="contextual_background" class="w-full p-2 border rounded" placeholder="Provide a brief background about any ongoing projects or previous interactions"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm">Call to Action (Optional)</label>
+                <select name="call_to_action" class="w-full p-2 border rounded">
+                    <option value="reply">Reply</option>
+                    <option value="a meeting">A Meeting</option>
+                    <option value="a phone call">A Phone Call</option>
+                    <option value="others">Others</option>
+                </select>
+                <input type="text" name="call_to_action_other" class="w-full p-2 border rounded mt-2" placeholder="If others, please specify">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm">Additional Details (Optional)</label>
+                <textarea name="additional_details" class="w-full p-2 border rounded" placeholder="Any relevant details like deadlines, attached files, or previous conversation references"></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm">Priority Level (Required)</label>
+                <select name="priority_level" class="w-full p-2 border rounded">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div class="mb-4 md:col-span-2">
+                <label class="block text-gray-700 text-sm">Closing Remarks (Optional)</label>
+                <textarea name="closing_remarks" class="w-full p-2 border rounded" placeholder="Closing remarks"></textarea>
+            </div>
+            <div class="md:col-span-2 text-center mt-4">
+                <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Generate Email</button>
+            </div>
+        </form>
+    </main>
+    <footer class="bg-white shadow mt-10 w-full">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <p>Esprit Analytique | <a href="https://espritanalytique.com">espritanalytique.com</a> | contact@espritanalytique.com</p>
+            <p>Copyright © 2024 EspritAnalytique - All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

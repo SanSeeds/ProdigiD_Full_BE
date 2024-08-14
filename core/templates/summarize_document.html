@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summarize Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .compact-form .mb-4 { margin-bottom: 0.5rem; }
+        .compact-form label { margin-bottom: 0.25rem; }
+        .compact-form input,
+        .compact-form textarea,
+        .compact-form select { padding: 0.5rem; }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    {% load static %}
+    <header class="bg-white shadow">
+        <div class="container mx-auto p-2 flex justify-between items-center">
+            <a href="{% url 'dashboard' %}">
+                <img src="{% static 'logo.png' %}" alt="Logo" class="h-24">
+            </a>
+            <h1 class="text-xl font-bold ml-24">Welcome to ProdigiDesk</h1>
+            <div class="flex items-center">
+                <div class="flex flex-col items-center mx-1">
+                    <img src="{% static 'profile-icon.png' %}" alt="Profile Icon" class="h-12">
+                    <a href="{% url 'profile' %}" class="text-gray-800 text-sm">{{ user.email }}</a>
+                </div>
+                <div class="flex flex-col items-center mx-1">
+                    <img src="{% static 'logout-icon.png' %}" alt="Logout Icon" class="h-12">
+                    <a href="{% url 'logout' %}" class="text-gray-800 text-sm">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="container mx-auto mt-4 max-w-screen-lg">
+        <h2 class="text-xl font-bold text-center mb-4">Summarize Document</h2>
+        {% if error %}
+        <div class="mb-2 p-2 bg-red-100 text-red-700 rounded">
+            {{ error }}
+        </div>
+        {% endif %}
+        <form method="post" action="{% url 'summarize_document' %}" enctype="multipart/form-data" class="compact-form grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 bg-white p-4 rounded shadow">
+            {% csrf_token %}
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Document Context</label>
+                <select name="document_context" class="w-full p-1 border rounded text-sm">
+                    <option value="research paper">Research Paper</option>
+                    <option value="business report">Business Report</option>
+                    <option value="article">Article</option>
+                    <option value="book chapter">Book Chapter</option>
+                    <option value="others">Others</option>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Main Subject</label>
+                <select name="main_subject" class="w-full p-1 border rounded text-sm">
+                    <option value="technology">Technology</option>
+                    <option value="healthcare">Healthcare</option>
+                    <option value="finance">Finance</option>
+                    <option value="others">Others</option>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Purpose of the Summary</label>
+                <select name="summary_purpose" class="w-full p-1 border rounded text-sm">
+                    <option value="general overview">General Overview</option>
+                    <option value="executive briefing">Executive Briefing</option>
+                    <option value="specific aspect">Specific Aspect</option>
+                    <option value="others">Others</option>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Length and Detail</label>
+                <select name="length_detail" class="w-full p-1 border rounded text-sm">
+                    <option value="high-level overview">High-level Overview</option>
+                    <option value="detailed abstract">Detailed Abstract</option>
+                    <option value="others">Others</option>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Important Elements to Include</label>
+                <textarea name="important_elements" class="w-full p-1 border rounded text-sm"></textarea>
+            </div>
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Audience</label>
+                <input type="text" name="audience" class="w-full p-1 border rounded text-sm">
+            </div>
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Tone</label>
+                <input type="text" name="tone" class="w-full p-1 border rounded text-sm">
+            </div>
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Format</label>
+                <input type="text" name="format" class="w-full p-1 border rounded text-sm">
+            </div>
+            <div class="mb-2 md:col-span-2">
+                <label class="block text-gray-700 text-sm">Additional Instructions</label>
+                <textarea name="additional_instructions" class="w-full p-1 border rounded text-sm"></textarea>
+            </div>
+            <div class="mb-2 md:col-span-2">
+                <label class="block text-gray-700 text-sm">Upload Document</label>
+                <input type="file" name="document" class="w-full p-1 border rounded text-sm">
+            </div>
+            <div class="md:col-span-2 text-center mt-2">
+                <button type="submit" class="bg-blue-500 text-white py-1 px-3 rounded">Summarize</button>
+            </div>
+        </form>
+    </main>
+    <footer class="bg-white shadow mt-4 w-full">
+        <div class="container mx-auto p-2 flex justify-between items-center text-xs">
+            <p>Esprit Analytique | <a href="https://espritanalytique.com">espritanalytique.com</a> | contact@espritanalytique.com</p>
+            <p>Copyright © 2024 EspritAnalytique - All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

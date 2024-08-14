@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Script Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .compact-form .mb-4 { margin-bottom: 0.5rem; }
+        .compact-form label { margin-bottom: 0.25rem; }
+        .compact-form input,
+        .compact-form textarea,
+        .compact-form select { padding: 0.5rem; }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    {% load static %}
+    <header class="bg-white shadow">
+        <div class="container mx-auto p-2 flex justify-between items-center">
+            <a href="{% url 'dashboard' %}">
+                <img src="{% static 'logo.png' %}" alt="Logo" class="h-24">
+            </a>
+            <h1 class="text-xl font-bold ml-24">Welcome to ProdigiDesk</h1>
+            <div class="flex items-center">
+                <div class="flex flex-col items-center mx-1">
+                    <img src="{% static 'profile-icon.png' %}" alt="Profile Icon" class="h-12">
+                    <a href="{% url 'profile' %}" class="text-gray-800 text-sm">{{ user.email }}</a>
+                </div>
+                <div class="flex flex-col items-center mx-1">
+                    <img src="{% static 'logout-icon.png' %}" alt="Logout Icon" class="h-12">
+                    <a href="{% url 'logout' %}" class="text-gray-800 text-sm">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="container mx-auto mt-4 max-w-screen-lg">
+        <h2 class="text-xl font-bold text-center mb-4">Sales Script Generator</h2>
+        {% if error %}
+        <div class="mb-2 p-2 bg-red-100 text-red-700 rounded">
+            {{ error }}
+        </div>
+        {% endif %}
+        <form method="post" action="{% url 'sales_script_generator' %}" class="compact-form grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 bg-white p-4 rounded shadow">
+            {% csrf_token %}
+            <div class="mb-2 md:col-span-2">
+                <label class="block text-gray-700 text-sm">Company Details</label>
+                <input type="text" name="company_details" class="w-full p-1 border rounded text-sm">
+            </div>
+
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Number of words</label>
+                <input type="number" name="num_words" class="w-full p-1 border rounded text-sm">
+            </div>
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Names and descriptions of the products or services being sold</label>
+                <textarea name="product_descriptions" class="w-full p-1 border rounded text-sm"></textarea>
+            </div>
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Key features and benefits of each product or service</label>
+                <textarea name="features_benefits" class="w-full p-1 border rounded text-sm"></textarea>
+            </div>
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Pricing information, if relevant</label>
+                <textarea name="pricing_info" class="w-full p-1 border rounded text-sm"></textarea>
+            </div>
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Any current promotions, discounts, or special offers</label>
+                <textarea name="promotions" class="w-full p-1 border rounded text-sm"></textarea>
+            </div>
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Target Audience</label>
+                <textarea name="target_audience" class="w-full p-1 border rounded text-sm"></textarea>
+            </div>
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Sales Objectives</label>
+                <textarea name="sales_objectives" class="w-full p-1 border rounded text-sm"></textarea>
+            </div>
+            <div class="mb-2">
+                <label class="block text-gray-700 text-sm">Desired tone and style of the script</label>
+                <textarea name="tone_style" class="w-full p-1 border rounded text-sm"></textarea>
+            </div>
+            <div class="mb-2 md:col-span-2">
+                <label class="block text-gray-700 text-sm">Competitive Advantage</label>
+                <textarea name="competitive_advantage" class="w-full p-1 border rounded text-sm"></textarea>
+            </div>
+            <div class="mb-2 md:col-span-2">
+                <label class="block text-gray-700 text-sm">Testimonials or success stories to include for credibility</label>
+                <textarea name="testimonials" class="w-full p-1 border rounded text-sm"></textarea>
+            </div>
+            <div class="mb-2 md:col-span-2">
+                <label class="block text-gray-700 text-sm">Compliance and Legal Considerations</label>
+                <textarea name="compliance" class="w-full p-1 border rounded text-sm"></textarea>
+            </div>
+            <div class="mb-2 md:col-span-2">
+                <label class="block text-gray-700 text-sm">Technological Integration</label>
+                <textarea name="tech_integration" class="w-full p-1 border rounded text-sm"></textarea>
+            </div>
+            <div class="md:col-span-2 text-center mt-2">
+                <button type="submit" class="bg-blue-500 text-white py-1 px-3 rounded">Generate</button>
+            </div>
+        </form>
+    </main>
+    <footer class="bg-white shadow mt-4 w-full">
+        <div class="container mx-auto p-2 flex justify-between items-center text-xs">
+            <p>Esprit Analytique | <a href="https://espritanalytique.com">espritanalytique.com</a> | contact@espritanalytique.com</p>
+            <p>Copyright © 2024 EspritAnalytique - All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    {% load static %}
+    <header class="bg-white shadow">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <a href="{% url 'landing' %}">
+                <img src="{% static 'logo.png' %}" alt="Logo" class="h-24">
+            </a>
+            <h1 class="text-xl font-bold ml-24">Welcome to ProdigiDesk</h1>
+            <div class="flex items-center">
+                <div class="flex flex-col items-center mx-2">
+                    <img src="{% static 'profile-icon.png' %}" alt="Profile Icon" class="h-12">
+                    <a href="{% url 'profile' %}" class="text-gray-800">{{ user.email }}</a>
+                </div>
+                <div class="flex flex-col items-center mx-2">
+                    <img src="{% static 'logout-icon.png' %}" alt="Logout Icon" class="h-12">
+                    <a href="{% url 'logout' %}" class="text-gray-800">Logout</a>
+                </div>
+            </div>
+            <!-- <div class="flex items-center">
+                <a href="{% url 'profile' %}" class="text-gray-800 mx-2">Profile</a>
+                <a href="{% url 'logout' %}" class="text-gray-800 mx-2">Logout</a>
+            </div> -->
+        </div>
+    </header>
+    <main class="container mx-auto flex-grow mt-10 px-4 md:px-8 lg:px-16 max-w-screen-lg">
+        <!-- <h2 class="text-2xl font-bold text-center mb-8">Dashboard</h2> -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <a href="{% url 'email_generator' %}" class="block p-6 bg-white rounded-lg shadow hover:bg-gray-100">
+                <h3 class="text-xl font-bold mb-2">Email</h3>
+                <p>Create and manage your email content.</p>
+            </a>
+            <a href="{% url 'business_proposal_generator' %}" class="block p-6 bg-white rounded-lg shadow hover:bg-gray-100">
+                <h3 class="text-xl font-bold mb-2">Business Proposal</h3>
+                <p>Generate business proposals.</p>
+            </a>
+            <a href="{% url 'offer_letter_generator' %}" class="block p-6 bg-white rounded-lg shadow hover:bg-gray-100">
+                <h3 class="text-xl font-bold mb-2">Offer Letter</h3>
+                <p>Create offer letters for new hires.</p>
+            </a>
+            <a href="{% url 'sales_script_generator' %}" class="block p-6 bg-white rounded-lg shadow hover:bg-gray-100">
+                <h3 class="text-xl font-bold mb-2">Sales Script</h3>
+                <p>Generate sales scripts for your products.</p>
+            </a>
+            <a href="{% url 'summarize_document' %}" class="block p-6 bg-white rounded-lg shadow hover:bg-gray-100">
+                <h3 class="text-xl font-bold mb-2">Summarize</h3>
+                <p>Summarize documents quickly.</p>
+            </a>
+            <a href="{% url 'content_generator' %}" class="block p-6 bg-white rounded-lg shadow hover:bg-gray-100">
+                <h3 class="text-xl font-bold mb-2">Content Generation</h3>
+                <p>Create engaging content for your audience.</p>
+            </a>
+        </div>
+    </main>
+    <footer class="bg-white shadow mt-10 w-full">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <p>Esprit Analytique | <a href="https://espritanalytique.com">espritanalytique.com</a> | contact@espritanalytique.com</p>
+            <p>Copyright © 2024 EspritAnalytique - All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,17 @@
+﻿category,Assamese,Bengali,Bhojpuri,English,Bodo,Hindi,Kannada,Konkani,Gujrati,Kashmiri,Maithili,Malayalam,Manipuri,Marathi,Nepali,Dogri,Odia,Punjabi,Sanskrit,Sindhi,Santhali,Tamil,Telugu,Urdu,Rajashtani,Sinhala
+(ASR) Automatic Speech Recognition ,0,1,0,1,0,1,1,0,1,0,0,1,0,1,0,0,1,1,1,0,0,1,1,1,0,0
+(OCR) Optical Character Recognition ,1,1,0,0,0,1,1,0,1,0,0,1,1,1,0,0,1,1,0,0,0,1,1,1,0,0
+(NMT) Neural Machine Translation ,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0
+Transliteration,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,1,1,1,0,1
+(TTS) Text to Speech ,1,1,0,1,1,1,1,0,1,0,0,1,1,1,0,0,1,1,0,0,0,1,1,1,1,0
+(VAD) Voice Activity Detection,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1
+(ITN) Inverse Text Normalization ,1,1,1,1,0,1,1,0,1,0,0,1,0,1,0,0,1,1,1,0,0,1,1,1,0,0
+Punctuation,1,1,0,1,0,1,1,0,1,0,0,1,0,1,0,0,1,1,0,0,0,1,1,0,0,0
+Profanity Filter,1,1,0,1,0,1,1,1,1,0,0,1,1,1,1,1,1,1,0,0,0,1,1,1,0,0
+Text Language Detection,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0
+Audio Language Detection,1,1,0,1,0,1,1,0,1,0,0,1,0,1,0,0,1,1,0,0,0,1,1,0,0,0
+Denoiser,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1
+(NER) Name Entity Recognition ,1,1,0,0,0,1,1,0,1,0,0,1,0,1,0,0,1,1,0,0,0,1,1,0,0,0
+Gender Classification,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+Text Normalization,0,0,0,1,0,1,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1,0,0,0
+Glossary,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0

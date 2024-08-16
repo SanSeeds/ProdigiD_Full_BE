@@ -604,9 +604,10 @@ def add_slide(prs, title, content, bg_image_path):
     slide.shapes._spTree.remove(pic._element)
     slide.shapes._spTree.insert(2, pic._element)
 
-def create_presentation(document_path, title, num_slides, special_instructions, bg_image_path):
+def generate_presentation(document_path, title, num_slides, special_instructions, bg_image_path):
     # Extract content from the document
-    document_content = extract_document_content(document_path)
+    
+    document_content=extract_document_content(document_path)
 
     prs = Presentation()
     slide_titles = generate_slide_titles(document_content, num_slides, special_instructions, title)
@@ -656,14 +657,14 @@ def extract_document_content(file_path):
             row = sheet.row(row_idx)
             text += ' '.join([str(cell.value) for cell in row if cell.value]) + '\n'
         return text
-    elif file_path.endswith('.pptx'):
-        prs = Presentation(file_path)
-        text = ""
-        for slide in prs.slides:
-            for shape in slide.shapes:
-                if hasattr(shape, "text"):
-                    text += shape.text + "\n"
-        return text
+    # elif file_path.endswith('.pptx'):
+    #     prs = Presentation(file_path)
+    #     text = ""
+    #     for slide in prs.slides:
+    #         for shape in slide.shapes:
+    #             if hasattr(shape, "text"):
+    #                 text += shape.text + "\n"
+    #     return text
     else:
         raise ValueError("Unsupported file type")
     

@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
-from .email_llama3 import add_slide, create_presentation, extract_document_content, generate_email, bhashini_translate,generate_bus_pro, generate_offer_letter, generate_slide_content, generate_slide_titles, generate_summary, generate_content, generate_sales_script  
+from .email_llama3 import add_slide,generate_presentation, extract_document_content, generate_email, bhashini_translate,generate_bus_pro, generate_offer_letter, generate_slide_content, generate_slide_titles, generate_summary, generate_content, generate_sales_script  
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from django.utils import timezone
@@ -1219,7 +1219,7 @@ def change_password(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated,HasAPIKey])
+@permission_classes([IsAuthenticated])
 def summarize_document(request):
     try:
         # Extract and decrypt the incoming payload
@@ -1244,18 +1244,30 @@ def summarize_document(request):
         tone = data.get('tone')
         format = data.get('format')
         additional_instructions = data.get('additional_instructions')
-        document_content = data.get('document_content')  # Get document content
-
+        document_file = request.FILES.get('document_content')
+        #document_content = document_file.read().decode('utf-8')
+        
+        print(document_file)
+        # if document_file:
+        #     document_path = default_storage.save(document_file.name, document_file)
+            
+        #     document_content =extract_document_content(document_path)
+        #     logger.debug("Document content extracted.")
+        # else:
+        #     document_path = None
+        #     document_content=None
+        #document_path = default_storage.save(document_file.name, document_file)  # Get document content
+        #print(document_content)
         logger.debug(f"Document parameters received: context={document_context}, subject={main_subject}, purpose={summary_purpose}")
 
         # Process the uploaded document
-        document = request.FILES.get('document')
-        if document:
-            # Assuming the document is a text file
-            document_content = document.read().decode('utf-8')
-            logger.debug(f"Document content read from file.")
+        # document = request.FILES.get('document')
+        # if document:
+        #     # Assuming the document is a text file
+        #     document_content = document.read().decode('utf-8')
+        #     logger.debug(f"Document content read from file.")
         
-        if not document_content:
+        if not document_file:
             logger.warning("No document content available.")
             return JsonResponse({'error': 'No document content available.'}, status=400)
 
@@ -1271,7 +1283,7 @@ def summarize_document(request):
             tone,
             format,
             additional_instructions,
-            document_content  # Pass document content to the summary function
+            document_file  # Pass document content to the summary function
         )
 
         if summary_content:
@@ -1288,7 +1300,7 @@ def summarize_document(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated,HasAPIKey])
+@permission_classes([IsAuthenticated])
 def content_generator(request):
     try:
         # Load and decode the request body
@@ -1446,9 +1458,9 @@ def logout_view(request):
         logger.error(f"Error during logout: {str(e)}")
         return JsonResponse({'error': 'An error occurred during logout.'}, status=500)
 
-
+@csrf_exempt
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, HasAPIKey])
+#@permission_classes([IsAuthenticated])
 def create_presentation(request):
     try:
         # Extract and decrypt the incoming payload
@@ -1475,48 +1487,50 @@ def create_presentation(request):
             bg_image = default_storage.path(bg_image_path)
             logger.debug(f"Background image saved at: {bg_image}")
         else:
-            bg_image = None
+            bg_image_path=None
 
         # Process document file
         document_file = request.FILES.get('document', None)
         if document_file:
             document_path = default_storage.save(document_file.name, document_file)
-            document_content = extract_document_content(default_storage.path(document_path))
+         #   document_content =extract_document_content(default_storage.path(document_path))
             logger.debug("Document content extracted.")
         else:
-            document_content = None
+            document_path = None
 
         # Generate presentation
         logger.info("Generating presentation...")
         prs = Presentation()
-        slide_titles = generate_slide_titles(title, num_slides, special_instructions)
-        slide_titles = slide_titles.replace('[', '').replace(']', '').replace('"', '').split(',')
+        prs=generate_presentation(document_path, title, num_slides, special_instructions, bg_image_path)
+       # prs = Presentation()
+        # slide_titles = generate_slide_titles(title, num_slides, special_instructions)
+        # slide_titles = slide_titles.replace('[', '').replace(']', '').replace('"', '').split(',')
 
-        max_points_per_slide = 4
-        total_slides_generated = 0
+        # max_points_per_slide = 4
+        # total_slides_generated = 0
 
-        for st in slide_titles:
-            if total_slides_generated >= num_slides:
-                break
+        # for st in slide_titles:
+        #     if total_slides_generated >= num_slides:
+        #         break
 
-            slide_content = generate_slide_content(st, title, special_instructions, document_content).replace("*", '').split('\n')
-            current_content = []
-            slide_count = 1
+        #     slide_content =generate_slide_content(document_content, st, special_instructions).replace("*", '').split('\n')
+        #     current_content = []
+        #     slide_count = 1
 
-            for point in slide_content:
-                current_content.append(point.strip())
-                if len(current_content) >= max_points_per_slide:
-                    add_slide(prs, st if slide_count == 1 else f"{st} (contd.)", current_content, bg_image)
-                    current_content = []
-                    slide_count += 1
-                    total_slides_generated += 1
+        #     for point in slide_content:
+        #         current_content.append(point.strip())
+        #         if len(current_content) >= max_points_per_slide:
+        #             add_slide(prs, st if slide_count == 1 else f"{st} (contd.)", current_content, bg_image)
+        #             current_content = []
+        #             slide_count += 1
+        #             total_slides_generated += 1
 
-                    if total_slides_generated >= num_slides:
-                        break
+        #             if total_slides_generated >= num_slides:
+        #                 break
 
-            if current_content and total_slides_generated < num_slides:
-                add_slide(prs, st if slide_count == 1 else f"{st} (contd.)", current_content, bg_image)
-                total_slides_generated += 1
+        #     if current_content and total_slides_generated < num_slides:
+        #         add_slide(prs, st if slide_count == 1 else f"{st} (contd.)", current_content, bg_image)
+        #         total_slides_generated += 1 
 
         # Save presentation to buffer and prepare response
         pptx_buffer = BytesIO()

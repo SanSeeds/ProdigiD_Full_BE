@@ -218,26 +218,26 @@ WSGI_APPLICATION = 'prodigidusk.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'OPTIONS': {
-                'options': '-c search_path=prodigidesk'
-            },
-        'NAME': 'ProdigiDesk',
-        'USER': 'postgres',
-        'PASSWORD': '1766',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'OPTIONS': {
+#                 'options': '-c search_path=prodigidesk'
+#             },
+#         'NAME': 'ProdigiDesk',
+#         'USER': 'postgres',
+#         'PASSWORD': '1766',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
 
 REST_FRAMEWORK = {

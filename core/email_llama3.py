@@ -511,57 +511,6 @@ def bhashini_translate(text: str,  to_code: str = "Hindi", from_code: str = "Eng
     return {"status_code": 200, "message": "Translation successful", "translated_content": translated_content}
 
 
-from groq import Groq  # Assuming the Groq client is installed and imported correctly
-from pptx import Presentation
-from pptx.util import Inches, Pt
-from pptx.enum.text import PP_ALIGN
-from pptx.dml.color import RGBColor
-from docx import Document as DocxDocument
-import fitz  # PyMuPDF
-import openpyxl
-import xlrd
-
-# Initialize Groq client
-GROQ_SECRET_ACCESS_KEY = "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"
-
-def extract_document_content(file_path):
-    if file_path is None:
-        return None
-    elif file_path.endswith('.docx'):
-        doc = DocxDocument(file_path)
-        return '\n'.join([para.text for para in doc.paragraphs])
-    elif file_path.endswith('.pdf'):
-        doc = fitz.open(file_path)
-        text = ""
-        for page in doc:
-            text += page.get_text()
-        return text
-    elif file_path.endswith('.xlsx'):
-        wb = openpyxl.load_workbook(file_path)
-        sheet = wb.active
-        text = ""
-        for row in sheet.iter_rows(values_only=True):
-            text += ' '.join([str(cell) for cell in row if cell is not None]) + '\n'
-        return text
-    elif file_path.endswith('.xls'):
-        wb = xlrd.open_workbook(file_path)
-        sheet = wb.sheet_by_index(0)
-        text = ""
-        for row_idx in range(sheet.nrows):
-            row = sheet.row(row_idx)
-            text += ' '.join([str(cell.value) for cell in row if cell.value]) + '\n'
-        return text
-    elif file_path.endswith('.pptx'):
-        prs = Presentation(file_path)
-        text = ""
-        for slide in prs.slides:
-            for shape in slide.shapes:
-                if hasattr(shape, "text"):
-                    text += shape.text + "\n"
-        return text
-    else:
-        raise ValueError("Unsupported file type")
-
 def generate_slide_titles(document_content, num_slides, special_instructions, title):
     if document_content:
         prompt = f"Based on the following document content, generate titles for {num_slides} slides:\n\n{document_content}\n\n"

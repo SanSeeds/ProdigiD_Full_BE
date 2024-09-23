@@ -3,7 +3,7 @@ from .models import Profile, PasswordResetRequest, UserService
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'bio', 'location', 'birth_date', 'valid_from', 'valid_till')
+    list_display = ('user', 'bio', 'location', 'birth_date')
 
 @admin.register(PasswordResetRequest)
 class PasswordResetRequestAdmin(admin.ModelAdmin):

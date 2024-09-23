@@ -1,3 +1,4 @@
+import logging
 import os
 from django.conf import settings
 from groq import Groq
@@ -12,16 +13,24 @@ from docx import Document as DocxDocument
 import fitz  # PyMuPDF
 import openpyxl
 import xlrd
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+# from langchain_astradb import AstraDBVectorStore
+from langchain.indexes import VectorstoreIndexCreator
+from langchain_groq import ChatGroq
+
+# from prodigidusk.settings import VECTOR_STORE
+
+logger = logging.getLogger(__name__)
 
 # API Keys
 GROQ_SECRET_ACCESS_KEY = settings.GROQ_SECRET_ACCESS_KEY
 BHASHINI_API_KEY = settings.BHASHINI_API_KEY
 BHASHINI_USER_ID = settings.BHASHINI_USER_ID
+VECTOR_STORE = settings.FAISS_VECTOR_STORE
 
-# Function to check for inappropriate language
-# def contains_inappropriate_language(text: str) -> bool:
-#     inappropriate_words = ["stupid", "idiot", "badword3"]
-#     return any(word in text.lower() for word in inappropriate_words)
 
 # Function to check for inappropriate language
 def contains_inappropriate_language(text: str) -> bool:
@@ -31,59 +40,7 @@ def contains_inappropriate_language(text: str) -> bool:
 def sanitize_input(input_str):
     return profanity.censor(input_str)
 
-#os.environ["GROQ_SECRET_ACCESS_KEY"] = GROQ_SECRET_ACCESS_KEY
-
-
-# # Function to generate email
-# def generate_email(purpose, num_words, subject, rephrase, to, tone, keywords, contextual_background, call_to_action, additional_details, priority_level, closing_remarks):
-#     # Ensure all fields are checked for inappropriate language
-#     fields_to_check = [purpose, subject, keywords, contextual_background, call_to_action, additional_details, closing_remarks]
-#     if any(contains_inappropriate_language(str(field)) for field in fields_to_check if field is not None):
-#         return "Error: Input contains inappropriate language."
-    
-#     prompt = f"Generate an email of maximum {num_words} words and subject: {subject}, to {to}, maintain a {tone} tone, using the following keywords {keywords}, given the following inputs:"
-#     prompt += f"\nPurpose of the mail is {purpose}," if purpose else ""
-#     prompt += f"\nConsider the contextual background {contextual_background}," if contextual_background else ""
-#     prompt += f"\nWith an expectation of {call_to_action}," if call_to_action else ""
-#     prompt += f"\nIncorporate the following additional details: {additional_details}." if additional_details else ""
-#     prompt += f"\nThe mail is of {priority_level} priority." if priority_level else ""
-#     prompt += f"\nIncorporate the closing remarks {closing_remarks}." if closing_remarks else ""
-#     prompt += "\nRephrase the subject" if rephrase == "Y" else ""
-    
-#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-#     chat_completion = client.chat.completions.create(
-#         messages=[{"role": "user", "content": prompt}],
-#         model="llama3-70b-8192"
-#     )
-    
-#     return chat_completion.choices[0].message.content
-
-
-# Function to generate email
-# def generate_email(purpose, num_words, subject, rephrase, to, tone, keywords, contextual_background, call_to_action, additional_details, priority_level, closing_remarks):
-#     # Ensure all fields are checked for inappropriate language
-#     fields_to_check = [purpose, subject, keywords, contextual_background, call_to_action, additional_details, closing_remarks]
-#     if any(contains_inappropriate_language(str(field)) for field in fields_to_check if field is not None):
-#         return "Error: Input contains inappropriate language."
-    
-#     prompt = f"Generate an email of maximum {num_words} words and subject: {subject}, to {to}, maintain a {tone} tone, using the following keywords {keywords}, given the following inputs:"
-#     prompt += f"\nPurpose of the mail is {purpose}," if purpose else ""
-#     prompt += f"\nConsider the contextual background {contextual_background}," if contextual_background else ""
-#     prompt += f"\nWith an expectation of {call_to_action}," if call_to_action else ""
-#     prompt += f"\nIncorporate the following additional details: {additional_details}." if additional_details else ""
-#     prompt += f"\nThe mail is of {priority_level} priority." if priority_level else ""
-#     prompt += f"\nIncorporate the closing remarks {closing_remarks}." if closing_remarks else ""
-#     prompt += "\nRephrase the subject" if rephrase == "Y" else ""
-    
-#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-#     chat_completion = client.chat.completions.create(
-#         messages=[{"role": "user", "content": prompt}],
-#         model="llama3-70b-8192"
-#     )
-    
-#     return chat_completion.choices[0].message.content
-
-def generate_email(purpose, num_words, subject, rephrase, to, tone, keywords, contextual_background, call_to_action, additional_details, priority_level, closing_remarks):
+def generate_email(purpose='Request Information', num_words=100, subject=None, rephrase=None, to=None, tone='Formal', keywords=None, contextual_background=None, call_to_action=None, additional_details=None, priority_level='Low', closing_remarks=None):
     # Ensure all fields are checked for inappropriate language
     fields_to_check = [purpose, subject, keywords, contextual_background, call_to_action, additional_details, closing_remarks]
     if any(contains_inappropriate_language(str(field)) for field in fields_to_check if field is not None):
@@ -97,6 +54,7 @@ def generate_email(purpose, num_words, subject, rephrase, to, tone, keywords, co
     prompt += f"\nThe mail is of {priority_level} priority." if priority_level else ""
     prompt += f"\nIncorporate the closing remarks {closing_remarks}." if closing_remarks else ""
     prompt += "\nRephrase the subject" if rephrase == "Y" else ""
+    prompt += "\nDo not include any additional commentary or information beyond the email content itself."
     
     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
     chat_completion = client.chat.completions.create(
@@ -224,64 +182,57 @@ def generate_offer_letter(company_details, candidate_name, position_title, depar
 
     return chat_completion.choices[0].message.content
 
+def generate_summary(document_context, main_subject, summary_purpose, length_detail, important_elements, audience, tone, format, additional_instructions, document_file):
+    # Extract the document content from the uploaded file
+    try:
+        document_content = extract_document_content(document_file)
+    except Exception as e:
+        return f"Error: Could not extract content. Details: {str(e)}"
 
-
-def generate_summary(document_context, main_subject, summary_purpose, length_detail, important_elements, audience, tone, format, additional_instructions, document):
     # Collect all fields to check for inappropriate language
-    fields_to_check = [
-        document_context, main_subject, summary_purpose, length_detail, important_elements, 
-        audience, tone, format, additional_instructions, document
-    ]
-    
-    # Check if any field contains inappropriate language
+    inputs = {
+        "Document Context": document_context,
+        "Main Subject": main_subject,
+        "Summary Purpose": summary_purpose,
+        "Length Detail": length_detail,
+        "Important Elements": important_elements,
+        "Audience": audience,
+        "Tone": tone,
+        "Format": format,
+        "Additional Instructions": additional_instructions
+    }
+
+    # Check if any input parameter contains inappropriate words
     inappropriate_key = None
     inappropriate_value = None
-    for value in fields_to_check:
+    for key, value in inputs.items():
         if value and contains_inappropriate_language(value):
-            inappropriate_key = value
+            inappropriate_key = key
             inappropriate_value = value
             break
 
     if inappropriate_key:
-        return f"This type of language is not allowed in the input: {inappropriate_value}"
+        return f"This type of language is not allowed in {inappropriate_key}: {inappropriate_value}"
 
-    # Sanitize input fields
-    sanitized_fields = { 
-        "document_context": sanitize_input(str(document_context)) if document_context else '',
-        "main_subject": sanitize_input(str(main_subject)) if main_subject else '',
-        "summary_purpose": sanitize_input(str(summary_purpose)) if summary_purpose else '',
-        "length_detail": sanitize_input(str(length_detail)) if length_detail else '',
-        "important_elements": sanitize_input(str(important_elements)) if important_elements else '',
-        "audience": sanitize_input(str(audience)) if audience else '',
-        "tone": sanitize_input(str(tone)) if tone else '',
-        "format": sanitize_input(str(format)) if format else '',
-        "additional_instructions": sanitize_input(str(additional_instructions)) if additional_instructions else '',
-        "document": sanitize_input(str(document)) if document else ''
-    }
+    if not document_content:
+        return "Error: Document is empty or could not be read!"
 
-    # Build the prompt with sanitized inputs
-    prompt = f"Generate a summary of the given document {sanitized_fields['document']} given the following inputs: "
-    if sanitized_fields['document_context']:
-        prompt += f"\nContext of document: {sanitized_fields['document_context']}, "
-    if sanitized_fields['main_subject']:
-        prompt += f"\nMain subject: {sanitized_fields['main_subject']}, "
-    if sanitized_fields['summary_purpose']:
-        prompt += f"\nPurpose of generating summary: {sanitized_fields['summary_purpose']}, "
-    if sanitized_fields['length_detail']:
-        prompt += f"\nLevel of detail: {sanitized_fields['length_detail']}, "
-    if sanitized_fields['important_elements']:
-        prompt += f"\nImportant elements: {sanitized_fields['important_elements']}. "
-    if sanitized_fields['audience']:
-        prompt += f"\nTarget audience: {sanitized_fields['audience']}. "
-    if sanitized_fields['tone']:
-        prompt += f"\nExpected tone: {sanitized_fields['tone']}. "
-    if sanitized_fields['format']:
-        prompt += f"\nExpected format: {sanitized_fields['format']}. "
-    if sanitized_fields['additional_instructions']:
-        prompt += f"\nAdditional Instructions: {sanitized_fields['additional_instructions']}. "
+    # Build the prompt with the inputs
+    prompt = f"Please summarize the following document content based on the provided instructions:\n\n"
+    prompt += f"Document Content: {document_content}\n\n"
+    prompt += "Summary Instructions:\n"
+    for key, value in inputs.items():
+        prompt += f"- {key}: {value}\n"
 
-    if not sanitized_fields['document']:
-        return "Error: Attach Document!!"
+    prompt += (
+        "\n\nPlease ensure the summary is:\n"
+        "- Concise and covers all the main points and is at least 450 words.\n"
+        "- Avoids any hallucinations or fabricated information. Use only the provided details.\n"
+        "- Accurate and factual, maintaining integrity throughout the summary.\n"
+        "- Free of inappropriate language.\n"
+        "- In the requested tone and format.\n"
+        "- Provide a conclusion at the end."
+    )
 
     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
 
@@ -293,14 +244,9 @@ def generate_summary(document_context, main_subject, summary_purpose, length_det
             }
         ],
         model="llama-3.1-70b-versatile",
-
-
     )
 
-
     return chat_completion.choices[0].message.content
-
-
 
 
 # Function to generate content based on provided parameters
@@ -478,10 +424,8 @@ def bhashini_translate(text: str,  to_code: str = "Hindi", from_code: str = "Eng
 
     }
 
-    print(33333, text, 4444, to_code)
     from_code = lang_dict[from_code]
     to_code = lang_dict[to_code]
-    print(222222, from_code, to_code)
 
 
 
@@ -525,18 +469,52 @@ def bhashini_translate(text: str,  to_code: str = "Hindi", from_code: str = "Eng
     return {"status_code": 200, "message": "Translation successful", "translated_content": translated_content}
 
 
-
-def generate_slide_content(st, title, special_instructions, document_content=None):
-    prompt = f"Generate content to be put in ppt slide with title {st}. The overall subject of the presentation is {title}. "
-    if special_instructions:
-        prompt += f"\nPay attention to the following points: {special_instructions} while generating content. "
+def generate_slide_titles(document_content, num_slides, special_instructions, title):
     if document_content:
-        prompt += f"\nUse the following document content as a reference: {document_content[:2000]}... "
+        prompt = f"Based on the following document content, generate titles for {num_slides} slides:\n\n{document_content}\n\n"
+    else:
+        prompt = f"Based on the title '{title}', generate titles for {num_slides} slides."
+
+    if special_instructions:
+        prompt += f" Pay attention to the following points: {special_instructions}. "
+
     prompt += (
-        "Content should be in the form of points and should be just sufficient to fit on a single slide {highest priority} "
-        "Output only the slide contents - avoid any text describing the content. "
-        "Do not include title in the content. No bold text. Avoid the text 'Here is the content for the PPT slide'. "
-        "Do not include the bullet point symbols."
+        "Generate a list of titles directly, without introducing them. "
+        "Each title should be concise, fit within two lines,should not be  less than 3 words and be suitable for a slide"
+        "Avoid phrases like 'Here is the list of titles' or 'Here are the titles or 'slide number in title'. "
+        "Ensure the titles are formatted as a Python list with {num_slides} elements, each in quotation marks. "
+        "Do not generate false or gibberish content."
+    )
+
+    client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
+    chat_completion = client.chat.completions.create(
+        messages=[{"role": "user", "content": prompt}],
+        model="llama-3.1-70b-versatile",
+
+
+    )
+    title_list = chat_completion.choices[0].message.content
+    return title_list
+
+
+def generate_slide_content(document_content, title, special_instructions):
+    if document_content:
+        prompt = (
+            f"Based on the following document content, generate 4 concise bullet points for a PPT slide "
+            f"with the title '{title}':\n\n{document_content}\n\n"
+        )
+    else:
+        prompt = f"Based on the title '{title}', generate 4 concise bullet points for a PPT slide."
+
+    if special_instructions:
+        prompt += f" Pay attention to the following points: {special_instructions}. "
+
+    prompt += (
+        "Generate bullet points directly, without introducing them with phrases like "
+        "'Here are the 4 bullet points' or 'Here is the content'. "
+        "Ensure each bullet point is concise, not exceeding two lines, and stays within 80 characters. "
+        "Do not include the bullet point symbols, numbers, hyphens, or any introduction to the points. "
+        "Do not hallucinate or generate false or gibberish content."
     )
 
     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
@@ -549,24 +527,7 @@ def generate_slide_content(st, title, special_instructions, document_content=Non
     slide_content = chat_completion.choices[0].message.content
     return slide_content
 
-def generate_slide_titles(title, num_slides, special_instructions):
-    prompt = f"Generate titles for {num_slides} slides on the subject {title}. "
-    if special_instructions:
-        prompt += f"\nPay attention to the following points: {special_instructions} while generating titles. "
-    prompt += ("Titles should be in the form of a python list object with {num_slides} elements. Output only the list object without any text before or after the list."
-            "The Title should not exceed more than two lines."
-            "Do not Hallucinate")
-
-    client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-    chat_completion = client.chat.completions.create(
-        messages=[{"role": "user", "content": prompt}],
-        model="llama-3.1-70b-versatile",
-
-    )
-    title_list = chat_completion.choices[0].message.content
-    return title_list
-
-def add_slide(prs, title, content, bg_image):
+def add_slide(prs, title, content, bg_image_path):
     slide_layout = prs.slide_layouts[1]
     slide = prs.slides.add_slide(slide_layout)
 
@@ -575,113 +536,204 @@ def add_slide(prs, title, content, bg_image):
 
     title_text_frame = title_placeholder.text_frame
     title_font_size = Pt(32)  # Title font size
-    small_font_size = Pt(20)
     title_text_frame.clear()  # Clear any existing paragraphs
 
     p = title_text_frame.paragraphs[0]
     run = p.add_run()
-    run.text = title.split("(contd.)")[0]
+    run.text = title.strip()  # No "(contd.)" handling
     run.font.size = title_font_size
     run.font.bold = True
     run.font.color.rgb = RGBColor(0, 51, 102)
-
-    if "(contd.)" in title:
-        run = p.add_run()
-        run.text = "(contd.)"
-        run.font.size = small_font_size
-        run.font.bold = True
-        run.font.color.rgb = RGBColor(0, 51, 102)
-
     p.alignment = PP_ALIGN.CENTER
 
     content_text_frame = content_placeholder.text_frame
-    content_font_size = Pt(20)  # Updated default content font size
+    content_font_size = Pt(24)  # Updated default content font size
     content_text_frame.clear()  # Clear any existing paragraphs
 
     for point in content:
-        point = point.lstrip("*•")  # Remove leading bullet symbols
+        point = point.lstrip("*•")
         p = content_text_frame.add_paragraph()
         p.text = point.strip()
         p.font.size = content_font_size
         p.font.color.rgb = RGBColor(0, 0, 0)
         p.alignment = PP_ALIGN.LEFT
 
-    while not check_text_fit(prs, content_text_frame):
-        content_font_size -= Pt(2)
-        for paragraph in content_text_frame.paragraphs:
-            if paragraph.font.size:
-                paragraph.font.size = content_font_size
-
     # Set background image
-    if bg_image is None:
-        bg_image = settings.DEFAULT_BACKGROUND_IMAGE_PATH  # Path to the default background image
+    if bg_image_path is None:
+        bg_image_path = settings.DEFAULT_BACKGROUND_IMAGE_PATH  # Path to the default background image
 
     left = top = Inches(0)
-    pic = slide.shapes.add_picture(bg_image, left, top, width=prs.slide_width, height=prs.slide_height)
+    pic = slide.shapes.add_picture(bg_image_path, left, top, width=prs.slide_width, height=prs.slide_height)
     slide.shapes._spTree.remove(pic._element)
     slide.shapes._spTree.insert(2, pic._element)
 
-def check_text_fit(prs, text_frame):
-    slide_height = prs.slide_height
-    total_height = sum((paragraph.font.size.pt if paragraph.font.size else Pt(18).pt) * len(paragraph.text.split('\n')) for paragraph in text_frame.paragraphs)
-    return total_height <= slide_height
+def create_presentation(document_path, title, num_slides, special_instructions, bg_image_path):
+    # Extract content from the document
+    
+    document_content=extract_document_content(document_path)
 
-
-def create_presentation(title, num_slides, special_instructions, bg_image):
     prs = Presentation()
-    slide_titles = generate_slide_titles(title, num_slides, special_instructions)
+    slide_titles = generate_slide_titles(document_content, num_slides, special_instructions, title)
     slide_titles = slide_titles.replace('[', '').replace(']', '').replace('"', '').split(',')
 
-    max_points_per_slide = 4     # Adjust this value based on how much content you want per slide
-
-    total_slides_generated = 0
-
     for st in slide_titles:
-        if total_slides_generated >= num_slides:
-            break
+        
+        slide_content = generate_slide_content(document_content, st, special_instructions).replace("*", '').split('\n')
+        current_content = [point.strip() for point in slide_content if len(point.strip()) > 0]
 
-        slide_content = generate_slide_content(st, title, special_instructions).replace("*", '').split('\n')
-        current_content = []
-        slide_count = 1
+        if len(current_content) > 4:
+            current_content = current_content[:4]  # Limit to only 4 points
 
-        for point in slide_content:
-            current_content.append(point.strip())
-            if len(current_content) >= max_points_per_slide:
-                add_slide(prs, st if slide_count == 1 else f"{st} (contd.)", current_content, bg_image)
-                current_content = []
-                slide_count += 1
-                total_slides_generated += 1
+        add_slide(prs, st.strip(), current_content, bg_image_path)
 
-                if total_slides_generated >= num_slides:
-                    break
-
-        if current_content and total_slides_generated < num_slides:
-            add_slide(prs, st if slide_count == 1 else f"{st} (contd.)", current_content, bg_image)
-            total_slides_generated += 1
-
+   # prs.save('SmartOffice_Assistant_Presentation_final.pptx')
     return prs
 
 
+def generate_blog(title, tone, keywords=None):
+    # Ensure all fields are checked for inappropriate language
+    fields_to_check = [title, keywords]
+    if any(contains_inappropriate_language(str(field)) for field in fields_to_check if field is not None):
+        return "Error: Input contains inappropriate language."
 
-def extract_document_content(file_path):
-    if file_path.endswith('.docx'):
-        doc = DocxDocument(file_path)
+    # Create the prompt for the blog generation
+    prompt = (
+        f"As a professional blog generator with extensive experience in the field, create a compelling blog post "
+        f"with a maximum of {1000} words. The title of the blog is '{title}' and it should be written in a "
+        f"{tone} tone with appropriate side headings."
+    )
+    prompt += (
+        "\n\nMake sure to introduce the topic engagingly and provide valuable insights throughout the blog. "
+        "Include relevant examples or case studies to illustrate key points."
+    )
+
+    if keywords:
+        prompt += (
+            f"\n\nIncorporate the following keywords: {', '.join(keywords)}. Ensure that the keywords are naturally "
+            "integrated into the content to enhance readability and SEO."
+        )
+
+    prompt += (
+        "\n\nConclude the blog with a strong closing statement that summarizes the key points."
+      #  "\n\nAlso, include a call-to-action or thought-provoking idea to engage the reader."
+        "\n\nEnsure that the content is informative, easy to understand, and engaging. Avoid jargon and ensure that "
+        "the blog flows logically from one section to the next."
+    )
+
+    # Call the Groq API to generate the blog
+    client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
+    chat_completion = client.chat.completions.create(
+        messages=[{"role": "user", "content": prompt}],
+        model="llama3-70b-8192",
+    )
+
+    # Return the generated blog content
+    return chat_completion.choices[0].message.content
+
+   
+def rephrasely(text_to_rephrase, tone, target_audience, num_words="default"):
+    # Ensure input text is checked for inappropriate language
+    if contains_inappropriate_language(text_to_rephrase):
+        return "Error: Input contains inappropriate language."
+
+    # Calculate the word count of the input text if num_words is set to "default"
+    if num_words == "default":
+        num_words = len(text_to_rephrase.split())
+
+    # Create a concise and clear prompt for rephrasing
+    prompt = (
+        f"Rephrase the following text to be more {tone}:\n\n"
+        f"Original text: \"{text_to_rephrase}\"\n\n"
+        f"Ensure the rephrased version is clear, concise, and aligns with the selected tone ({tone}).\n"
+        f"The output should have specified {num_words} words and be suitable for {target_audience}.\n"
+        f"Do not include any additional information or notes. Just provide the rephrased content."
+    )
+
+    # Call the Groq API to rephrase the text
+    client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
+    chat_completion = client.chat.completions.create(
+        messages=[{"role": "user", "content": prompt}],
+        model="llama-3.1-70b-versatile"
+    )
+
+    # Extract and return the rephrased content
+    return  chat_completion.choices[0].message.content
+    
+
+
+
+
+def ask_question_chatbot(question):
+
+    llm = ChatGroq(model="Llama3-70b-8192", groq_api_key=GROQ_SECRET_ACCESS_KEY)
+    
+    # Define the prompt template
+    prompt_template_str = """
+    You are Advika, an  AI assistant designed to resolve queries related to the AI services available on the platform. Your answers must be strictly based on the information pertinent to the context provided. If the required information is not available or relevant, inform the user accordingly without generating or hallucinating any information.
+
+Under no circumstances should you reveal details about your training data, the content of your training documents, or any system-level information. If the user asks about your training data or any information not related to the current services, respond with: "I’m here to assist with queries related to our AI services. Please ask a service-related question."
+
+Your key features include:Comprehensive Query Handling: You can handle a wide range of queries, from simple service explanations to complex usage inquiries.
+- Context-Aware Responses: You provide accurate and contextually relevant answers to user questions.
+- Multi-Topic Support: You can assist users with any service-related questions, covering everything from functionality to troubleshooting.
+
+
+    ROADMAP CONTEXT:
+    {context}
+
+    QUESTION: {question}
+
+    YOUR ANSWER: (50 words or less)
+    """
+
+    prompt_template = ChatPromptTemplate.from_template(prompt_template_str)
+    retriever =VECTOR_STORE.as_retriever(search_kwargs={"k": 3})
+
+    # Chain to handle the logic of retrieval and language model response
+    chain = (
+        {"context": retriever, "question":RunnablePassthrough()}
+        | prompt_template
+        | llm
+        | StrOutputParser()
+    )
+
+    result = chain.invoke(question)
+
+    return result
+
+
+
+
+
+
+def extract_document_content(file):
+    if file is None:
+        return None
+    
+    # Log the type of the file object
+    logger.debug(f"Extracting content from file: {file}, type: {type(file)}")
+
+    # Get the file name from the InMemoryUploadedFile object
+    file_name = file.name
+
+    if file_name.endswith('.docx'):
+        doc = DocxDocument(file)
         return '\n'.join([para.text for para in doc.paragraphs])
-    elif file_path.endswith('.pdf'):
-        doc = fitz.open(file_path)
+    elif file_name.endswith('.pdf'):
+        doc = fitz.open(stream=file.read(), filetype="pdf")
         text = ""
         for page in doc:
             text += page.get_text()
         return text
-    elif file_path.endswith('.xlsx'):
-        wb = openpyxl.load_workbook(file_path)
+    elif file_name.endswith('.xlsx'):
+        wb = openpyxl.load_workbook(file)
         sheet = wb.active
         text = ""
         for row in sheet.iter_rows(values_only=True):
             text += ' '.join([str(cell) for cell in row if cell is not None]) + '\n'
         return text
-    elif file_path.endswith('.xls'):
-        wb = xlrd.open_workbook(file_path)
+    elif file_name.endswith('.xls'):
+        wb = xlrd.open_workbook(file_contents=file.read())
         sheet = wb.sheet_by_index(0)
         text = ""
         for row_idx in range(sheet.nrows):
@@ -690,11 +742,5 @@ def extract_document_content(file_path):
         return text
     else:
         raise ValueError("Unsupported file type")
-
-
-
-
-
-
 
 

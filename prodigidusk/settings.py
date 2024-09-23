@@ -7,8 +7,9 @@ from decouple import config
 import logging
 import logging.config
 from logging.handlers import TimedRotatingFileHandler
-
-
+from langchain_astradb import AstraDBVectorStore
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain.vectorstores import FAISS
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,6 +21,11 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"
+
+FAISS_DB_PATH=BASE_DIR /  "faissDb"
+
+
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -33,11 +39,30 @@ AES_IV = config('AES_IV_b64')
 AES_SECRET_KEY = config('AES_SECRET_KEY_b64')
 ENCRYPTION_IV = config('ENCRYPTION_IV_b64')
 ENCRYPTION_SECRET_KEY = config('ENCRYPTION_SECRET_KEY_b64')
+GOOGLE_API_KEY = config('GOOGLE_API_KEY')
+RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = config('RAZORPAY_SECRET')
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT')  
+EMAIL_USE_TLS = False  
+EMAIL_USE_SSL = True  
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD') 
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+embedding = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=GOOGLE_API_KEY)
+
+try:
+    FAISS_VECTOR_STORE = FAISS.load_local(FAISS_DB_PATH, embedding, allow_dangerous_deserialization=True)
+    # print("FAISS vector store loaded successfully")
+except Exception as e:
+    FAISS_VECTOR_STORE = None
+    print(f"Error loading FAISS vector store: {e}")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 
 LOGGING = {
     'version': 1,
@@ -54,7 +79,7 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'django_debug.log'),
             'formatter': 'verbose',
@@ -63,7 +88,7 @@ LOGGING = {
             'backupCount': 2,
         },
         'console': {
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
@@ -79,12 +104,12 @@ LOGGING = {
     },
     'root': {
         'handlers': ['file'],
-        'level': 'DEBUG',
+        'level': 'ERROR',
     },
     'loggers': {
         'django': {
             'handlers': ['file' ],
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'propagate': True,
         },
         'django.request': {
@@ -110,38 +135,14 @@ LOGGING = {
     },
 }
 
-ALLOWED_HOSTS = []
-
-
-# #AUTH_USER_MODEL = 'core.Profile'
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.office365.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'abhinavsaxena1509@outlook.com'
-# EMAIL_HOST_PASSWORD = ''
-# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-
 ALLOWED_HOSTS = ['*']
 
-#AUTH_USER_MODEL = 'core.Profile'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtpout.secureserver.net' 
-EMAIL_PORT = 465  
-EMAIL_USE_TLS = False  
-EMAIL_USE_SSL = True  
-EMAIL_HOST_USER = 'info@prodigidesk.ai'  
-EMAIL_HOST_PASSWORD = '#rxEFVGh47'  
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-
-# Razorpay
-
-RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID')
-RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET')
-
 DEFAULT_BACKGROUND_IMAGE_PATH = './core/static/ppt_bg.jpg'
+# SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Application definition
 
@@ -169,7 +170,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'core.api_logging_middleware.APILoggingMiddleware'
+    # 'core.api_logging_middleware.APILoggingMiddleware',
     'drf_api_logger.middleware.api_logger_middleware.APILoggerMiddleware', # Add here
 ]
 
@@ -177,7 +178,11 @@ DRF_API_LOGGER_DATABASE = True  # Default to False
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # React frontend running on localhost
+    "http://localhost:5173", "https://prodigidesk.ai","http://localhost:3000"
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173", 
 ]
 
 
@@ -229,12 +234,12 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'OPTIONS': {
-                'options': '-c search_path=prodigidesk'
+                'options': '-c search_path=prodigi'
             },
-        'NAME': 'ProdigiDesk',
+        'NAME': 'ProdigiDesk_DB',
         'USER': 'postgres',
-        'PASSWORD': '1766',
-        'HOST': 'localhost',
+        'PASSWORD': 'tf4g]hL03av(',
+        'HOST': 'ec2-13-235-176-62.ap-south-1.compute.amazonaws.com',
         'PORT': '5432',
     }
 }
@@ -256,7 +261,6 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": False,
-
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
     "VERIFYING_KEY": "",

@@ -5,6 +5,8 @@ from core import views
 urlpatterns = [
     path('', views.landing, name='landing'),
     path('about/', views.about, name='about'),
+    path('invoice/', views.invoice, name='invoice'),
+
     path('admin/', admin.site.urls),
     path('test_report/', views.test_report, name='test_report'),
     path('signin/', views.signin, name='signin'),
@@ -38,6 +40,15 @@ urlpatterns = [
     path('create_razorpay_order/',views.create_razorpay_order,name='create_razorpay_order'),
     path('verify_payment/',views.verify_payment,name='verify_payment'),
     path('speech_api/',views.speech_api,name='speech_api'),
+    path('email_generator_guest/',views.email_generator_guest,name='email_generator_guest'),
+    path('guest_send_otp/',views.guest_send_otp,name='guest_send_otp'),
+    path('guest_validate_otp/',views.guest_validate_otp,name='guest_validate_otp'),
+    path('translate_json/',views.translate_json,name='translate_json'),
+    path('profile_info/',views.profile_info,name='profile_info'),
+
+    path('profile_info/', views.profile_info, name='profile_info'), 
+
+
 
 ]
 

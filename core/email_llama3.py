@@ -53,7 +53,7 @@ def generate_email(purpose='Request Information', num_words=100, subject=None, r
     prompt += f"\nIncorporate the following additional details: {additional_details}." if additional_details else ""
     prompt += f"\nThe mail is of {priority_level} priority." if priority_level else ""
     prompt += f"\nIncorporate the closing remarks {closing_remarks}." if closing_remarks else ""
-    prompt += "\nRephrase the subject" if rephrase == "Y" else ""
+    prompt += "\nRephrase the subject line" if rephrase == "true" else ""
     prompt += "\nDo not include any additional commentary or information beyond the email content itself."
     
     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
@@ -224,12 +224,27 @@ def generate_summary(document_context, main_subject, summary_purpose, length_det
     for key, value in inputs.items():
         prompt += f"- {key}: {value}\n"
 
+ 
+    if length_detail == 'Brief Summary':
+
+        prompt += "Keep it concise, around 150 words."
+
+    elif length_detail == 'Standard Summary':
+
+        prompt += "Provide a detailed summary, around 300 words."
+
+    else:  # In-Depth Summary
+
+        prompt += "Offer a comprehensive summary, around 450 words."
+ 
+    
     prompt += (
         "\n\nPlease ensure the summary is:\n"
-        "- Concise and covers all the main points and is at least 450 words.\n"
+        "- Concise and covers all the main points.\n"
         "- Avoids any hallucinations or fabricated information. Use only the provided details.\n"
         "- Accurate and factual, maintaining integrity throughout the summary.\n"
         "- Free of inappropriate language.\n"
+        "- Summarize the document content, adding appropriate subheadings where necessary to enhance clarity and organization.\n"
         "- In the requested tone and format.\n"
         "- Provide a conclusion at the end."
     )
@@ -402,27 +417,33 @@ def bhashini_translate(text: str,  to_code: str = "Hindi", from_code: str = "Eng
         dict: A dictionary with the status code, message, and translated text or error info.
     """
     lang_dict = {
-        "English" :"en",
-        "Hindi" :"hi",
-        "Tamil" :"ta",
+        "English": "en",
+        "Hindi": "hi",
+        "Tamil": "ta",
         "Telugu": "te",
         "Marathi": "mr",
-        "Kannada" : "kn",
-        "Bengali" : "bn",
+        "Kannada": "kn",
+        "Bengali": "bn",
         "Odia": "or",
         "Assamese": "as",
         "Punjabi": "pa",
         "Malayalam": "ml",
         "Gujarati": "gu",
-        "Urdu" : "ur",
-        "Sanskrit" : "sa",
-        "Nepali" : "ne",
+        "Urdu": "ur",
+        "Sanskrit": "sa",
+        "Nepali": "ne",
         "Bodo": "brx",
-        "Maithili" : "mai",
-        "Sindhi" : "sd",
-        "Tamil" : "ta",
+        "Maithili": "mai",
+        "Sindhi": "sd",
+        "Kashmiri": "ks", 
+        "Konkani": "kok",  
+        "Dogri" :"doi",
+        "Goan Konkani": "gom",
+        "Santali": "sat"
+
 
     }
+
 
     from_code = lang_dict[from_code]
     to_code = lang_dict[to_code]
@@ -492,6 +513,9 @@ def generate_slide_titles(document_content, num_slides, special_instructions, ti
         model="llama-3.1-70b-versatile",
 
 
+
+
+
     )
     title_list = chat_completion.choices[0].message.content
     return title_list
@@ -521,6 +545,8 @@ def generate_slide_content(document_content, title, special_instructions):
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
         model="llama-3.1-70b-versatile",
+
+
 
 
     )
@@ -740,6 +766,19 @@ def extract_document_content(file):
             row = sheet.row(row_idx)
             text += ' '.join([str(cell.value) for cell in row if cell.value]) + '\n'
         return text
+    elif file_name.endswith('.pptx'):
+        # Extract content from PPTX file using python-pptx
+        text = ""
+        presentation = Presentation(file)
+        for slide in presentation.slides:
+            for shape in slide.shapes:
+                if hasattr(shape, "text"):
+                    text += shape.text + "\n"
+        return text
+    elif file_name.endswith('.ppt'):
+        # Extract content from PPT file (simplest way is to convert to PPTX or use another library)
+        # If you can't handle .ppt directly, you might want to raise an error or return an informative message.
+        raise ValueError("Unsupported file type: .ppt files need to be converted to .pptx.")
     else:
         raise ValueError("Unsupported file type")
 

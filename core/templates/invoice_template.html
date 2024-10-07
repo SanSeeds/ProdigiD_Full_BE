@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
+    <div style="max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, 0.15); background-color: #fff;">
+        
+        <table width="100%" style="margin-bottom: 20px;">
+            <tr>
+                <td style="font-size: 36px; color: #333;">ProdigiDesk</td>
+                <td style="text-align: right; font-size: 24px;">Invoice</td>
+            </tr>
+        </table>
+
+        <table width="100%" style="margin-bottom: 20px;">
+            <tr>
+                <td>
+                    <p><strong>Deliver to:</strong></p>
+                    <p>Full Name: {{ invoice.customer_name }}</p>
+                    <p>Email: {{ invoice.email }}</p>
+                </td>
+                <td style="text-align: right;">
+                    <p>Invoice #: {{ invoice.invoice_number }}</p>
+                    <p>Payment Date & Time: {{ invoice.date }}</p>
+                </td>
+            </tr>
+        </table>
+
+        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+                <tr>
+                    <th style="border-bottom: 1px solid #eee; text-align: left;">Services</th>
+                    <th style="border-bottom: 1px solid #eee; text-align: left;">Price ({{ invoice.currency }})</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in invoice.services %}
+                <tr>
+                    <td style="border-bottom: 1px solid #eee;">{{ service.name }}</td>
+                    <td style="border-bottom: 1px solid #eee;">{{ service.price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="text-align: right; font-size: 18px; margin-top: 20px;">
+            <p>Total: {{ invoice.total }} {{ invoice.currency }}</p>
+            <p>GST: 0%</p>
+            <p>Total Price: {{ invoice.total }} {{ invoice.currency }}</p>
+        </div>
+
+        <div style="margin-bottom: 40px;">
+            <p><strong>Bank Name:</strong> {{ invoice.bank_name }}</p>
+            <p><strong>Payment Mode:</strong> {{ invoice.payment_mode }}</p>
+            <p><strong>Payment Date:</strong> {{ invoice.date }}</p>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <p>Thank you for your business!</p>
+            <div style="width: 50%; border-top: 1px solid #ddd; margin-top: 10px;"></div>
+        </div>
+    </div>
+</body>
+</html>

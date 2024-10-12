@@ -40,13 +40,40 @@ urlpatterns = [
     path('create_razorpay_order/',views.create_razorpay_order,name='create_razorpay_order'),
     path('verify_payment/',views.verify_payment,name='verify_payment'),
     path('speech_api/',views.speech_api,name='speech_api'),
+
+
     path('email_generator_guest/',views.email_generator_guest,name='email_generator_guest'),
+    path('business_proposal_generator_guest/',views.business_proposal_generator_guest,name='business_proposal_generator_guest'),
+    path('offer_letter_generator_guest/',views.offer_letter_generator_guest,name='offer_letter_generator_guest'),
+    path('sales_script_generator_guest/',views.sales_script_generator_guest,name='sales_script_generator_guest'),
+    path('summarize_document_guest/',views.summarize_document_guest,name='summarize_document_guest'),
+    path('content_generator_guest/',views.content_generator_guest,name='content_generator_guest'),
+    path('rephrasely_view_guest/',views.rephrasely_view_guest,name='rephrasely_view_guest'),
+    path('generate_blog_view_guest/',views.generate_blog_view_guest,name='generate_blog_view_guest'),
+
+
+
+
+
+
+
+
+
     path('guest_send_otp/',views.guest_send_otp,name='guest_send_otp'),
     path('guest_validate_otp/',views.guest_validate_otp,name='guest_validate_otp'),
     path('translate_json/',views.translate_json,name='translate_json'),
     path('profile_info/',views.profile_info,name='profile_info'),
 
-    path('profile_info/', views.profile_info, name='profile_info'), 
+    path('create_cart/', views.create_cart, name='create_cart'), 
+    path('get_cart/', views.get_cart, name='get_cart'), 
+    path('remove_service/', views.remove_service, name='remove_service'), 
+    path('delete_user_account/', views.delete_user_account, name='delete_user_account'), 
+    path('generate_invoice/', views.generate_invoice, name='generate_invoice'), 
+    path('invoice-details/', views.invoice_details, name='invoice_details'),  # Add the new path
+
+
+
+
 
 
 

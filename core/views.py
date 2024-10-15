@@ -165,61 +165,16 @@ def invoice(request):
     return render(request, 'invoice_template.html')
 
 
-# def guest_generate_otp():
-#     """Generate a 6-digit random OTP."""
-#     return str(random.randint(100000, 999999))
-
 def guest_generate_otp():
     """Generate a 6-digit random OTP."""
-    return "123456"  # Set OTP as the default value "123456"
+    return str(random.randint(100000, 999999))
+
+
 
 def guest_otp_expiry_time():
     """Set OTP validity to 30 minutes."""
     return timezone.now() + timedelta(minutes=30)
 
-
-
-
-# @csrf_exempt
-# def create_razorpay_order(request):
-#     if request.method == "POST":
-#         try:
-#             # Fetch data (amount and email) from the request
-#             data = json.loads(request.body)
-#             amount = data.get('amount', 0) * 100  # Convert to paise
-#             email = data.get('email')  # Extract email from the request
-            
-#             if not email:
-#                 return JsonResponse({"error": "Email is required"}, status=400)
-
-#             # Create Razorpay order
-#             razorpay_order = razorpay_client.order.create({
-#                 "amount": amount,
-#                 "currency": "INR",
-#                 "payment_capture": "1"
-#             })
-
-#             # Save order details to the Payment table including the email
-#             Payment.objects.create(
-#                 order_id=razorpay_order['id'],
-#                 amount=amount / 100,  # Convert back to rupees
-#                 currency="INR",
-#                 payment_capture=True,
-#                 email=email  # Store the email
-#             )
-
-#             # Return the order ID and other details
-#             return JsonResponse({
-#                 "order_id": razorpay_order['id'],
-#                 "amount": amount,
-#                 "currency": "INR",
-#                 "razorpay_key_id": settings.RAZORPAY_KEY_ID
-#             })
-
-#         except Exception as e:
-#             return JsonResponse({"error": str(e)}, status=500)
-
-#     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 @csrf_exempt
 def create_razorpay_order(request):
@@ -759,66 +714,6 @@ ProdigiDesk Team
 
 
 
-#Encrypted API to verify otp while registering a new user
-# @csrf_exempt
-# def otp_verify(request):
-#     if request.method == 'POST':
-#         try:
-#             # Load and decode the request body
-#             body = request.body.decode('utf-8')
-#             logger.debug(f"Request body received: {body}")
-
-#             # Extract and decrypt the incoming payload
-#             data = json.loads(body)
-#             encrypted_content = data.get('encrypted_content')
-#             if not encrypted_content:
-#                 logger.warning("No encrypted content found in the request.")
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             logger.debug(f"Encrypted content received: {encrypted_content}")
-#             decrypted_content = decrypt_data(encrypted_content)
-#             logger.debug(f"Decrypted content: {decrypted_content}")
-
-#             data = json.loads(decrypted_content)
-#             otp = data.get('otp')
-
-#             if not otp:
-#                 return JsonResponse({'error': 'OTP is required.'}, status=400)
-
-#             try:
-#                 # Fetch the OTP record based on the OTP provided
-#                 otp_record = TemporaryEmailVerificationOTP.objects.get(otp=otp)
-#             except TemporaryEmailVerificationOTP.DoesNotExist:
-#                 # If OTP does not exist, return error and delete any related records
-#                 TemporaryEmailVerificationOTP.objects.filter(otp=otp).delete()
-#                 encrypted_response_content = encrypt_data({'error': 'Invalid OTP'})
-#                 return JsonResponse({'encrypted_content': encrypted_response_content}, status=400)
-
-#             # Check if the OTP has expired
-#             if otp_record.expiry_time < timezone.now():
-#                 # Delete OTP record if expired
-#                 otp_record.delete()
-#                 encrypted_response_content = encrypt_data({'error': 'OTP has expired'})
-#                 return JsonResponse({'encrypted_content': encrypted_response_content}, status=400)
-
-#             # If OTP is valid and not expired, proceed with verification
-#             otp_record.delete()
-
-#             # Encrypt the success response
-#             encrypted_response_content = encrypt_data({'success': 'OTP verified successfully'})
-#             return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
-
-#         except json.JSONDecodeError:
-#             logger.error("Invalid JSON format received.")
-#             encrypted_response_content = encrypt_data({'error': 'Invalid JSON format.'})
-#             return JsonResponse({'encrypted_content': encrypted_response_content}, status=400)
-#         except Exception as e:
-#             logger.error(f"An unexpected error occurred: {str(e)}")
-#             encrypted_response_content = encrypt_data({'error': str(e)})
-#             return JsonResponse({'encrypted_content': encrypted_response_content}, status=500)
-
-#     return JsonResponse({'error': 'Invalid request method'}, status=405)
-
 # Backend OTP Verification API
 @csrf_exempt
 def otp_verify(request):
@@ -869,60 +764,6 @@ def otp_verify(request):
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
-#Encrypted API To Send Feedback
-# @csrf_exempt
-# def send_feedback(request):
-#     if request.method == 'POST':
-#         try:
-#             # Extract and decrypt the incoming payload
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             logger.debug(f'Encrypted content received: {encrypted_content}')
-
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             logger.debug(f'Decrypted content: {decrypted_content}')
-#             data = json.loads(decrypted_content)
-
-#             # Extract feedback and userEmail from decrypted content
-#             feedback_text = data.get('feedback')
-#             user_email = data.get('userEmail')
-
-#             if not feedback_text or not user_email:
-#                 logger.warning('Feedback text or userEmail is missing.')
-#                 return JsonResponse({'error': 'Missing feedback text or userEmail'}, status=400)
-
-#             # Compose the email
-#             subject = 'New Feedback Submission'
-#             message = f'User Email: {user_email}\n\nFeedback:\n{feedback_text}\n\n'
-
-#             # Send the email
-#             send_mail(
-#                 subject,
-#                 message,
-#                 settings.EMAIL_HOST_USER, 
-#                 ['info@prodigidesk.ai'],  
-#                 fail_silently=False
-#             )
-#             print()
-
-#             logger.info(f"Feedback email sent successfully from {user_email}")
-
-#             # Encrypt the response message
-#             encrypted_response = encrypt_data({'message': 'Feedback sent successfully'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#         except json.JSONDecodeError:
-#             logger.error('Invalid JSON format in request')
-#             return JsonResponse({'error': 'Invalid JSON format'}, status=400)
-#         except Exception as e:
-#             logger.error(f"Unexpected error: {str(e)}")
-#             return JsonResponse({'error': str(e)}, status=500)
-#     else:
-#         logger.error('Invalid request method')
-#         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 @csrf_exempt
 def send_feedback(request):
@@ -1309,82 +1150,6 @@ def signin(request):
     else:
         logger.error('Invalid request method')
         return JsonResponse({'error': 'Invalid request method'}, status=405)
-
-
-# @csrf_protect  # Enable CSRF protection
-# def signin(request):
-#     if request.method == 'POST':
-#         try:
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             data = json.loads(decrypted_content)
-#             logger.debug(f'Decrypted content: {data}')
-
-#             login_input = data.get('login_input').lower()
-#             password = data.get('password')
-#             logout_from_all = data.get('logout_from_all', False)
-
-#             if not login_input or not password:
-#                 logger.warning('Login input and password are required')
-#                 return JsonResponse({'error': 'Login input and password are required'}, status=400)
-
-#             try:
-#                 if '@' in login_input:
-#                     user = User.objects.get(email=login_input)
-#                 else:
-#                     user = User.objects.get(username=login_input)
-#             except User.DoesNotExist:
-#                 logger.warning('Username or email not found')
-#                 return JsonResponse({'error': 'Username or email not found'}, status=401)
-
-#             if logout_from_all:
-#                 UserSession.objects.filter(user=user, active=True).update(active=False)
-
-#             active_session = UserSession.objects.filter(user=user, active=True).first()
-#             if active_session and not logout_from_all:
-#                 logger.warning('User already logged in with an active session')
-#                 return JsonResponse({'error': 'User already logged in'}, status=403)
-
-#             user = authenticate(request, username=user.username, password=password)
-#             if user is not None:
-#                 login(request, user)
-#                 refresh = RefreshToken.for_user(user)
-#                 logger.info(f'User {user.username} authenticated successfully')
-
-#                 session_id = get_random_string(length=32)
-#                 UserSession.objects.create(user=user, session_id=session_id, email=user.email, active=True)
-
-#                 logger.debug(f'Session created with ID: {session_id}')
-
-#                 encrypted_response = encrypt_data({
-#                     'success': 'User authenticated',
-#                     'access': str(refresh.access_token),
-#                     'refresh': str(refresh),
-#                     'user_id': user.id,
-#                     'session_id': session_id
-#                 })
-
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-#             else:
-#                 logger.warning('Password not correct')
-#                 return JsonResponse({'error': 'Password not correct'}, status=401)
-#         except json.JSONDecodeError:
-#             logger.error('Invalid JSON format in request')
-#             return JsonResponse({'error': 'Invalid JSON'}, status=400)
-#         except Exception as e:
-#             logger.error(f'Internal server error: {str(e)}')
-#             return JsonResponse({'error': 'Internal server error'}, status=500)
-#     else:
-#         logger.error('Invalid request method')
-#         return JsonResponse({'error': 'Invalid request method'}, status=405)
-
-
-
-
 
 
 
@@ -1784,73 +1549,6 @@ def translate_content(request):
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 
-# @csrf_exempt
-# def translate(request):
-#     translated_text = None
-#     error = None
-#     input_text = ""
-#     from_language = ""
-#     to_language = ""
-
-#     if request.method == 'POST':
-#         try:
-#             # Extract and decrypt the incoming payload
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             logger.debug(f'Encrypted content received: {encrypted_content}')
-
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             logger.debug(f'Decrypted content: {decrypted_content}')
-#             data = json.loads(decrypted_content)
-
-#             input_text = data.get('input_text', '')
-#             from_language = data.get('from_language', '')
-#             to_language = data.get('to_language', '')
-
-#             if input_text and from_language and to_language:
-#                 try:
-#                     logger.info(f'Translating text from {from_language} to {to_language}')
-#                     translated_text = bhashini_translate(input_text, to_language, from_language)
-#                     translated_text = translated_text["translated_content"]
-                    
-#                     logger.info('Translation successful')
-#                     logger.debug(f'Input text: {input_text}')
-#                     logger.debug(f'Translated text: {translated_text}')
-#                     print(translated_text)
-#                 except Exception as e:
-#                     error = f"Error during translation: {str(e)}"
-#                     logger.error(error)
-#             else:
-#                 error = "Please provide the input text and select both languages."
-#                 logger.warning(error)
-#         except json.JSONDecodeError:
-#             error = "Invalid JSON format received."
-#             logger.error(error)
-#         except Exception as e:
-#             error = f"Error during request handling: {str(e)}"
-#             logger.error(error)
-#     else:
-#         error = 'Invalid request method'
-#         logger.warning(error)
-
-#     # Prepare the response data
-#     response_data = {
-#         'translated_text': translated_text,
-#         'error': error,
-#         'input_text': input_text,
-#         'from_language': from_language,
-#         'to_language': to_language
-#     }
-    
-#     # Encrypt the response
-#     encrypted_response = encrypt_data(response_data)
-#     logger.debug(f'Encrypted response: {encrypted_response}')
-    
-#     return JsonResponse({'encrypted_content': encrypted_response})
-
 import concurrent.futures
 
 @csrf_exempt
@@ -2121,93 +1819,6 @@ def profile(request):
 
 from django.core.exceptions import ObjectDoesNotExist
 
-# @api_view(['GET'])
-# @permission_classes([])
-# def profile_info(request):
-#     # Get the email from the request query parameters
-#     email = request.GET.get('email')
-    
-#     if not email:
-#         return JsonResponse({'error': 'Email parameter is required.'}, status=400)
-
-#     try:
-#         # Fetch the user based on the provided email
-#         user = User.objects.get(email=email)
-
-#         # Get the user's profile
-#         profile = Profile.objects.get(user=user)
-        
-#         # Get the user's subscribed services
-#         user_service = UserService.objects.get(user=user)
-
-#         # Get all payments made by the user
-#         payments = Payment.objects.filter(email=user.email)
-
-#         # Prepare the payment details
-#         payment_info = []
-#         for payment in payments:
-#             payment_info.append({
-#                 'order_id': payment.order_id,
-#                 'payment_id': payment.payment_id,
-#                 'amount': str(payment.amount),
-#                 'currency': payment.currency,
-#                 'created_at': payment.created_at.isoformat(),
-#                 'verified': payment.verified,
-#             })
-
-#         # Prepare the response data
-#         response_data = {
-#             'profile': {
-#                 'bio': profile.bio,
-#                 'location': profile.location,
-#                 'birth_date': profile.birth_date.isoformat() if profile.birth_date else None,
-#             },
-#             'services': {
-#                 'email_service': user_service.email_service,
-#                 'offer_letter_service': user_service.offer_letter_service,
-#                 'business_proposal_service': user_service.business_proposal_service,
-#                 'sales_script_service': user_service.sales_script_service,
-#                 'content_generation_service': user_service.content_generation_service,
-#                 'summarize_service': user_service.summarize_service,
-#                 'ppt_generation_service': user_service.ppt_generation_service,
-#                 'blog_generation_service': user_service.blog_generation_service,
-#                 'rephrasely_service': user_service.rephrasely_service,
-#                 'service_start_dates': {
-#                     'email_service_start': user_service.email_end_date,
-#                     'offer_letter_service_start': user_service.offer_letter_end_date,
-#                     'business_proposal_service_start': user_service.business_proposal_end_date,
-#                     'sales_script_service_start': user_service.sales_script_end_date,
-#                     'content_generation_service_start': user_service.content_generation_end_date,
-#                     'summarize_service_start': user_service.summarize_end_date,
-#                     'ppt_generation_service_start': user_service.ppt_generation_end_date,
-#                     'blog_generation_service_start': user_service.blog_generation_end_date,
-#                     'rephrasely_service_start': user_service.rephrasely_end_date,
-#                 },
-#                  'service_end_dates': {  # Add this section for end dates
-#                     'email_service_end': user_service.email_end_date,
-#                     'offer_letter_service_end': user_service.offer_letter_end_date,
-#                     'business_proposal_service_end': user_service.business_proposal_end_date,
-#                     'sales_script_service_end': user_service.sales_script_end_date,
-#                     'content_generation_service_end': user_service.content_generation_end_date,
-#                     'summarize_service_end': user_service.summarize_end_date,
-#                     'ppt_generation_service_end': user_service.ppt_generation_end_date,
-#                     'blog_generation_service_end': user_service.blog_generation_end_date,
-#                     'rephrasely_service_end': user_service.rephrasely_end_date,
-#                 },
-#                     },
-#             'payments': payment_info,
-#         }
-
-#         return JsonResponse(response_data, status=200)
-
-#     except ObjectDoesNotExist:
-#         return JsonResponse({'error': 'User not found.'}, status=404)
-#     except Profile.DoesNotExist:
-#         return JsonResponse({'error': 'Profile not found.'}, status=404)
-#     except UserService.DoesNotExist:
-#         return JsonResponse({'error': 'User services not found.'}, status=404)
-#     except Exception as e:
-#         return JsonResponse({'error': str(e)}, status=500)
 
 
 from django.http import JsonResponse
@@ -2577,62 +2188,6 @@ def logout_view(request):
         return JsonResponse({'error': 'An error occurred during logout.'}, status=500)
 
 
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def create_presentation(request):
-#     try:
-#         # Handle the multipart form data
-#         encrypted_content = request.POST.get('encrypted_content')
-#         if not encrypted_content:
-#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#         # Decrypt the content
-#         decrypted_content = decrypt_data(encrypted_content)
-
-#         # Parse decrypted JSON data
-#         data = json.loads(decrypted_content)
-
-#         # Extract fields from the decrypted data
-#         title = data.get('title')
-#         num_slides = data.get('num_slides')
-#         bg_image_path = request.FILES.get('background_image')  # bg_image as a file
-#         document = request.FILES.get('document')  # document as a file
-
-#         if not title or not num_slides:
-#             return JsonResponse({'error': 'Title and number of slides are required.'}, status=400)
-
-#         # Handle document content optionally (assuming `extract_document_content` processes the file)
-#         document_content = extract_document_content(document) if document else ""
-
-#         # Generate presentation logic
-#         prs = Presentation()
-#         slide_titles = generate_slide_titles(document_content, num_slides, None, title)
-#         slide_titles = slide_titles.replace('[', '').replace(']', '').replace('"', '').split(',')
-
-#         for st in slide_titles:
-#             slide_content = generate_slide_content(document_content, st, None).replace("*", '').split('\n')
-#             current_content = [point.strip() for point in slide_content if len(point.strip()) > 0]
-
-#             if len(current_content) > 4:
-#                 current_content = current_content[:4]  # Limit to only 4 points
-
-#             add_slide(prs, st.strip(), current_content, bg_image_path)
-
-#         # Save presentation to a BytesIO object
-#         buffer = io.BytesIO()
-#         prs.save(buffer)
-#         buffer.seek(0)  # Rewind the buffer
-
-#         # Return file response
-#         response = FileResponse(buffer, as_attachment=True, filename='SmartOffice_Assistant_Presentation.pptx')
-#         return response
-
-#     except json.JSONDecodeError:
-#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-#     except Exception as e:
-#         return JsonResponse({'error': str(e)}, status=500)
-
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_presentation(request):
@@ -2833,20 +2388,6 @@ GREETING_MESSAGES = [
     "Hey, awesome human! 🎉 I’m Advika, your go-to AI for all things related to our services. Got a question? Let’s make it happen—go champion! You can also check out our [Resource Hub here](https://prodigidesk.ai/ProdigiDesk)."
 ]
 
-
-# GREETING_MESSAGES = [
-#     "Hey there! 👋 I’m Advika, your friendly AI champion. Got a question about our AI services? Let’s brighten your day with the perfect solution!",
-#     "Greetings, human! I’m Advika, your digital assistant built for speed ⚡. Ask me anything about our AI services, and let’s get things done in a flash!",
-#     "Hello and welcome! 🌟 I’m Advika, here to assist with all your AI-related queries. What’s on your mind? Let’s dive into our exciting services together!",
-#     "Hi there! I’m Advika, your guide to exploring the world of AI. Have a question about our services? Let’s explore it together—just ask away! 🤔",
-#     "Hello, superstar! 🌟 I’m Advika, your AI sidekick. Curious about our amazing AI services? I’ve got all the answers, let’s get started!",
-#     "✨ Welcome, adventurer! ✨ I’m Advika, your AI guide on this exciting journey. Ask me about any of our cutting-edge AI services, and let’s unlock some magic together!",
-#     "Hey! I’m Advika, here to support you on your AI journey. Got questions about our services? Don’t worry, we’ll tackle them together—let’s get started!",
-#     "Hi there! ⏱ I’m Advika, and I’m here to help you quickly explore our AI services. Ask away, and I’ll provide the answers in no time!",
-#     "Greetings! I’m Advika, your dedicated AI assistant. Have any questions about our AI offerings? I’m here to guide you—how may I assist you today?",
-#     "Hey, awesome human! 🎉 I’m Advika, your go-to AI for all things related to our services. Got a question? Let’s make it happen—go champion!"
-# ]
- 
 
 
 
@@ -3421,6 +2962,64 @@ def generate_blog_view_guest(request):
     return JsonResponse({"error": "Only POST method is allowed."}, status=405)
 
 
+@csrf_exempt
+def translate_content_guest(request):
+    translated_content = None
+    error = None
+    language = ""
+
+    if request.method == 'POST':
+        try:
+            # Extract and decrypt the incoming payload
+            encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+            logger.debug(f'Encrypted content received: {encrypted_content}')
+
+            if not encrypted_content:
+                logger.warning('No encrypted content found in the request.')
+                return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+            decrypted_content = decrypt_data(encrypted_content)
+            logger.debug(f'Decrypted content: {decrypted_content}')
+            data = json.loads(decrypted_content)
+
+            generated_content = data.get('generated_content')
+            language = data.get('language')
+
+            if not generated_content or not language:
+                logger.warning('Both generated_content and language are required fields.')
+                return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
+
+            logger.info(f'Translating content: {generated_content} to language: {language}')
+            response = bhashini_translate(generated_content, language)
+
+            if response["status_code"] == 200:
+                translated_content = response["translated_content"]
+                logger.info('Content translated successfully.')
+                # Encrypt the response content
+                encrypted_response = encrypt_data({
+                    'generated_content': generated_content,
+                    'translated_content': translated_content,
+                    'selected_language': language
+                })
+                logger.debug(f'Encrypted response: {encrypted_response}')
+                return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+            else:
+                logger.error('Translation failed with status code: {}'.format(response["status_code"]))
+                return JsonResponse({'error': 'Translation failed.'}, status=500)
+
+        except json.JSONDecodeError:
+            logger.error('Invalid JSON format in request.')
+            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+        except ValueError as e:
+            logger.warning(f'ValueError: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            logger.error(f'Unexpected error: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=500)
+
+    logger.error('Method not allowed.')
+    return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
 
 
 @csrf_exempt
@@ -3428,14 +3027,14 @@ def guest_send_otp(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
-            mobile_number = data.get('mobile_number')
+            email = data.get('email')  # Use email instead of mobile number
 
-            if not mobile_number:
-                return JsonResponse({'error': 'Mobile number is required.'}, status=400)
+            if not email:
+                return JsonResponse({'error': 'Email is required.'}, status=400)
 
-            # Check if the mobile number is already registered and active
-            if GuestLogin.objects.filter(mobile_number=mobile_number, is_active=True).exists():
-                return JsonResponse({'error': 'Mobile number is already registered.'}, status=400)
+            # Check if the email is already registered and active
+            if GuestLogin.objects.filter(email=email, is_active=True).exists():
+                return JsonResponse({'error': 'Email is already registered.'}, status=400)
 
             # Generate OTP and set expiry time
             otp = guest_generate_otp()
@@ -3443,7 +3042,7 @@ def guest_send_otp(request):
 
             # Create or update the GuestLogin entry
             guest_login, created = GuestLogin.objects.update_or_create(
-                mobile_number=mobile_number,
+                email=email,
                 defaults={
                     'otp': otp,
                     'valid_till': valid_till,
@@ -3451,32 +3050,65 @@ def guest_send_otp(request):
                 }
             )
 
-            # Simulate sending the OTP (replace with SMS API)
-            print(f"OTP {otp} sent to {mobile_number}")
-            return JsonResponse({'message': f'OTP sent to {mobile_number}.'}, status=200)
+            # Prepare the email content using the text from `send_email_verification_otp`
+            subject = 'Welcome to ProdigiDesk'
+            plain_message = f"""
+Dear Sir/Madam,
 
+System generated confidential OTP {otp} is valid for 10 minutes.
+
+This is a system generated mail. Please do not reply.
+
+Regards,
+ProdigiDesk Team
+"""
+            html_message = f"""
+<p>Dear Sir/Madam,</p>
+<p>System generated confidential OTP <strong>{otp}</strong> is valid for 10 minutes.</p>
+<p>This is a system generated mail. Please do not reply.</p>
+<p>Regards,<br>ProdigiDesk Team</p>
+"""
+
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient_list = [email]
+
+            # Send the OTP via email
+            try:
+                send_mail(
+                    subject, 
+                    plain_message, 
+                    from_email, 
+                    recipient_list, 
+                    fail_silently=False,
+                    html_message=html_message  # Send both plain and HTML content
+                )
+                return JsonResponse({'message': f'OTP sent to {email}.'}, status=200)
+            except Exception as e:
+                return JsonResponse({'error': f'Error sending email: {str(e)}'}, status=500)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON format.'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid HTTP method.'}, status=405)
-
 
 @csrf_exempt
 def guest_validate_otp(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
-            mobile_number = data.get('mobile_number')
+            email = data.get('email')  # Changed to email
             otp = data.get('otp')
 
-            if not mobile_number or not otp:
-                return JsonResponse({'error': 'Mobile number and OTP are required.'}, status=400)
+            if not email or not otp:
+                return JsonResponse({'error': 'Email and OTP are required.'}, status=400)
 
             # Find the GuestLogin entry
             try:
-                guest_login = GuestLogin.objects.get(mobile_number=mobile_number, otp=otp)
+                guest_login = GuestLogin.objects.get(email=email, otp=otp)  # Changed to email
             except GuestLogin.DoesNotExist:
-                return JsonResponse({'error': 'Invalid OTP.'}, status=400)
+                return JsonResponse({'error': 'Invalid OTP or email.'}, status=400)
 
             # Check if OTP is valid and session is active
             if not guest_login.is_valid() or not guest_login.is_active:
@@ -3487,11 +3119,13 @@ def guest_validate_otp(request):
             guest_login.deactivate_session()
             return JsonResponse({'message': 'OTP is valid. Session deactivated.'}, status=200)
 
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON format.'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid HTTP method.'}, status=405)
-
+    
 
 @csrf_exempt
 def create_cart(request):
@@ -3709,10 +3343,153 @@ def delete_user_account(request):
 
 
 
+import zipfile
+from io import BytesIO
+
+# @csrf_exempt
+# def translate_json_files(request):
+#     translated_json = {}
+#     error = None
+#     translate_to_list = []
+
+#     if request.method == 'POST':
+#         try:
+#             json_file = request.FILES.get('file')
+#             translate_to = request.POST.get('translate_to')
+            
+#             if not json_file:
+#                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
+            
+#             if not translate_to:
+#                 return JsonResponse({'error': 'No target language provided.'}, status=400)
+
+#             translate_to_list = [lang.strip() for lang in translate_to.split(',')]
+
+#             file_content = json_file.read().decode('utf-8')
+#             original_json = json.loads(file_content)
+
+#             zip_buffer = BytesIO()
+#             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
+                
+#                 for target_lang in translate_to_list:
+#                     translated_json = {}
+                    
+#                     translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
+#                     translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
+
+#                     def translate_key_value(key, value, target_lang):
+#                         try:
+#                             translation_result = bhashini_translate(value, target_lang)
+#                             translated_json[key] = translation_result["translated_content"]
+#                         except Exception as e:
+#                             translated_json[key] = f"Translation Error: {str(e)}"
+
+#                     threads = []
+#                     for key, value in translation_tasks:
+#                         thread = threading.Thread(target=translate_key_value, args=(key, value, target_lang))
+#                         thread.start()
+#                         threads.append(thread)
+
+#                     for thread in threads:
+#                         thread.join()
+
+#                     translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
+#                     translated_file_name = f"translated_{target_lang}.json"
+#                     zip_archive.writestr(translated_file_name, translated_json_str)
+
+#             zip_buffer.seek(0)
+#             response = HttpResponse(zip_buffer, content_type='application/zip')
+#             response['Content-Disposition'] = 'attachment; filename="translated_files.zip"'
+#             return response
+
+#         except json.JSONDecodeError:
+#             error = "Invalid JSON file format."
+#             return JsonResponse({'error': error}, status=400)
+#         except Exception as e:
+#             error = f"Error during translation: {str(e)}"
+#             return JsonResponse({'error': error}, status=500)
+#     else:
+#         return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+# import os
+# import json
+# import zipfile
+# from io import BytesIO
+# from concurrent.futures import ThreadPoolExecutor
+# from django.http import JsonResponse, HttpResponse
+# from django.views.decorators.csrf import csrf_exempt
 
 
+# # Function to sort JSON data by keys
+# def sort_json_data(data):
+#     if isinstance(data, dict):
+#         return {key: sort_json_data(data[key]) if isinstance(data[key], dict) else data[key] for key in sorted(data)}
+#     return data
 
+# @csrf_exempt
+# def translate_json_files(request):
+#     translated_json = {}
+#     error = None
+#     translate_to_list = []
 
+#     if request.method == 'POST':
+#         try:
+#             json_file = request.FILES.get('file')
+#             translate_to = request.POST.get('translate_to')
 
+#             if not json_file:
+#                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
 
+#             if not translate_to:
+#                 return JsonResponse({'error': 'No target language provided.'}, status=400)
+
+#             translate_to_list = [lang.strip() for lang in translate_to.split(',')]
+
+#             file_content = json_file.read().decode('utf-8')
+#             original_json = json.loads(file_content)
+
+#             zip_buffer = BytesIO()
+#             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
+
+#                 for target_lang in translate_to_list:
+#                     translated_json = {}
+
+#                     # Collect tasks for translation
+#                     translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
+#                     translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
+
+#                     def translate_key_value(key, value, target_lang):
+#                         try:
+#                             translation_result = bhashini_translate(value, target_lang)
+#                             # Fallback to original value if translation fails or returns None
+#                             translated_json[key] = translation_result.get("translated_content", value) if translation_result else value
+#                         except Exception as e:
+#                             translated_json[key] = value  # Use original value on error
+
+#                     # Use ThreadPoolExecutor with up to 100 threads
+#                     with ThreadPoolExecutor(max_workers=100) as executor:
+#                         executor.map(lambda task: translate_key_value(*task, target_lang), translation_tasks)
+
+#                     # Sort the translated JSON by keys
+#                     sorted_translated_json = sort_json_data(translated_json)
+
+#                     # Write the sorted translated JSON to a file in the zip
+#                     translated_json_str = json.dumps(sorted_translated_json, ensure_ascii=False, indent=4)
+#                     translated_file_name = f"translated_{target_lang}_sorted.json"
+#                     zip_archive.writestr(translated_file_name, translated_json_str)
+
+#             zip_buffer.seek(0)
+#             response = HttpResponse(zip_buffer, content_type='application/zip')
+#             response['Content-Disposition'] = 'attachment; filename="translated_sorted_files.zip"'
+#             return response
+
+#         except json.JSONDecodeError:
+#             error = "Invalid JSON file format."
+#             return JsonResponse({'error': error}, status=400)
+#         except Exception as e:
+#             error = f"Error during translation: {str(e)}"
+#             return JsonResponse({'error': error}, status=500)
+#     else:
+#         return JsonResponse({'error': 'Invalid request method'}, status=400)
+    
 

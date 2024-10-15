@@ -167,8 +167,26 @@ class Payment(models.Model):
     def __str__(self):
         return f"Order {self.order_id} - {self.amount} {self.currency}"
     
+# class GuestLogin(models.Model):
+#     mobile_number = models.CharField(max_length=15, unique=True)  # Ensure mobile number is unique
+#     otp = models.CharField(max_length=6)
+#     session_id = models.CharField(max_length=255, unique=True, default=uuid.uuid4)
+#     logged_in_at = models.DateTimeField(auto_now_add=True)
+#     valid_till = models.DateTimeField()
+#     is_active = models.BooleanField(default=True)
+
+#     def is_valid(self):
+#         return timezone.now() < self.valid_till
+
+#     def deactivate_session(self):
+#         self.is_active = False
+#         self.save()
+
+#     def __str__(self):
+#         return f"Guest {self.mobile_number} - Session ID {self.session_id} - Active: {self.is_active}"
+
 class GuestLogin(models.Model):
-    mobile_number = models.CharField(max_length=15, unique=True)  # Ensure mobile number is unique
+    email = models.EmailField(max_length=255, unique=True)  # Ensure email is unique
     otp = models.CharField(max_length=6)
     session_id = models.CharField(max_length=255, unique=True, default=uuid.uuid4)
     logged_in_at = models.DateTimeField(auto_now_add=True)
@@ -183,7 +201,9 @@ class GuestLogin(models.Model):
         self.save()
 
     def __str__(self):
-        return f"Guest {self.mobile_number} - Session ID {self.session_id} - Active: {self.is_active}"
+        return f"Guest {self.email} - Session ID {self.session_id} - Active: {self.is_active}"
+
+
 
 
 class Cart(models.Model):

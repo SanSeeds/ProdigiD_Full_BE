@@ -511,11 +511,6 @@ def generate_slide_titles(document_content, num_slides, special_instructions, ti
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
         model="llama-3.1-70b-versatile",
-
-
-
-
-
     )
     title_list = chat_completion.choices[0].message.content
     return title_list
@@ -545,10 +540,6 @@ def generate_slide_content(document_content, title, special_instructions):
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
         model="llama-3.1-70b-versatile",
-
-
-
-
     )
     slide_content = chat_completion.choices[0].message.content
     return slide_content
@@ -746,7 +737,7 @@ def extract_document_content(file):
         doc = DocxDocument(file)
         return '\n'.join([para.text for para in doc.paragraphs])
     elif file_name.endswith('.pdf'):
-        doc = fitz.open(stream=file.read(), filetype="pdf")
+        doc = fitz.Document(stream=file.read(), filetype="pdf")
         text = ""
         for page in doc:
             text += page.get_text()

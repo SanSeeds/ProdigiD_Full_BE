@@ -53,3 +53,6 @@ ERROR 2024-09-24 10:58:57,060 basehttp "POST /create_presentation/ HTTP/1.1" 500
 ERROR 2024-09-24 11:04:28,667 log Internal Server Error: /create_presentation/
 ERROR 2024-09-24 11:04:28,667 basehttp "POST /create_presentation/ HTTP/1.1" 500 2182
 ERROR 2024-09-24 11:04:28,667 basehttp "POST /create_presentation/ HTTP/1.1" 500 2182
+ERROR 2024-10-15 16:11:08,727 log Internal Server Error: /send_email_verification_otp/
+ERROR 2024-10-15 16:11:08,735 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 112
+ERROR 2024-10-15 16:11:08,735 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 112

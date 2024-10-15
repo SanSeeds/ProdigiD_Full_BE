@@ -40,7 +40,7 @@ def contains_inappropriate_language(text: str) -> bool:
 def sanitize_input(input_str):
     return profanity.censor(input_str)
 
-def generate_email(purpose='Request Information', num_words=100, subject=None, rephrase=None, to=None, tone='Formal', keywords=None, contextual_background=None, call_to_action=None, additional_details=None, priority_level='Low', closing_remarks=None):
+def generate_email(purpose='Request Information', num_words=100, subject=None, rephrase=False, to=None, tone='Formal', keywords=None, contextual_background=None, call_to_action=None, additional_details=None, priority_level='Low', closing_remarks=None):
     # Ensure all fields are checked for inappropriate language
     fields_to_check = [purpose, subject, keywords, contextual_background, call_to_action, additional_details, closing_remarks]
     if any(contains_inappropriate_language(str(field)) for field in fields_to_check if field is not None):
@@ -53,7 +53,10 @@ def generate_email(purpose='Request Information', num_words=100, subject=None, r
     prompt += f"\nIncorporate the following additional details: {additional_details}." if additional_details else ""
     prompt += f"\nThe mail is of {priority_level} priority." if priority_level else ""
     prompt += f"\nIncorporate the closing remarks {closing_remarks}." if closing_remarks else ""
-    prompt += "\nRephrase the subject line" if rephrase == "true" else ""
+    
+    # Check if rephrasing is enabled
+    prompt += "\nRephrase the subject line" if rephrase else ""
+    
     prompt += "\nDo not include any additional commentary or information beyond the email content itself."
     
     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
@@ -63,6 +66,7 @@ def generate_email(purpose='Request Information', num_words=100, subject=None, r
     )
     
     return chat_completion.choices[0].message.content
+
 
 
 def generate_bus_pro(business_intro, proposal_objective, num_words, scope_of_work, project_phases, expected_outcomes, tech_innovations, target_audience, budget_info, timeline, benefits, closing_remarks):

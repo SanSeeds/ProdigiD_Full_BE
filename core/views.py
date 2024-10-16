@@ -11,7 +11,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, HttpResponse, JsonResponse
 from gtts import gTTS
-from .email_llama3 import add_slide, ask_question_chatbot, generate_blog, generate_slide_titles, extract_document_content, generate_email, bhashini_translate,generate_bus_pro, generate_offer_letter, generate_slide_content, generate_slide_titles, generate_summary, generate_content, generate_sales_script, rephrasely  
+from .email_llama3 import BHASHINI_API_KEY, BHASHINI_USER_ID, add_slide, ask_question_chatbot, generate_blog, generate_slide_titles, extract_document_content, generate_email, bhashini_translate,generate_bus_pro, generate_offer_letter, generate_slide_content, generate_slide_titles, generate_summary, generate_content, generate_sales_script, rephrasely, translate_multiple_texts  
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from django.utils import timezone
@@ -2457,69 +2457,69 @@ def speech_api(request):
         # Handle non-POST requests
         return JsonResponse({'status': 'error', 'message': 'Only POST requests are allowed.'})
 
-@csrf_exempt
-def translate_json(request):
-    translated_json = {}
-    error = None
-    translate_to = ""
+# @csrf_exempt
+# def translate_json(request):
+#     translated_json = {}
+#     error = None
+#     translate_to = ""
 
-    if request.method == 'POST':
-        try:
-            # Extract file and target language from the request
-            json_file = request.FILES.get('file')
-            translate_to = request.POST.get('translate_to')
+#     if request.method == 'POST':
+#         try:
+#             # Extract file and target language from the request
+#             json_file = request.FILES.get('file')
+#             translate_to = request.POST.get('translate_to')
             
-            if not json_file:
-                return JsonResponse({'error': 'No JSON file provided.'}, status=400)
+#             if not json_file:
+#                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
             
-            if not translate_to:
-                return JsonResponse({'error': 'No target language provided.'}, status=400)
+#             if not translate_to:
+#                 return JsonResponse({'error': 'No target language provided.'}, status=400)
 
-            # Load the JSON file
-            file_content = json_file.read().decode('utf-8')
-            print(f"File Content: {file_content}")  # Debugging line
-            original_json = json.loads(file_content)
+#             # Load the JSON file
+#             file_content = json_file.read().decode('utf-8')
+#             print(f"File Content: {file_content}")  # Debugging line
+#             original_json = json.loads(file_content)
 
-            # Collect all string values for translation in one batch
-            translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
-            translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
+#             # Collect all string values for translation in one batch
+#             translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
+#             translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
 
-            # Use threading to parallelize translation calls for better performance
-            def translate_key_value(key, value, target_lang):
-                try:
-                    translation_result = bhashini_translate(value, target_lang)
-                    translated_json[key] = translation_result["translated_content"]
-                except Exception as e:
-                    translated_json[key] = f"Translation Error: {str(e)}"
+#             # Use threading to parallelize translation calls for better performance
+#             def translate_key_value(key, value, target_lang):
+#                 try:
+#                     translation_result = bhashini_translate(value, target_lang)
+#                     translated_json[key] = translation_result["translated_content"]
+#                 except Exception as e:
+#                     translated_json[key] = f"Translation Error: {str(e)}"
 
-            threads = []
-            for key, value in translation_tasks:
-                thread = threading.Thread(target=translate_key_value, args=(key, value, translate_to))
-                thread.start()
-                threads.append(thread)
+#             threads = []
+#             for key, value in translation_tasks:
+#                 thread = threading.Thread(target=translate_key_value, args=(key, value, translate_to))
+#                 thread.start()
+#                 threads.append(thread)
 
-            # Wait for all threads to finish
-            for thread in threads:
-                thread.join()
+#             # Wait for all threads to finish
+#             for thread in threads:
+#                 thread.join()
 
-            # Create the translated JSON file in memory
-            translated_file_name = f"translated_{translate_to}.json"
-            translated_json_str = json.dumps(translated_json, indent=4)
-            translated_file = BytesIO(translated_json_str.encode('utf-8'))
+#             # Create the translated JSON file in memory
+#             translated_file_name = f"translated_{translate_to}.json"
+#             translated_json_str = json.dumps(translated_json, indent=4)
+#             translated_file = BytesIO(translated_json_str.encode('utf-8'))
 
-            # Return the translated file as an attachment
-            response = HttpResponse(translated_file.getvalue(), content_type='application/json')
-            response['Content-Disposition'] = f'attachment; filename="{translated_file_name}"'
-            return response
+#             # Return the translated file as an attachment
+#             response = HttpResponse(translated_file.getvalue(), content_type='application/json')
+#             response['Content-Disposition'] = f'attachment; filename="{translated_file_name}"'
+#             return response
 
-        except json.JSONDecodeError:
-            error = "Invalid JSON file format."
-            return JsonResponse({'error': error}, status=400)
-        except Exception as e:
-            error = f"Error during translation: {str(e)}"
-            return JsonResponse({'error': error}, status=500)
-    else:
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
+#         except json.JSONDecodeError:
+#             error = "Invalid JSON file format."
+#             return JsonResponse({'error': error}, status=400)
+#         except Exception as e:
+#             error = f"Error during translation: {str(e)}"
+#             return JsonResponse({'error': error}, status=500)
+#     else:
+#         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
 
@@ -3346,150 +3346,82 @@ def delete_user_account(request):
 import zipfile
 from io import BytesIO
 
-# @csrf_exempt
-# def translate_json_files(request):
-#     translated_json = {}
-#     error = None
-#     translate_to_list = []
 
-#     if request.method == 'POST':
-#         try:
-#             json_file = request.FILES.get('file')
-#             translate_to = request.POST.get('translate_to')
-            
-#             if not json_file:
-#                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
-            
-#             if not translate_to:
-#                 return JsonResponse({'error': 'No target language provided.'}, status=400)
+import os
+import json
+import zipfile
+from io import BytesIO
+from concurrent.futures import ThreadPoolExecutor
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
-#             translate_to_list = [lang.strip() for lang in translate_to.split(',')]
 
-#             file_content = json_file.read().decode('utf-8')
-#             original_json = json.loads(file_content)
+# Function to sort JSON data by keys
+def sort_json_data(data):
+    if isinstance(data, dict):
+        return {key: sort_json_data(data[key]) if isinstance(data[key], dict) else data[key] for key in sorted(data)}
+    return data
 
-#             zip_buffer = BytesIO()
-#             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
-                
-#                 for target_lang in translate_to_list:
-#                     translated_json = {}
+@csrf_exempt
+def translate_json_files(request):
+    if request.method == 'POST':
+        try:
+            # Get the uploaded JSON file and target languages
+            json_file = request.FILES.get('file')
+            translate_to = request.POST.get('translate_to')
+
+            if not json_file:
+                return JsonResponse({'error': 'No JSON file provided.'}, status=400)
+
+            if not translate_to:
+                return JsonResponse({'error': 'No target language provided.'}, status=400)
+
+            # Parse target languages and original JSON content
+            translate_to_list = [lang.strip() for lang in translate_to.split(',')]
+            file_content = json_file.read().decode('utf-8')
+            original_json = json.loads(file_content)
+
+            # Prepare zip buffer to store translated files
+            zip_buffer = BytesIO()
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
+                for target_lang in translate_to_list:
+                    translated_json = {}
                     
-#                     translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
-#                     translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
+                    # Separate string fields for translation from non-string fields
+                    string_fields = {key: value for key, value in original_json.items() if isinstance(value, str)}
+                    non_string_fields = {key: value for key, value in original_json.items() if not isinstance(value, str)}
 
-#                     def translate_key_value(key, value, target_lang):
-#                         try:
-#                             translation_result = bhashini_translate(value, target_lang)
-#                             translated_json[key] = translation_result["translated_content"]
-#                         except Exception as e:
-#                             translated_json[key] = f"Translation Error: {str(e)}"
+                    # Translate string fields using parallel processing
+                    translated_texts = translate_multiple_texts(
+                        list(string_fields.values()),
+                        from_code="English",  # You can customize this
+                        to_code=target_lang,
+                        user_id=BHASHINI_USER_ID,
+                        api_key=BHASHINI_API_KEY
+                    )
 
-#                     threads = []
-#                     for key, value in translation_tasks:
-#                         thread = threading.Thread(target=translate_key_value, args=(key, value, target_lang))
-#                         thread.start()
-#                         threads.append(thread)
+                    # Reconstruct the translated JSON by merging non-string fields with translated ones
+                    translated_json.update(non_string_fields)
+                    for key, translation in zip(string_fields.keys(), translated_texts):
+                        translated_json[key] = translation.get("translated_content", string_fields[key])
 
-#                     for thread in threads:
-#                         thread.join()
+                    # Sort the translated JSON by keys
+                    sorted_translated_json = sort_json_data(translated_json)
 
-#                     translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
-#                     translated_file_name = f"translated_{target_lang}.json"
-#                     zip_archive.writestr(translated_file_name, translated_json_str)
+                    # Write the sorted translated JSON to a file in the zip archive
+                    translated_json_str = json.dumps(sorted_translated_json, ensure_ascii=False, indent=4)
+                    translated_file_name = f"translated_{target_lang}_sorted.json"
+                    zip_archive.writestr(translated_file_name, translated_json_str)
 
-#             zip_buffer.seek(0)
-#             response = HttpResponse(zip_buffer, content_type='application/zip')
-#             response['Content-Disposition'] = 'attachment; filename="translated_files.zip"'
-#             return response
+            # Return the zip file containing translated JSON files
+            zip_buffer.seek(0)
+            response = HttpResponse(zip_buffer, content_type='application/zip')
+            response['Content-Disposition'] = 'attachment; filename="translated_sorted_files.zip"'
+            return response
 
-#         except json.JSONDecodeError:
-#             error = "Invalid JSON file format."
-#             return JsonResponse({'error': error}, status=400)
-#         except Exception as e:
-#             error = f"Error during translation: {str(e)}"
-#             return JsonResponse({'error': error}, status=500)
-#     else:
-#         return JsonResponse({'error': 'Invalid request method'}, status=400)
-
-# import os
-# import json
-# import zipfile
-# from io import BytesIO
-# from concurrent.futures import ThreadPoolExecutor
-# from django.http import JsonResponse, HttpResponse
-# from django.views.decorators.csrf import csrf_exempt
-
-
-# # Function to sort JSON data by keys
-# def sort_json_data(data):
-#     if isinstance(data, dict):
-#         return {key: sort_json_data(data[key]) if isinstance(data[key], dict) else data[key] for key in sorted(data)}
-#     return data
-
-# @csrf_exempt
-# def translate_json_files(request):
-#     translated_json = {}
-#     error = None
-#     translate_to_list = []
-
-#     if request.method == 'POST':
-#         try:
-#             json_file = request.FILES.get('file')
-#             translate_to = request.POST.get('translate_to')
-
-#             if not json_file:
-#                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
-
-#             if not translate_to:
-#                 return JsonResponse({'error': 'No target language provided.'}, status=400)
-
-#             translate_to_list = [lang.strip() for lang in translate_to.split(',')]
-
-#             file_content = json_file.read().decode('utf-8')
-#             original_json = json.loads(file_content)
-
-#             zip_buffer = BytesIO()
-#             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
-
-#                 for target_lang in translate_to_list:
-#                     translated_json = {}
-
-#                     # Collect tasks for translation
-#                     translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
-#                     translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
-
-#                     def translate_key_value(key, value, target_lang):
-#                         try:
-#                             translation_result = bhashini_translate(value, target_lang)
-#                             # Fallback to original value if translation fails or returns None
-#                             translated_json[key] = translation_result.get("translated_content", value) if translation_result else value
-#                         except Exception as e:
-#                             translated_json[key] = value  # Use original value on error
-
-#                     # Use ThreadPoolExecutor with up to 100 threads
-#                     with ThreadPoolExecutor(max_workers=100) as executor:
-#                         executor.map(lambda task: translate_key_value(*task, target_lang), translation_tasks)
-
-#                     # Sort the translated JSON by keys
-#                     sorted_translated_json = sort_json_data(translated_json)
-
-#                     # Write the sorted translated JSON to a file in the zip
-#                     translated_json_str = json.dumps(sorted_translated_json, ensure_ascii=False, indent=4)
-#                     translated_file_name = f"translated_{target_lang}_sorted.json"
-#                     zip_archive.writestr(translated_file_name, translated_json_str)
-
-#             zip_buffer.seek(0)
-#             response = HttpResponse(zip_buffer, content_type='application/zip')
-#             response['Content-Disposition'] = 'attachment; filename="translated_sorted_files.zip"'
-#             return response
-
-#         except json.JSONDecodeError:
-#             error = "Invalid JSON file format."
-#             return JsonResponse({'error': error}, status=400)
-#         except Exception as e:
-#             error = f"Error during translation: {str(e)}"
-#             return JsonResponse({'error': error}, status=500)
-#     else:
-#         return JsonResponse({'error': 'Invalid request method'}, status=400)
-    
-
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON file format.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': f"Error during translation: {str(e)}"}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)

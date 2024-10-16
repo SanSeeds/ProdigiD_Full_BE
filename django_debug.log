@@ -56,3 +56,9 @@ ERROR 2024-09-24 11:04:28,667 basehttp "POST /create_presentation/ HTTP/1.1" 500
 ERROR 2024-10-15 16:11:08,727 log Internal Server Error: /send_email_verification_otp/
 ERROR 2024-10-15 16:11:08,735 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 112
 ERROR 2024-10-15 16:11:08,735 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 112
+ERROR 2024-10-15 17:13:44,161 log Internal Server Error: /guest_send_otp/
+ERROR 2024-10-15 17:13:44,162 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
+ERROR 2024-10-15 17:13:44,162 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
+ERROR 2024-10-15 17:42:32,308 log Internal Server Error: /guest_send_otp/
+ERROR 2024-10-15 17:42:32,316 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
+ERROR 2024-10-15 17:42:32,316 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112

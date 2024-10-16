@@ -50,7 +50,6 @@ urlpatterns = [
     path('translate_content_guest/',views.translate_content_guest,name='translate_content_guest'),
     path('guest_send_otp/',views.guest_send_otp,name='guest_send_otp'),
     path('guest_validate_otp/',views.guest_validate_otp,name='guest_validate_otp'),
-    path('translate_json/',views.translate_json,name='translate_json'),
     path('profile_info/',views.profile_info,name='profile_info'),
     path('create_cart/', views.create_cart, name='create_cart'), 
     path('get_cart/', views.get_cart, name='get_cart'), 
@@ -59,7 +58,7 @@ urlpatterns = [
     path('generate_invoice/', views.generate_invoice, name='generate_invoice'), 
     path('invoice-details/', views.invoice_details, name='invoice_details'),  # Add the new path
 
-    # path('translate_json_files/',views.translate_json_files,name='translate_json_files'),
+    path('translate_json_files/',views.translate_json_files,name='translate_json_files'),
 
 
 

@@ -778,3 +778,110 @@ def extract_document_content(file):
         raise ValueError("Unsupported file type")
 
 
+import requests
+from typing import List, Dict
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import time
+
+# Cache for storing translation results
+translation_cache = {}
+
+def retry(func, retries=3, delay=1):
+    """Retries a function call a specified number of times with a delay."""
+    for attempt in range(retries):
+        try:
+            return func()
+        except Exception as e:
+            if attempt < retries - 1:
+                time.sleep(delay)
+                continue
+            else:
+                raise e
+
+def bhashini_translate_json(text: str, to_code: str = "Hindi", from_code: str = "English",
+                       user_id: str = BHASHINI_USER_ID, api_key: str = BHASHINI_API_KEY) -> dict:
+    """Translates text from source language to target language using the Bhashini API."""
+    
+    # Cache key based on input parameters
+    cache_key = f"{text}_{from_code}_{to_code}"
+    if cache_key in translation_cache:
+        return translation_cache[cache_key]
+
+    lang_dict = {
+        "English": "en", "Hindi": "hi", "Tamil": "ta", "Telugu": "te",
+        "Marathi": "mr", "Kannada": "kn", "Bengali": "bn", "Odia": "or",
+        "Assamese": "as", "Punjabi": "pa", "Malayalam": "ml", "Gujarati": "gu",
+        "Urdu": "ur", "Sanskrit": "sa", "Nepali": "ne", "Bodo": "brx",
+        "Maithili": "mai", "Sindhi": "sd", "Kashmiri": "ks", "Konkani": "kok",
+        "Dogri": "doi", "Goan Konkani": "gom", "Santali": "sat"
+    }
+
+    from_code = lang_dict[from_code]
+    to_code = lang_dict[to_code]
+
+    # Setup the initial request to get model configurations
+    url = 'https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline'
+    headers = {
+        "Content-Type": "application/json",
+        "userID": user_id,
+        "ulcaApiKey": api_key
+    }
+    payload = {
+        "pipelineTasks": [{
+            "taskType": "translation",
+            "config": {"language": {"sourceLanguage": from_code, "targetLanguage": to_code}}
+        }],
+        "pipelineRequestConfig": {"pipelineId": "64392f96daac500b55c543cd"}
+    }
+    
+    # Retry the model configuration request
+    response = retry(lambda: requests.post(url, json=payload, headers=headers))
+
+    if response.status_code != 200:
+        return {"status_code": response.status_code, "message": "Error in translation request", "translated_content": None}
+
+    # Process the response to setup the translation execution
+    response_data = response.json()
+    service_id = response_data["pipelineResponseConfig"][0]["config"][0]["serviceId"]
+    callback_url = response_data["pipelineInferenceAPIEndPoint"]["callbackUrl"]
+    headers2 = {
+        "Content-Type": "application/json",
+        response_data["pipelineInferenceAPIEndPoint"]["inferenceApiKey"]["name"]: response_data["pipelineInferenceAPIEndPoint"]["inferenceApiKey"]["value"]
+    }
+    compute_payload = {
+        "pipelineTasks": [{
+            "taskType": "translation",
+            "config": {"language": {"sourceLanguage": from_code, "targetLanguage": to_code}, "serviceId": service_id}
+        }],
+        "inputData": {"input": [{"source": text}], "audio": [{"audioContent": None}]}
+    }
+
+    # Retry the translation execution
+    compute_response = retry(lambda: requests.post(callback_url, json=compute_payload, headers=headers2))
+
+    if compute_response.status_code != 200:
+        return {"status_code": compute_response.status_code, "message": "Error in translation", "translated_content": None}
+
+    compute_response_data = compute_response.json()
+    translated_content = compute_response_data["pipelineResponse"][0]["output"][0]["target"]
+
+    # Cache the translation result
+    translation_cache[cache_key] = {"status_code": 200, "message": "Translation successful", "translated_content": translated_content}
+    
+    return translation_cache[cache_key]
+
+def translate_multiple_texts(text_list: List[str], from_code: str, to_code: str,
+                              user_id: str, api_key: str) -> List[dict]:
+    """Translates multiple texts concurrently using Bhashini API."""
+    results = []
+    with ThreadPoolExecutor(max_workers=100) as executor:
+        future_to_text = {executor.submit(bhashini_translate_json, text, to_code, from_code, user_id, api_key): text for text in text_list}
+        for future in as_completed(future_to_text):
+            text = future_to_text[future]
+            try:
+                result = future.result()
+                results.append(result)
+            except Exception as e:
+                print(f"Translation failed for {text}: {e}")
+                results.append({"text": text, "error": str(e)})
+    return results

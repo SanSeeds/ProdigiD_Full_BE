@@ -1489,64 +1489,203 @@ def email_generator(request):
 
 
 #Encrypted API to translate the the generated content
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def translate_content(request):
+#     translated_content = None
+#     error = None
+#     language = ""
+
+#     if request.method == 'POST':
+#         try:
+#             # Extract and decrypt the incoming payload
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             logger.debug(f'Encrypted content received: {encrypted_content}')
+
+#             if not encrypted_content:
+#                 logger.warning('No encrypted content found in the request.')
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#             decrypted_content = decrypt_data(encrypted_content)
+#             logger.debug(f'Decrypted content: {decrypted_content}')
+#             data = json.loads(decrypted_content)
+
+#             generated_content = data.get('generated_content')
+#             language = data.get('language')
+
+#             if not generated_content or not language:
+#                 logger.warning('Both generated_content and language are required fields.')
+#                 return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
+
+#             logger.info(f'Translating content: {generated_content} to language: {language}')
+#             response = bhashini_translate(generated_content, language)
+
+#             if response["status_code"] == 200:
+#                 translated_content = response["translated_content"]
+#                 logger.info('Content translated successfully.')
+#                 # Encrypt the response content
+#                 encrypted_response = encrypt_data({
+#                     'generated_content': generated_content,
+#                     'translated_content': translated_content,
+#                     'selected_language': language
+#                 })
+#                 logger.debug(f'Encrypted response: {encrypted_response}')
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+#             else:
+#                 logger.error('Translation failed with status code: {}'.format(response["status_code"]))
+#                 return JsonResponse({'error': 'Translation failed.'}, status=500)
+
+#         except json.JSONDecodeError:
+#             logger.error('Invalid JSON format in request.')
+#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#         except ValueError as e:
+#             logger.warning(f'ValueError: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=400)
+#         except Exception as e:
+#             logger.error(f'Unexpected error: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=500)
+
+#     logger.error('Method not allowed.')
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+
+
+
+
+
+
+
+
+
+
+
+#With formatting
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def translate_content(request):
+#     translated_content = None
+#     language = ""
+
+#     if request.method == 'POST':
+#         try:
+#             # Extract and decrypt the incoming payload
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             logger.debug(f'Encrypted content received: {encrypted_content}')
+
+#             if not encrypted_content:
+#                 logger.warning('No encrypted content found in the request.')
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#             decrypted_content = decrypt_data(encrypted_content)
+#             logger.debug(f'Decrypted content: {decrypted_content}')
+#             data = json.loads(decrypted_content)
+
+#             generated_content = data.get('generated_content')
+#             language = data.get('language')
+
+#             if not generated_content or not language:
+#                 logger.warning('Both generated_content and language are required fields.')
+#                 return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
+
+#             logger.info(f'Translating content: {generated_content} to language: {language}')
+
+#             # Split content into paragraphs or lines
+#             paragraphs = generated_content.split('\n\n')  # Split by double newlines for paragraphs
+#             translated_paragraphs = []
+
+#             # Translate each paragraph separately
+#             for paragraph in paragraphs:
+#                 response = bhashini_translate(paragraph, language)
+#                 if response["status_code"] == 200:
+#                     translated_paragraphs.append(response["translated_content"])
+#                 else:
+#                     logger.error('Translation failed with status code: {}'.format(response["status_code"]))
+#                     return JsonResponse({'error': 'Translation failed.'}, status=500)
+
+#             # Join translated paragraphs back with double newlines to preserve formatting
+#             translated_content = '\n\n'.join(translated_paragraphs)
+
+#             # Encrypt the response content
+#             encrypted_response = encrypt_data({
+#                 'generated_content': generated_content,
+#                 'translated_content': translated_content,
+#                 'selected_language': language
+#             })
+
+#             logger.debug(f'Encrypted response: {encrypted_response}')
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+#         except json.JSONDecodeError:
+#             logger.error('Invalid JSON format in request.')
+#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#         except ValueError as e:
+#             logger.warning(f'ValueError: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=400)
+#         except Exception as e:
+#             logger.error(f'Unexpected error: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=500)
+
+#     logger.error('Method not allowed.')
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def translate_content(request):
-    translated_content = None
-    error = None
-    language = ""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
-    if request.method == 'POST':
-        try:
-            # Extract and decrypt the incoming payload
-            encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-            logger.debug(f'Encrypted content received: {encrypted_content}')
+    try:
+        # Extract and decrypt the incoming payload
+        encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+        if not encrypted_content:
+            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
 
-            if not encrypted_content:
-                logger.warning('No encrypted content found in the request.')
-                return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+        decrypted_content = decrypt_data(encrypted_content)
+        data = json.loads(decrypted_content)
+        
+        generated_content = data.get('generated_content')
+        language = data.get('language')
 
-            decrypted_content = decrypt_data(encrypted_content)
-            logger.debug(f'Decrypted content: {decrypted_content}')
-            data = json.loads(decrypted_content)
+        if not generated_content or not language:
+            return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
 
-            generated_content = data.get('generated_content')
-            language = data.get('language')
+        # Split content into paragraphs or lines
+        paragraphs = generated_content.split('\n\n')
+        translated_paragraphs = []
 
-            if not generated_content or not language:
-                logger.warning('Both generated_content and language are required fields.')
-                return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
-
-            logger.info(f'Translating content: {generated_content} to language: {language}')
-            response = bhashini_translate(generated_content, language)
-
+        # Translate each paragraph synchronously
+        for paragraph in paragraphs:
+            response = bhashini_translate(paragraph, language)
             if response["status_code"] == 200:
-                translated_content = response["translated_content"]
-                logger.info('Content translated successfully.')
-                # Encrypt the response content
-                encrypted_response = encrypt_data({
-                    'generated_content': generated_content,
-                    'translated_content': translated_content,
-                    'selected_language': language
-                })
-                logger.debug(f'Encrypted response: {encrypted_response}')
-                return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+                translated_paragraphs.append(response["translated_content"])
             else:
-                logger.error('Translation failed with status code: {}'.format(response["status_code"]))
-                return JsonResponse({'error': 'Translation failed.'}, status=500)
+                return JsonResponse({'error': 'Translation failed with status code: {}'.format(response["status_code"])}, status=500)
 
-        except json.JSONDecodeError:
-            logger.error('Invalid JSON format in request.')
-            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-        except ValueError as e:
-            logger.warning(f'ValueError: {str(e)}')
-            return JsonResponse({'error': str(e)}, status=400)
-        except Exception as e:
-            logger.error(f'Unexpected error: {str(e)}')
-            return JsonResponse({'error': str(e)}, status=500)
+        # Join translated paragraphs back
+        translated_content = '\n\n'.join(translated_paragraphs)
 
-    logger.error('Method not allowed.')
-    return JsonResponse({'error': 'Method not allowed.'}, status=405)
+        # Encrypt the response content
+        encrypted_response = encrypt_data({
+            'generated_content': generated_content,
+            'translated_content': translated_content,
+            'selected_language': language
+        })
+
+        return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+    except ValueError as e:
+        return JsonResponse({'error': str(e)}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+
+
+
 
 
 import concurrent.futures
@@ -3176,21 +3315,38 @@ def remove_service(request):
         try:
             data = json.loads(request.body)
             email = data.get("email")
-            service_name = data.get("service")
+            service_id = data.get("service_id")  # Change service to service_id
 
-            if not email or not service_name:
-                return JsonResponse({"error": "Missing email or service name"}, status=400)
+            if not email or service_id is None:  # Check for service_id being None
+                return JsonResponse({"error": "Missing email or service ID"}, status=400)
 
             # Get the cart for the given email
             cart = get_object_or_404(Cart, email=email)
 
-            # Check if the service name is valid and set it to False
-            if hasattr(cart, service_name):
-                setattr(cart, service_name, False)
-                cart.save()
-                return JsonResponse({"message": f"{service_name} removed successfully"}, status=200)
-            else:
-                return JsonResponse({"error": f"Invalid service name: {service_name}"}, status=400)
+            # Map service IDs to their corresponding attribute names in the Cart model
+            service_mapping = {
+                1: 'email_service',
+                2: 'offer_letter_service',
+                3: 'business_proposal_service',
+                4: 'sales_script_service',
+                5: 'content_generation_service',
+                6: 'summarize_service',
+                7: 'ppt_generation_service',
+                8: 'blog_generation_service',
+                9: 'rephrasely_service',
+            }
+
+            # Get the service name corresponding to the given service ID
+            service_name = service_mapping.get(service_id)
+
+            if service_name is None:
+                return JsonResponse({"error": f"Invalid service ID: {service_id}"}, status=400)
+
+            # Set the service to False to remove it
+            setattr(cart, service_name, False)
+            cart.save()
+
+            return JsonResponse({"message": f"{service_name} removed successfully"}, status=200)
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON"}, status=400)
@@ -3340,156 +3496,4 @@ def delete_user_account(request):
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 
-
-
-
-import zipfile
-from io import BytesIO
-
-# @csrf_exempt
-# def translate_json_files(request):
-#     translated_json = {}
-#     error = None
-#     translate_to_list = []
-
-#     if request.method == 'POST':
-#         try:
-#             json_file = request.FILES.get('file')
-#             translate_to = request.POST.get('translate_to')
-            
-#             if not json_file:
-#                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
-            
-#             if not translate_to:
-#                 return JsonResponse({'error': 'No target language provided.'}, status=400)
-
-#             translate_to_list = [lang.strip() for lang in translate_to.split(',')]
-
-#             file_content = json_file.read().decode('utf-8')
-#             original_json = json.loads(file_content)
-
-#             zip_buffer = BytesIO()
-#             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
-                
-#                 for target_lang in translate_to_list:
-#                     translated_json = {}
-                    
-#                     translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
-#                     translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
-
-#                     def translate_key_value(key, value, target_lang):
-#                         try:
-#                             translation_result = bhashini_translate(value, target_lang)
-#                             translated_json[key] = translation_result["translated_content"]
-#                         except Exception as e:
-#                             translated_json[key] = f"Translation Error: {str(e)}"
-
-#                     threads = []
-#                     for key, value in translation_tasks:
-#                         thread = threading.Thread(target=translate_key_value, args=(key, value, target_lang))
-#                         thread.start()
-#                         threads.append(thread)
-
-#                     for thread in threads:
-#                         thread.join()
-
-#                     translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
-#                     translated_file_name = f"translated_{target_lang}.json"
-#                     zip_archive.writestr(translated_file_name, translated_json_str)
-
-#             zip_buffer.seek(0)
-#             response = HttpResponse(zip_buffer, content_type='application/zip')
-#             response['Content-Disposition'] = 'attachment; filename="translated_files.zip"'
-#             return response
-
-#         except json.JSONDecodeError:
-#             error = "Invalid JSON file format."
-#             return JsonResponse({'error': error}, status=400)
-#         except Exception as e:
-#             error = f"Error during translation: {str(e)}"
-#             return JsonResponse({'error': error}, status=500)
-#     else:
-#         return JsonResponse({'error': 'Invalid request method'}, status=400)
-
-# import os
-# import json
-# import zipfile
-# from io import BytesIO
-# from concurrent.futures import ThreadPoolExecutor
-# from django.http import JsonResponse, HttpResponse
-# from django.views.decorators.csrf import csrf_exempt
-
-
-# # Function to sort JSON data by keys
-# def sort_json_data(data):
-#     if isinstance(data, dict):
-#         return {key: sort_json_data(data[key]) if isinstance(data[key], dict) else data[key] for key in sorted(data)}
-#     return data
-
-# @csrf_exempt
-# def translate_json_files(request):
-#     translated_json = {}
-#     error = None
-#     translate_to_list = []
-
-#     if request.method == 'POST':
-#         try:
-#             json_file = request.FILES.get('file')
-#             translate_to = request.POST.get('translate_to')
-
-#             if not json_file:
-#                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
-
-#             if not translate_to:
-#                 return JsonResponse({'error': 'No target language provided.'}, status=400)
-
-#             translate_to_list = [lang.strip() for lang in translate_to.split(',')]
-
-#             file_content = json_file.read().decode('utf-8')
-#             original_json = json.loads(file_content)
-
-#             zip_buffer = BytesIO()
-#             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
-
-#                 for target_lang in translate_to_list:
-#                     translated_json = {}
-
-#                     # Collect tasks for translation
-#                     translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
-#                     translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
-
-#                     def translate_key_value(key, value, target_lang):
-#                         try:
-#                             translation_result = bhashini_translate(value, target_lang)
-#                             # Fallback to original value if translation fails or returns None
-#                             translated_json[key] = translation_result.get("translated_content", value) if translation_result else value
-#                         except Exception as e:
-#                             translated_json[key] = value  # Use original value on error
-
-#                     # Use ThreadPoolExecutor with up to 100 threads
-#                     with ThreadPoolExecutor(max_workers=100) as executor:
-#                         executor.map(lambda task: translate_key_value(*task, target_lang), translation_tasks)
-
-#                     # Sort the translated JSON by keys
-#                     sorted_translated_json = sort_json_data(translated_json)
-
-#                     # Write the sorted translated JSON to a file in the zip
-#                     translated_json_str = json.dumps(sorted_translated_json, ensure_ascii=False, indent=4)
-#                     translated_file_name = f"translated_{target_lang}_sorted.json"
-#                     zip_archive.writestr(translated_file_name, translated_json_str)
-
-#             zip_buffer.seek(0)
-#             response = HttpResponse(zip_buffer, content_type='application/zip')
-#             response['Content-Disposition'] = 'attachment; filename="translated_sorted_files.zip"'
-#             return response
-
-#         except json.JSONDecodeError:
-#             error = "Invalid JSON file format."
-#             return JsonResponse({'error': error}, status=400)
-#         except Exception as e:
-#             error = f"Error during translation: {str(e)}"
-#             return JsonResponse({'error': error}, status=500)
-#     else:
-#         return JsonResponse({'error': 'Invalid request method'}, status=400)
-    
 

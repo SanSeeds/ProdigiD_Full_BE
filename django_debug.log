@@ -56,9 +56,113 @@ ERROR 2024-09-24 11:04:28,667 basehttp "POST /create_presentation/ HTTP/1.1" 500
 ERROR 2024-10-15 16:11:08,727 log Internal Server Error: /send_email_verification_otp/
 ERROR 2024-10-15 16:11:08,735 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 112
 ERROR 2024-10-15 16:11:08,735 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 112
-ERROR 2024-10-15 17:13:44,161 log Internal Server Error: /guest_send_otp/
-ERROR 2024-10-15 17:13:44,162 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
-ERROR 2024-10-15 17:13:44,162 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
-ERROR 2024-10-15 17:42:32,308 log Internal Server Error: /guest_send_otp/
-ERROR 2024-10-15 17:42:32,316 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
-ERROR 2024-10-15 17:42:32,316 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
+ERROR 2024-10-16 10:55:22,952 log Internal Server Error: /guest_send_otp/
+ERROR 2024-10-16 10:55:22,962 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
+ERROR 2024-10-16 10:55:22,962 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
+ERROR 2024-10-16 11:13:10,395 log Internal Server Error: /guest_send_otp/
+ERROR 2024-10-16 11:13:10,398 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
+ERROR 2024-10-16 11:13:10,398 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
+ERROR 2024-10-16 12:45:36,133 views Unexpected error: [WinError 10054] An existing connection was forcibly closed by the remote host
+ERROR 2024-10-16 12:45:36,144 log Internal Server Error: /send_feedback/
+ERROR 2024-10-16 12:45:36,145 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
+ERROR 2024-10-16 12:45:36,145 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
+ERROR 2024-10-16 14:27:31,429 views Unexpected error: [WinError 10054] An existing connection was forcibly closed by the remote host
+ERROR 2024-10-16 14:27:31,444 log Internal Server Error: /send_feedback/
+ERROR 2024-10-16 14:27:31,447 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
+ERROR 2024-10-16 14:27:31,447 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
+ERROR 2024-10-16 15:29:55,741 views Unexpected error: [WinError 10054] An existing connection was forcibly closed by the remote host
+ERROR 2024-10-16 15:29:55,749 log Internal Server Error: /send_feedback/
+ERROR 2024-10-16 15:29:55,751 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
+ERROR 2024-10-16 15:29:55,751 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
+ERROR 2024-10-16 15:36:34,227 views Translation failed with status code: 504
+ERROR 2024-10-16 15:36:34,229 log Internal Server Error: /translate_content/
+ERROR 2024-10-16 16:06:20,212 views Translation error: Translation failed with status code: 504
+ERROR 2024-10-16 16:06:21,081 log Internal Server Error: /translate_content/
+ERROR 2024-10-16 16:06:21,082 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-10-16 16:06:21,082 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-10-16 16:09:11,514 views Translation error: Translation failed with status code: 504
+ERROR 2024-10-16 16:09:11,808 log Internal Server Error: /translate_content/
+ERROR 2024-10-16 16:09:11,809 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-10-16 16:09:11,809 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-10-16 17:28:04,003 views Translation failed with status code: 504
+ERROR 2024-10-16 17:28:04,005 log Internal Server Error: /translate_content/
+ERROR 2024-10-16 17:28:04,006 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-10-16 17:28:04,006 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-10-16 17:34:24,886 log Internal Server Error: /translate_content/
+Traceback (most recent call last):
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\rest_framework\views.py", line 511, in dispatch
+    self.response = self.finalize_response(request, response, *args, **kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\rest_framework\views.py", line 423, in finalize_response
+    assert isinstance(response, HttpResponseBase), (
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Expected a `Response`, `HttpResponse` or `StreamingHttpResponse` to be returned from the view, but received a `<class 'coroutine'>`
+ERROR 2024-10-16 17:34:24,894 basehttp "POST /translate_content/ HTTP/1.1" 500 92567
+ERROR 2024-10-16 17:34:24,894 basehttp "POST /translate_content/ HTTP/1.1" 500 92567
+ERROR 2024-10-16 17:39:05,338 log Internal Server Error: /translate_content/
+Traceback (most recent call last):
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\rest_framework\views.py", line 511, in dispatch
+    self.response = self.finalize_response(request, response, *args, **kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\rest_framework\views.py", line 423, in finalize_response
+    assert isinstance(response, HttpResponseBase), (
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Expected a `Response`, `HttpResponse` or `StreamingHttpResponse` to be returned from the view, but received a `<class 'coroutine'>`
+ERROR 2024-10-16 17:39:05,343 basehttp "POST /translate_content/ HTTP/1.1" 500 92567
+ERROR 2024-10-16 17:39:05,343 basehttp "POST /translate_content/ HTTP/1.1" 500 92567
+ERROR 2024-10-16 17:46:22,482 log Internal Server Error: /translate_content/
+Traceback (most recent call last):
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\rest_framework\views.py", line 511, in dispatch
+    self.response = self.finalize_response(request, response, *args, **kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\rest_framework\views.py", line 423, in finalize_response
+    assert isinstance(response, HttpResponseBase), (
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Expected a `Response`, `HttpResponse` or `StreamingHttpResponse` to be returned from the view, but received a `<class 'coroutine'>`
+ERROR 2024-10-16 17:46:22,489 basehttp "POST /translate_content/ HTTP/1.1" 500 92567
+ERROR 2024-10-16 17:46:22,489 basehttp "POST /translate_content/ HTTP/1.1" 500 92567
+ERROR 2024-10-16 18:06:00,807 views Unexpected error: [WinError 10054] An existing connection was forcibly closed by the remote host
+ERROR 2024-10-16 18:06:00,821 log Internal Server Error: /send_feedback/
+ERROR 2024-10-16 18:06:00,823 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
+ERROR 2024-10-16 18:06:00,823 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
+ERROR 2024-10-17 00:05:57,795 log Internal Server Error: /guest_send_otp/
+ERROR 2024-10-17 00:05:57,800 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
+ERROR 2024-10-17 00:05:57,800 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
+ERROR 2024-10-17 14:19:58,924 views Translation failed with status code: 504
+ERROR 2024-10-17 14:19:58,934 log Internal Server Error: /translate_content/

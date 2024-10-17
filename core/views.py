@@ -3366,9 +3366,11 @@ def sort_json_data(data):
 def translate_json_files(request):
     if request.method == 'POST':
         try:
-            # Get the uploaded JSON file and target languages
+            # Get the uploaded JSON file, target languages, and translation option
             json_file = request.FILES.get('file')
             translate_to = request.POST.get('translate_to')
+            translation_option = request.POST.get('translation_option')
+            keys = request.POST.get('keys') if translation_option == 'specific' else None
 
             if not json_file:
                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
@@ -3381,32 +3383,76 @@ def translate_json_files(request):
             file_content = json_file.read().decode('utf-8')
             original_json = json.loads(file_content)
 
+            # Recursive function to traverse and translate JSON
+            def translate_nested_json(data, specific_keys=None):
+                if isinstance(data, dict):
+                    translated_dict = {}
+                    for key, value in data.items():
+                        if isinstance(value, str) and (specific_keys is None or key in specific_keys):
+                            translated_dict[key] = value  # Add placeholder, will be replaced later
+                        else:
+                            translated_dict[key] = translate_nested_json(value, specific_keys)
+                    return translated_dict
+                elif isinstance(data, list):
+                    return [translate_nested_json(item, specific_keys) for item in data]
+                else:
+                    return data
+
+            # Function to fill in translated values
+            def apply_translations(data, translations, translation_iter):
+                if isinstance(data, dict):
+                    for key, value in data.items():
+                        if isinstance(value, str):
+                            data[key] = next(translation_iter).get("translated_content", value)
+                        else:
+                            apply_translations(value, translations, translation_iter)
+                elif isinstance(data, list):
+                    for item in data:
+                        apply_translations(item, translations, translation_iter)
+
             # Prepare zip buffer to store translated files
             zip_buffer = BytesIO()
             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
                 for target_lang in translate_to_list:
-                    translated_json = {}
-                    
-                    # Separate string fields for translation from non-string fields
-                    string_fields = {key: value for key, value in original_json.items() if isinstance(value, str)}
-                    non_string_fields = {key: value for key, value in original_json.items() if not isinstance(value, str)}
+                    if translation_option == 'entire':
+                        # Translate entire JSON file
+                        nested_to_translate = translate_nested_json(original_json)
+                    elif translation_option == 'specific' and keys:
+                        specific_keys = [key.strip() for key in keys.split(',')]
+                        nested_to_translate = translate_nested_json(original_json, specific_keys=specific_keys)
+                    else:
+                        nested_to_translate = {}
 
-                    # Translate string fields using parallel processing
+                    # Extract all strings to translate
+                    strings_to_translate = []
+
+                    def collect_strings(data):
+                        if isinstance(data, dict):
+                            for key, value in data.items():
+                                if isinstance(value, str):
+                                    strings_to_translate.append(value)
+                                else:
+                                    collect_strings(value)
+                        elif isinstance(data, list):
+                            for item in data:
+                                collect_strings(item)
+
+                    collect_strings(nested_to_translate)
+
+                    # Translate string fields using the API
                     translated_texts = translate_multiple_texts(
-                        list(string_fields.values()),
+                        strings_to_translate,
                         from_code="English",  # You can customize this
                         to_code=target_lang,
                         user_id=BHASHINI_USER_ID,
                         api_key=BHASHINI_API_KEY
                     )
 
-                    # Reconstruct the translated JSON by merging non-string fields with translated ones
-                    translated_json.update(non_string_fields)
-                    for key, translation in zip(string_fields.keys(), translated_texts):
-                        translated_json[key] = translation.get("translated_content", string_fields[key])
+                    # Reapply translations to the JSON structure
+                    apply_translations(nested_to_translate, translated_texts, iter(translated_texts))
 
                     # Sort the translated JSON by keys
-                    sorted_translated_json = sort_json_data(translated_json)
+                    sorted_translated_json = sort_json_data(nested_to_translate)
 
                     # Write the sorted translated JSON to a file in the zip archive
                     translated_json_str = json.dumps(sorted_translated_json, ensure_ascii=False, indent=4)

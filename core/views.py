@@ -1549,90 +1549,74 @@ def email_generator(request):
 #     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def translate_content(request):
+    translated_content = None
+    error = None
+    language = ""
 
+    if request.method == 'POST':
+        try:
+            # Extract and decrypt the incoming payload
+            encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+            logger.debug(f'Encrypted content received: {encrypted_content}')
 
+            if not encrypted_content:
+                logger.warning('No encrypted content found in the request.')
+                return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
 
+            decrypted_content = decrypt_data(encrypted_content)
+            logger.debug(f'Decrypted content: {decrypted_content}')
+            data = json.loads(decrypted_content)
 
+            generated_content = data.get('generated_content')
+            language = data.get('language')
 
+            if not generated_content or not language:
+                logger.warning('Both generated_content and language are required fields.')
+                return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
 
+            logger.info(f'Translating content: {generated_content} to language: {language}')
+            response = bhashini_translate(generated_content, language)
 
+            if response["status_code"] == 200:
+                translated_content = response["translated_content"]
+                logger.info(f'Content translated successfully: {translated_content}')  # Log the translated content
 
+                # Ensure translated content is properly encoded
+                translated_content = translated_content.encode('utf-8').decode('utf-8')
 
+                # Encrypt the response content
+                encrypted_response = encrypt_data({
+                    'generated_content': generated_content,
+                    'translated_content': translated_content,
+                    'selected_language': language
+                })
+                logger.debug(f'Encrypted response: {encrypted_response}')
+                return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+            else:
+                logger.error('Translation failed with status code: {}'.format(response["status_code"]))
+                return JsonResponse({'error': 'Translation failed.'}, status=500)
 
-#With formatting
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def translate_content(request):
-#     translated_content = None
-#     language = ""
+        except json.JSONDecodeError:
+            logger.error('Invalid JSON format in request.')
+            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+        except ValueError as e:
+            logger.warning(f'ValueError: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            logger.error(f'Unexpected error: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=500)
 
-#     if request.method == 'POST':
-#         try:
-#             # Extract and decrypt the incoming payload
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             logger.debug(f'Encrypted content received: {encrypted_content}')
-
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             logger.debug(f'Decrypted content: {decrypted_content}')
-#             data = json.loads(decrypted_content)
-
-#             generated_content = data.get('generated_content')
-#             language = data.get('language')
-
-#             if not generated_content or not language:
-#                 logger.warning('Both generated_content and language are required fields.')
-#                 return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
-
-#             logger.info(f'Translating content: {generated_content} to language: {language}')
-
-#             # Split content into paragraphs or lines
-#             paragraphs = generated_content.split('\n\n')  # Split by double newlines for paragraphs
-#             translated_paragraphs = []
-
-#             # Translate each paragraph separately
-#             for paragraph in paragraphs:
-#                 response = bhashini_translate(paragraph, language)
-#                 if response["status_code"] == 200:
-#                     translated_paragraphs.append(response["translated_content"])
-#                 else:
-#                     logger.error('Translation failed with status code: {}'.format(response["status_code"]))
-#                     return JsonResponse({'error': 'Translation failed.'}, status=500)
-
-#             # Join translated paragraphs back with double newlines to preserve formatting
-#             translated_content = '\n\n'.join(translated_paragraphs)
-
-#             # Encrypt the response content
-#             encrypted_response = encrypt_data({
-#                 'generated_content': generated_content,
-#                 'translated_content': translated_content,
-#                 'selected_language': language
-#             })
-
-#             logger.debug(f'Encrypted response: {encrypted_response}')
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#         except json.JSONDecodeError:
-#             logger.error('Invalid JSON format in request.')
-#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-#         except ValueError as e:
-#             logger.warning(f'ValueError: {str(e)}')
-#             return JsonResponse({'error': str(e)}, status=400)
-#         except Exception as e:
-#             logger.error(f'Unexpected error: {str(e)}')
-#             return JsonResponse({'error': str(e)}, status=500)
-
-#     logger.error('Method not allowed.')
-#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
+    logger.error('Method not allowed.')
+    return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def translate_content(request):
+def translate_content_formatted(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
@@ -1666,6 +1650,12 @@ def translate_content(request):
         # Join translated paragraphs back
         translated_content = '\n\n'.join(translated_paragraphs)
 
+        # Log the translated content for debugging
+        logger.info(f'Translated content: {translated_content}')  # Log the translated content
+
+        # Ensure translated content is properly encoded
+        translated_content = translated_content.encode('utf-8').decode('utf-8')
+
         # Encrypt the response content
         encrypted_response = encrypt_data({
             'generated_content': generated_content,
@@ -1681,12 +1671,6 @@ def translate_content(request):
         return JsonResponse({'error': str(e)}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
-
-
-
-
-
 
 import concurrent.futures
 

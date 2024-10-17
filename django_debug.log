@@ -157,3 +157,12 @@ Traceback (most recent call last):
 AssertionError: Expected a `Response`, `HttpResponse` or `StreamingHttpResponse` to be returned from the view, but received a `<class 'coroutine'>`
 ERROR 2024-10-16 17:46:22,489 basehttp "POST /translate_content/ HTTP/1.1" 500 92567
 ERROR 2024-10-16 17:46:22,489 basehttp "POST /translate_content/ HTTP/1.1" 500 92567
+ERROR 2024-10-16 18:06:00,807 views Unexpected error: [WinError 10054] An existing connection was forcibly closed by the remote host
+ERROR 2024-10-16 18:06:00,821 log Internal Server Error: /send_feedback/
+ERROR 2024-10-16 18:06:00,823 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
+ERROR 2024-10-16 18:06:00,823 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
+ERROR 2024-10-17 00:05:57,795 log Internal Server Error: /guest_send_otp/
+ERROR 2024-10-17 00:05:57,800 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
+ERROR 2024-10-17 00:05:57,800 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
+ERROR 2024-10-17 14:19:58,924 views Translation failed with status code: 504
+ERROR 2024-10-17 14:19:58,934 log Internal Server Error: /translate_content/

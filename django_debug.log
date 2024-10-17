@@ -166,3 +166,14 @@ ERROR 2024-10-17 00:05:57,800 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
 ERROR 2024-10-17 00:05:57,800 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
 ERROR 2024-10-17 14:19:58,924 views Translation failed with status code: 504
 ERROR 2024-10-17 14:19:58,934 log Internal Server Error: /translate_content/
+ERROR 2024-10-17 18:12:33,197 views Error processing request: name 'purpose' is not defined
+ERROR 2024-10-17 18:12:33,203 log Internal Server Error: /email_generator_guest/
+ERROR 2024-10-17 18:12:33,203 basehttp "POST /email_generator_guest/ HTTP/1.1" 500 60
+ERROR 2024-10-17 18:12:33,203 basehttp "POST /email_generator_guest/ HTTP/1.1" 500 60
+ERROR 2024-10-17 18:34:03,323 views Exception occurred: relativedelta.__init__() got an unexpected keyword argument 'mont'
+ERROR 2024-10-17 18:34:03,328 log Internal Server Error: /verify_payment/
+ERROR 2024-10-17 18:34:03,328 basehttp "POST /verify_payment/ HTTP/1.1" 500 79
+ERROR 2024-10-17 18:34:03,328 basehttp "POST /verify_payment/ HTTP/1.1" 500 79
+ERROR 2024-10-17 20:22:03,221 log Internal Server Error: /create_presentation/
+ERROR 2024-10-17 20:22:03,229 basehttp "POST /create_presentation/ HTTP/1.1" 500 396
+ERROR 2024-10-17 20:22:03,229 basehttp "POST /create_presentation/ HTTP/1.1" 500 396

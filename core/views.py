@@ -341,7 +341,7 @@ Dear {user.get_full_name()},
 
 We are pleased to confirm that your subscription to ProdigiDesk has been successfully processed.
 
-Subscribed Services:
+
 The following services have been activated as part of your subscription, valid for the next 30 days:
 
 {services_list}
@@ -2662,24 +2662,34 @@ def email_generator_guest(request):
             logger.debug(f'Decrypted content: {decrypted_content}')
             data = json.loads(decrypted_content)
 
-            # Extract data from the decrypted content
+            purpose = data.get('purpose')
+            if purpose == 'Other':
+                purpose = data.get('otherPurpose')
             num_words = data.get('num_words')
             subject = data.get('subject')
             rephrase = data.get('rephraseSubject', False)
             to = data.get('to')
+            tone = data.get('tone')
             keywords = data.get('keywords', [])
             contextual_background = data.get('contextualBackground')
             call_to_action = data.get('callToAction')
             if call_to_action == 'Other':
                 call_to_action = data.get('otherCallToAction')
             additional_details = data.get('additionalDetails')
+            priority_level = data.get('priorityLevel')
+            closing_remarks = data.get('closingRemarks')
 
-            logger.info(f'Generating email with the following data: {data}')
+            logger.info(f'Generating email with the following data: {data}')     
+
 
             generated_content = generate_email(
-                num_words, subject, rephrase, to, keywords,
-                contextual_background, call_to_action, additional_details
+                purpose, num_words, subject, rephrase, to, tone, keywords,
+                contextual_background, call_to_action, additional_details,
+                priority_level, closing_remarks
             )
+
+           
+
 
             if generated_content:
                 logger.info('Email content generated successfully.')
@@ -3316,8 +3326,8 @@ def remove_service(request):
                 5: 'content_generation_service',
                 6: 'summarize_service',
                 7: 'ppt_generation_service',
-                8: 'blog_generation_service',
-                9: 'rephrasely_service',
+                9: 'blog_generation_service',
+                10: 'rephrasely_service',
             }
 
             # Get the service name corresponding to the given service ID
@@ -3375,11 +3385,11 @@ def get_cart(request):
                 "is_active": cart.ppt_generation_service,
             },
             "blog_generation_service": {
-                "id": 8,
+                "id": 9,
                 "is_active": cart.blog_generation_service,
             },
             "rephrasely_service": {
-                "id": 9,
+                "id": 10,
                 "is_active": cart.rephrasely_service,
             },
         }
@@ -3424,11 +3434,11 @@ def get_cart(request):
                     "is_active": cart.ppt_generation_service,
                 },
                 "blog_generation_service": {
-                    "id": 8,
+                    "id": 9,
                     "is_active": cart.blog_generation_service,
                 },
                 "rephrasely_service": {
-                    "id": 9,
+                    "id": 10,
                     "is_active": cart.rephrasely_service,
                 },
             }

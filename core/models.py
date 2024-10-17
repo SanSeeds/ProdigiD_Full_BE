@@ -60,7 +60,7 @@ class UserService(models.Model):
         
         # Check each service and set end dates if the service is activated
         current_date = timezone.now().date()
-        expiration_date = current_date + timedelta(days=30)
+        expiration_date = current_date + relativedelta(months=1)
         
         if self.email_service and self.email_end_date is None:
             self.email_end_date = expiration_date

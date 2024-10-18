@@ -59,6 +59,8 @@ urlpatterns = [
     path('generate_invoice/', views.generate_invoice, name='generate_invoice'), 
     path('invoice-details/', views.invoice_details, name='invoice_details'),  # Add the new path
     path('translate_content_formatted/', views.translate_content_formatted, name='translate_content_formatted'),  # Add the new path
+    path('empty_cart/', views.empty_cart, name='empty_cart'),  # Add the new path
+
 
 
     # path('translate_json_files/',views.translate_json_files,name='translate_json_files'),

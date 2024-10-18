@@ -229,6 +229,165 @@ from io import BytesIO
 import os
 
 
+# @csrf_exempt
+# def verify_payment(request):
+#     if request.method == "POST":
+#         try:
+#             data = json.loads(request.body)
+#             razorpay_order_id = data.get('razorpay_order_id')
+#             razorpay_payment_id = data.get('razorpay_payment_id')
+#             razorpay_signature = data.get('razorpay_signature')
+#             selected_services = data.get('selected_services')  # Directly use the services payload
+#             email = data.get('email')  # Extract email from the request
+
+#             logger.info(f"Received payment verification request with order_id: {razorpay_order_id}, payment_id: {razorpay_payment_id}, signature: {razorpay_signature}")
+
+#             # Verify payment signature
+#             params_dict = {
+#                 'razorpay_order_id': razorpay_order_id,
+#                 'razorpay_payment_id': razorpay_payment_id,
+#                 'razorpay_signature': razorpay_signature
+#             }
+
+#             try:
+#                 # Verify the payment signature
+#                 razorpay_client.utility.verify_payment_signature(params_dict)
+#                 logger.info("Payment signature verification successful")
+
+#                 # Update the Payment record
+#                 payment = Payment.objects.get(order_id=razorpay_order_id)
+#                 payment.payment_id = razorpay_payment_id
+#                 payment.signature = razorpay_signature
+#                 payment.email = email
+#                 payment.verified = True  # Mark the payment as verified
+
+#                 # Process the selected services
+#                 if not selected_services or not email:
+#                     return JsonResponse({'error': 'No services or email found in the request.'}, status=400)
+
+#                 # Get or create the user and user services
+#                 user = get_object_or_404(User, email=email)
+#                 user_services, created = UserService.objects.get_or_create(user=user)
+
+#                 # List of subscribed services for the email
+#                 subscribed_services = []
+
+#                 # Check if "Introductory Offer" is selected
+#                 if selected_services.get("introductory_offer_service", False):
+#                     # Set all services to 1
+#                     user_services.email_service = 1
+#                     user_services.offer_letter_service = 1
+#                     user_services.business_proposal_service = 1
+#                     user_services.sales_script_service = 1
+#                     user_services.content_generation_service = 1
+#                     user_services.summarize_service = 1
+#                     user_services.ppt_generation_service = 1
+#                     user_services.blog_generation_service = 1
+#                     user_services.rephrasely_service = 1
+
+#                     # Add all services to the subscribed list
+#                     subscribed_services = [
+#                         "Email Service", "Offer Letter Service", "Business Proposal Service",
+#                         "Sales Script Service", "Content Generation Service", "Summarize Service",
+#                         "PPT Generation Service", "Blog Generation Service", "Rephrasely Service"
+#                     ]
+#                 else:
+#                     # Update services based on the data and add to subscribed list if activated
+#                     if selected_services.get("email_service", 0) > 0:
+#                         user_services.email_service = 1
+#                         subscribed_services.append("Email Service")
+#                     if selected_services.get("offer_letter_service", 0) > 0:
+#                         user_services.offer_letter_service = 1
+#                         subscribed_services.append("Offer Letter Service")
+#                     if selected_services.get("business_proposal_service", 0) > 0:
+#                         user_services.business_proposal_service = 1
+#                         subscribed_services.append("Business Proposal Service")
+#                     if selected_services.get("sales_script_service", 0) > 0:
+#                         user_services.sales_script_service = 1
+#                         subscribed_services.append("Sales Script Service")
+#                     if selected_services.get("content_generation_service", 0) > 0:
+#                         user_services.content_generation_service = 1
+#                         subscribed_services.append("Content Generation Service")
+#                     if selected_services.get("summarize_service", 0) > 0:
+#                         user_services.summarize_service = 1
+#                         subscribed_services.append("Summarize Service")
+#                     if selected_services.get("ppt_generation_service", 0) > 0:
+#                         user_services.ppt_generation_service = 1
+#                         subscribed_services.append("PPT Generation Service")
+#                     if selected_services.get("blog_generation_service", 0) > 0:
+#                         user_services.blog_generation_service = 1
+#                         subscribed_services.append("Blog Generation Service")
+#                     if selected_services.get("rephrasely_service", 0) > 0:
+#                         user_services.rephrasely_service = 1
+#                         subscribed_services.append("Rephrasely Service")
+
+#                 # Save the updated user services
+#                 user_services.save()
+                
+#                 # Get today's date and save it as the order date and time
+#                 order_datetime = datetime.now()  # Save current date and time
+
+#                 # Update Payment with order date, services, and link to UserService
+#                 payment.order_datetime = order_datetime
+#                 payment.subscribed_services = selected_services  # Storing the raw JSON of selected services
+#                 payment.service = user_services  # Link to the user services record
+#                 payment.save()
+
+#                 # Send the email confirmation without PDF
+#                 subject = 'Subscription Confirmation - ProdigiDesk Services'
+#                 services_list = '\n'.join([f"- {service}" for service in subscribed_services])  # Format services as a bullet-point list
+#                 message = f"""
+# Dear {user.get_full_name()},
+
+# We are pleased to confirm that your subscription to ProdigiDesk has been successfully processed.
+
+
+# The following services have been activated as part of your subscription, valid for the next 30 days:
+
+# {services_list}
+
+# You are now part of a community that leverages the best-in-class tools designed to boost productivity and help you achieve your goals efficiently. Your subscription unlocks access to exclusive features that are carefully tailored to meet your needs.
+
+# If you have any questions, need assistance, or would like to explore how to get the most out of your subscription, please feel free to reach out to us. We're here to help you make the most of your experience with ProdigiDesk.
+
+# Order Details:
+# - Order Number: {razorpay_order_id}
+# - Order Date and Time: {order_datetime.strftime("%Y-%m-%d %H:%M:%S")}
+# - Payment Amount: {payment.amount} {payment.currency}
+# - Registered Email: {email}
+
+# Thank you for choosing us. We look forward to supporting you on your journey to success.
+
+# Best regards,  
+# The ProdigiDesk Team
+# contact@espritanalytique.com
+# http://www.prodigidesk.ai/
+# """
+
+#                 email_message = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+
+#                 try:
+#                     email_message.send(fail_silently=False)
+#                     logger.info(f"Subscription confirmation email sent to {email}")
+#                 except Exception as e:
+#                     logger.error(f"Error sending subscription confirmation email: {str(e)}")
+
+#                 # Return success response
+#                 return JsonResponse({'message': 'Payment and service save successful'}, status=200)
+
+#             except razorpay.errors.SignatureVerificationError:
+#                 logger.error("Payment signature verification failed")
+#                 return JsonResponse({"status": "Payment verification failed"}, status=400)
+
+#         except json.JSONDecodeError:
+#             logger.error("Invalid JSON format")
+#             return JsonResponse({"error": "Invalid JSON format"}, status=400)
+#         except Exception as e:
+#             logger.error(f"Exception occurred: {str(e)}")
+#             return JsonResponse({"error": str(e)}, status=500)
+
+#     return JsonResponse({"error": "Invalid request method"}, status=400)
+
 @csrf_exempt
 def verify_payment(request):
     if request.method == "POST":
@@ -333,38 +492,50 @@ def verify_payment(request):
                 payment.service = user_services  # Link to the user services record
                 payment.save()
 
-                # Send the email confirmation without PDF
+                # Send the email confirmation in HTML format
                 subject = 'Subscription Confirmation - ProdigiDesk Services'
                 services_list = '\n'.join([f"- {service}" for service in subscribed_services])  # Format services as a bullet-point list
                 message = f"""
-Dear {user.get_full_name()},
+                <html>
+                <body>
+                <p>Dear {user.get_full_name()},</p>
 
-We are pleased to confirm that your subscription to ProdigiDesk has been successfully processed.
+                <p>We are pleased to confirm that your subscription to ProdigiDesk has been successfully processed.</p>
 
+                <p>The following services have been activated as part of your subscription, valid for the next 30 days:</p>
 
-The following services have been activated as part of your subscription, valid for the next 30 days:
+                <ul>
+                {''.join(f"<li>{service}</li>" for service in subscribed_services)}
+                </ul>
 
-{services_list}
+                <p>You are now part of a community that leverages the best-in-class tools designed to boost productivity and help you achieve your goals efficiently. Your subscription unlocks access to exclusive features that are carefully tailored to meet your needs.</p>
 
-You are now part of a community that leverages the best-in-class tools designed to boost productivity and help you achieve your goals efficiently. Your subscription unlocks access to exclusive features that are carefully tailored to meet your needs.
+                <p>If you have any questions, need assistance, or would like to explore how to get the most out of your subscription, please feel free to reach out to us. We're here to help you make the most of your experience with ProdigiDesk.</p>
 
-If you have any questions, need assistance, or would like to explore how to get the most out of your subscription, please feel free to reach out to us. We're here to help you make the most of your experience with ProdigiDesk.
+                <p>Order Details:</p>
+                <ul>
+                <li>Order Number: {razorpay_order_id}</li>
+                <li>Order Date and Time: {order_datetime.strftime("%Y-%m-%d %H:%M:%S")}</li>
+                <li>Payment Amount: {payment.amount} {payment.currency}</li>
+                <li>Registered Email: {email}</li>
+                </ul>
 
-Order Details:
-- Order Number: {razorpay_order_id}
-- Order Date and Time: {order_datetime.strftime("%Y-%m-%d %H:%M:%S")}
-- Payment Amount: {payment.amount} {payment.currency}
-- Registered Email: {email}
+                <p>To see more details of the transaction and to get the invoice, click <a href="http://localhost:5173/userSummary">here</a>.</p>
 
-Thank you for choosing us. We look forward to supporting you on your journey to success.
+                <p>Thank you for choosing us. We look forward to supporting you on your journey to success.</p>
 
-Best regards,  
-The ProdigiDesk Team
-contact@espritanalytique.com
-http://www.prodigidesk.ai/
-"""
+                <p>Best regards,<br>
+                The ProdigiDesk Team<br>
+                contact@espritanalytique.com<br>
+                <a href="http://www.prodigidesk.ai/">http://www.prodigidesk.ai/</a>
+                </p>
+                </body>
+                </html>
+                """
 
+                # Create the email message with HTML content
                 email_message = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+                email_message.content_subtype = 'html'  # Set the email content type to HTML
 
                 try:
                     email_message.send(fail_silently=False)
@@ -387,7 +558,6 @@ http://www.prodigidesk.ai/
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
-
 
 
 @csrf_exempt
@@ -668,18 +838,24 @@ def send_email_verification_otp(request):
             plain_message = f"""
 Dear Sir/Madam,
 
-System generated confidential OTP {otp} is valid for 10 mins.
+We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is {otp} and will remain valid for a period of 10 minutes.
 
-This is a system generated mail. Please do not reply.
+Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.
 
-Regards,
-ProdigiDesk Team
+This notification is intended to provide you with the necessary information to complete your task. If you have any concerns or require assistance, please contact our support team through the appropriate channels.
+
+Thank you for your understanding and cooperation.
+
+Sincerely,
+The ProdigiDesk Team
 """
             html_message = f"""
 <p>Dear Sir/Madam,</p>
-<p>System generated confidential OTP <strong>{otp}</strong> is valid for 10 mins.</p>
-<p>This is a system generated mail. Please do not reply.</p>
-<p>Regards,<br>ProdigiDesk Team</p>
+<p>We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is <strong>{otp}</strong> and will remain valid for a period of 10 minutes.</p>
+<p>Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.</p>
+<p>This notification is intended to provide you with the necessary information to complete your task. If you have any concerns or require assistance, please contact our support team through the appropriate channels.</p>
+<p>Thank you for your understanding and cooperation.</p>
+<p>Sincerely,<br>The ProdigiDesk Team</p>
 """
 
             from_email = settings.DEFAULT_FROM_EMAIL
@@ -1004,6 +1180,76 @@ def generate_otp():
     return ''.join(random.choices('0123456789', k=6))
 
 #Encrypted API to send OTP for Password Reset
+# @csrf_exempt
+# def send_otp(request):
+#     if request.method == 'POST':
+#         try:
+#             # Extract and decrypt the incoming payload
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             logger.debug(f"Encrypted content received: {encrypted_content}")
+
+#             if not encrypted_content:
+#                 logger.warning('No encrypted content found in the request.')
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#             decrypted_content = decrypt_data(encrypted_content)
+#             logger.debug(f"Decrypted content: {decrypted_content}")
+#             data = json.loads(decrypted_content)
+
+#             email = data.get('email')
+#             logger.debug(f"Received OTP request for email: {email}")
+
+#             try:
+#                 user = User.objects.get(email=email)
+#             except User.DoesNotExist:
+#                 logger.warning(f"Email does not exist: {email}")
+#                 encrypted_response = encrypt_data({'error': 'Email does not exist'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=404)
+
+#             # Generate OTP
+#             otp = generate_otp()
+#             expiry_time = timezone.now() + timedelta(minutes=10)
+
+#             # Store OTP and expiry time in the database
+#             PasswordResetRequest.objects.update_or_create(
+#                 user=user,
+#                 defaults={
+#                     'otp': otp,
+#                     'expiry_time': expiry_time
+#                 }
+#             )
+#             logger.info(f"Generated OTP for user {user.username}")
+
+#             # Send OTP via email
+#             subject = 'Password Reset OTP'
+#             message = f'Your OTP for password reset is {otp}. This OTP is valid only for 10 minutes.'
+#             from_email = settings.DEFAULT_FROM_EMAIL
+#             recipient_list = [email]
+
+#             try:
+#                 send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+#                 logger.info(f"OTP email sent to {email}")
+#             except Exception as e:
+#                 logger.error(f"Error sending email: {str(e)}")
+#                 encrypted_response = encrypt_data({'error': f'Error sending email: {str(e)}'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=500)
+
+#             encrypted_response = encrypt_data({'success': 'OTP sent successfully'})
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+#         except json.JSONDecodeError:
+#             logger.error("Invalid JSON format in request")
+#             encrypted_response = encrypt_data({'error': 'Invalid JSON format'})
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+#         except Exception as e:
+#             logger.error(f"Unexpected error: {str(e)}")
+#             encrypted_response = encrypt_data({'error': str(e)})
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=500)
+
+#     logger.error("Invalid request method")
+#     encrypted_response = encrypt_data({'error': 'Invalid request method'})
+#     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
+# Encrypted API to send OTP for Password Reset
 @csrf_exempt
 def send_otp(request):
     if request.method == 'POST':
@@ -1046,7 +1292,21 @@ def send_otp(request):
 
             # Send OTP via email
             subject = 'Password Reset OTP'
-            message = f'Your OTP for password reset is {otp}. This OTP is valid only for 10 minutes.'
+            message = f"""
+Dear Sir/Madam,
+
+We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is {otp} and will remain valid for a period of 10 minutes.
+
+Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.
+
+This notification is intended to provide you with the necessary information to complete your task. If you have any concerns or require assistance, please contact our support team through the appropriate channels.
+
+Thank you for your understanding and cooperation.
+
+Sincerely,
+The ProdigiDesk Team
+"""
+
             from_email = settings.DEFAULT_FROM_EMAIL
             recipient_list = [email]
 
@@ -3347,13 +3607,124 @@ def remove_service(request):
     else:
         return JsonResponse({"error": "Invalid request method"}, status=405)
 
+# @csrf_exempt
+# def get_cart(request):
+#     email = request.GET.get('email', None)
+
+#     if email:
+#         cart = get_object_or_404(Cart, email=email)
+        
+#         # Create a dictionary to hold the service details with IDs
+#         cart_services = {
+#             "email_service": {
+#                 "id": 1,
+#                 "is_active": cart.email_service,
+#             },
+#             "offer_letter_service": {
+#                 "id": 2,
+#                 "is_active": cart.offer_letter_service,
+#             },
+#             "business_proposal_service": {
+#                 "id": 3,
+#                 "is_active": cart.business_proposal_service,
+#             },
+#             "sales_script_service": {
+#                 "id": 4,
+#                 "is_active": cart.sales_script_service,
+#             },
+#             "content_generation_service": {
+#                 "id": 5,
+#                 "is_active": cart.content_generation_service,
+#             },
+#             "summarize_service": {
+#                 "id": 6,
+#                 "is_active": cart.summarize_service,
+#             },
+#             "ppt_generation_service": {
+#                 "id": 7,
+#                 "is_active": cart.ppt_generation_service,
+#             },
+#             "blog_generation_service": {
+#                 "id": 9,
+#                 "is_active": cart.blog_generation_service,
+#             },
+#             "rephrasely_service": {
+#                 "id": 10,
+#                 "is_active": cart.rephrasely_service,
+#             },
+#         }
+
+#         return JsonResponse({
+#             'email': cart.email,
+#             'services': cart_services,  # Include services with their IDs and status
+#             'created_at': cart.created_at.isoformat(),
+#             'updated_at': cart.updated_at.isoformat(),
+#         }, status=200)
+#     else:
+#         carts = Cart.objects.all()
+#         cart_list = []
+#         for cart in carts:
+#             cart_services = {
+#                 "email_service": {
+#                     "id": 1,
+#                     "is_active": cart.email_service,
+#                 },
+#                 "offer_letter_service": {
+#                     "id": 2,
+#                     "is_active": cart.offer_letter_service,
+#                 },
+#                 "business_proposal_service": {
+#                     "id": 3,
+#                     "is_active": cart.business_proposal_service,
+#                 },
+#                 "sales_script_service": {
+#                     "id": 4,
+#                     "is_active": cart.sales_script_service,
+#                 },
+#                 "content_generation_service": {
+#                     "id": 5,
+#                     "is_active": cart.content_generation_service,
+#                 },
+#                 "summarize_service": {
+#                     "id": 6,
+#                     "is_active": cart.summarize_service,
+#                 },
+#                 "ppt_generation_service": {
+#                     "id": 7,
+#                     "is_active": cart.ppt_generation_service,
+#                 },
+#                 "blog_generation_service": {
+#                     "id": 9,
+#                     "is_active": cart.blog_generation_service,
+#                 },
+#                 "rephrasely_service": {
+#                     "id": 10,
+#                     "is_active": cart.rephrasely_service,
+#                 },
+#             }
+
+#             cart_list.append({
+#                 'email': cart.email,
+#                 'services': cart_services,  # Include services for each cart
+#                 'created_at': cart.created_at.isoformat(),
+#                 'updated_at': cart.updated_at.isoformat(),
+#             })
+
+#         return JsonResponse(cart_list, safe=False, status=200)
+
 @csrf_exempt
 def get_cart(request):
     email = request.GET.get('email', None)
 
     if email:
-        cart = get_object_or_404(Cart, email=email)
-        
+        # Try to get the cart for the provided email
+        cart, created = Cart.objects.get_or_create(email=email)
+
+        # If the cart was created, it means the user was not found and a new row was created
+        if created:
+            # Optionally, you can initialize any services to false
+            cart.save()  # Save the newly created cart instance
+
         # Create a dictionary to hold the service details with IDs
         cart_services = {
             "email_service": {
@@ -3451,6 +3822,48 @@ def get_cart(request):
             })
 
         return JsonResponse(cart_list, safe=False, status=200)
+
+
+@csrf_exempt
+def empty_cart(request):
+    email = request.GET.get('email', None)
+
+    if email:
+        # Get or create a Cart for the provided email
+        cart, created = Cart.objects.get_or_create(email=email)
+
+        # Set all service flags to False
+        cart.email_service = False
+        cart.offer_letter_service = False
+        cart.business_proposal_service = False
+        cart.sales_script_service = False
+        cart.content_generation_service = False
+        cart.summarize_service = False
+        cart.ppt_generation_service = False
+        cart.blog_generation_service = False
+        cart.rephrasely_service = False
+
+        # Save the cart with updated values
+        cart.save()
+
+        return JsonResponse({
+            'email': cart.email,
+            'services': {
+                "email_service": cart.email_service,
+                "offer_letter_service": cart.offer_letter_service,
+                "business_proposal_service": cart.business_proposal_service,
+                "sales_script_service": cart.sales_script_service,
+                "content_generation_service": cart.content_generation_service,
+                "summarize_service": cart.summarize_service,
+                "ppt_generation_service": cart.ppt_generation_service,
+                "blog_generation_service": cart.blog_generation_service,
+                "rephrasely_service": cart.rephrasely_service,
+            },
+            'created_at': cart.created_at.isoformat(),
+            'updated_at': cart.updated_at.isoformat(),
+        }, status=200)
+    else:
+        return JsonResponse({'error': 'Email parameter is required'}, status=400)
 
 
 @csrf_exempt

@@ -183,3 +183,4 @@ ERROR 2024-10-17 21:23:22,448 basehttp "POST /translate_json_files/ HTTP/1.1" 50
 ERROR 2024-10-17 23:07:26,697 log Internal Server Error: /translate_json_files/
 ERROR 2024-10-17 23:07:26,709 basehttp "POST /translate_json_files/ HTTP/1.1" 500 93
 ERROR 2024-10-17 23:07:26,709 basehttp "POST /translate_json_files/ HTTP/1.1" 500 93
+ERROR 2024-10-18 17:36:31,018 log Internal Server Error: /translate_json_files/

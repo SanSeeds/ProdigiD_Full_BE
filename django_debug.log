@@ -177,3 +177,9 @@ ERROR 2024-10-17 18:34:03,328 basehttp "POST /verify_payment/ HTTP/1.1" 500 79
 ERROR 2024-10-17 20:22:03,221 log Internal Server Error: /create_presentation/
 ERROR 2024-10-17 20:22:03,229 basehttp "POST /create_presentation/ HTTP/1.1" 500 396
 ERROR 2024-10-17 20:22:03,229 basehttp "POST /create_presentation/ HTTP/1.1" 500 396
+ERROR 2024-10-17 21:23:22,447 log Internal Server Error: /translate_json_files/
+ERROR 2024-10-17 21:23:22,448 basehttp "POST /translate_json_files/ HTTP/1.1" 500 79
+ERROR 2024-10-17 21:23:22,448 basehttp "POST /translate_json_files/ HTTP/1.1" 500 79
+ERROR 2024-10-17 23:07:26,697 log Internal Server Error: /translate_json_files/
+ERROR 2024-10-17 23:07:26,709 basehttp "POST /translate_json_files/ HTTP/1.1" 500 93
+ERROR 2024-10-17 23:07:26,709 basehttp "POST /translate_json_files/ HTTP/1.1" 500 93

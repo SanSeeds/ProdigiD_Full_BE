@@ -520,7 +520,7 @@ def verify_payment(request):
                 <li>Registered Email: {email}</li>
                 </ul>
 
-                <p>To see more details of the transaction and to get the invoice, click <a href="http://localhost:5173/userSummary">here</a>.</p>
+                <p>To see more details of the transaction and to get the invoice, click <a href="https://prodigidesk.ai/userSummary">here</a>.</p>
 
                 <p>Thank you for choosing us. We look forward to supporting you on your journey to success.</p>
 

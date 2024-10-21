@@ -22,6 +22,8 @@ urlpatterns = [
     path('translate/', views.translate, name='translate'),
     path('change_password/', views.change_password, name='change_password'),
     path('send_otp/', views.send_otp, name='send_otp'),
+    path('reset_password_with_otp/', views.reset_password_with_otp, name='reset_password_with_otp'),
+
     path('add_user/', views.add_user, name='add_user'),
     path('create_presentation/', views.create_presentation, name='create_presentation'),
     path('save_selected_services/', views.save_selected_services, name='save_selected_services'),
@@ -61,6 +63,8 @@ urlpatterns = [
     path('translate_content_formatted/', views.translate_content_formatted, name='translate_content_formatted'),  # Add the new path
     path('empty_cart/', views.empty_cart, name='empty_cart'),  # Add the new path
     path('translate_json_files/',views.translate_json_files,name='translate_json_files'),
+    path('translate_json_files_new/',views.translate_json_files_new,name='translate_json_files_new'),
+
 
 
 

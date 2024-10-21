@@ -186,7 +186,7 @@ class Payment(models.Model):
 #         return f"Guest {self.mobile_number} - Session ID {self.session_id} - Active: {self.is_active}"
 
 class GuestLogin(models.Model):
-    email = models.EmailField(max_length=255, unique=True)  # Ensure email is unique
+    email = models.EmailField(max_length=255)  # Ensure email is unique
     otp = models.CharField(max_length=6)
     session_id = models.CharField(max_length=255, unique=True, default=uuid.uuid4)
     logged_in_at = models.DateTimeField(auto_now_add=True)

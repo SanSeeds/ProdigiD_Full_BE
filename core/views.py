@@ -59,7 +59,6 @@ from django.core.exceptions import ValidationError
 from datetime import timedelta
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
-from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
@@ -229,165 +228,6 @@ from io import BytesIO
 import os
 
 
-# @csrf_exempt
-# def verify_payment(request):
-#     if request.method == "POST":
-#         try:
-#             data = json.loads(request.body)
-#             razorpay_order_id = data.get('razorpay_order_id')
-#             razorpay_payment_id = data.get('razorpay_payment_id')
-#             razorpay_signature = data.get('razorpay_signature')
-#             selected_services = data.get('selected_services')  # Directly use the services payload
-#             email = data.get('email')  # Extract email from the request
-
-#             logger.info(f"Received payment verification request with order_id: {razorpay_order_id}, payment_id: {razorpay_payment_id}, signature: {razorpay_signature}")
-
-#             # Verify payment signature
-#             params_dict = {
-#                 'razorpay_order_id': razorpay_order_id,
-#                 'razorpay_payment_id': razorpay_payment_id,
-#                 'razorpay_signature': razorpay_signature
-#             }
-
-#             try:
-#                 # Verify the payment signature
-#                 razorpay_client.utility.verify_payment_signature(params_dict)
-#                 logger.info("Payment signature verification successful")
-
-#                 # Update the Payment record
-#                 payment = Payment.objects.get(order_id=razorpay_order_id)
-#                 payment.payment_id = razorpay_payment_id
-#                 payment.signature = razorpay_signature
-#                 payment.email = email
-#                 payment.verified = True  # Mark the payment as verified
-
-#                 # Process the selected services
-#                 if not selected_services or not email:
-#                     return JsonResponse({'error': 'No services or email found in the request.'}, status=400)
-
-#                 # Get or create the user and user services
-#                 user = get_object_or_404(User, email=email)
-#                 user_services, created = UserService.objects.get_or_create(user=user)
-
-#                 # List of subscribed services for the email
-#                 subscribed_services = []
-
-#                 # Check if "Introductory Offer" is selected
-#                 if selected_services.get("introductory_offer_service", False):
-#                     # Set all services to 1
-#                     user_services.email_service = 1
-#                     user_services.offer_letter_service = 1
-#                     user_services.business_proposal_service = 1
-#                     user_services.sales_script_service = 1
-#                     user_services.content_generation_service = 1
-#                     user_services.summarize_service = 1
-#                     user_services.ppt_generation_service = 1
-#                     user_services.blog_generation_service = 1
-#                     user_services.rephrasely_service = 1
-
-#                     # Add all services to the subscribed list
-#                     subscribed_services = [
-#                         "Email Service", "Offer Letter Service", "Business Proposal Service",
-#                         "Sales Script Service", "Content Generation Service", "Summarize Service",
-#                         "PPT Generation Service", "Blog Generation Service", "Rephrasely Service"
-#                     ]
-#                 else:
-#                     # Update services based on the data and add to subscribed list if activated
-#                     if selected_services.get("email_service", 0) > 0:
-#                         user_services.email_service = 1
-#                         subscribed_services.append("Email Service")
-#                     if selected_services.get("offer_letter_service", 0) > 0:
-#                         user_services.offer_letter_service = 1
-#                         subscribed_services.append("Offer Letter Service")
-#                     if selected_services.get("business_proposal_service", 0) > 0:
-#                         user_services.business_proposal_service = 1
-#                         subscribed_services.append("Business Proposal Service")
-#                     if selected_services.get("sales_script_service", 0) > 0:
-#                         user_services.sales_script_service = 1
-#                         subscribed_services.append("Sales Script Service")
-#                     if selected_services.get("content_generation_service", 0) > 0:
-#                         user_services.content_generation_service = 1
-#                         subscribed_services.append("Content Generation Service")
-#                     if selected_services.get("summarize_service", 0) > 0:
-#                         user_services.summarize_service = 1
-#                         subscribed_services.append("Summarize Service")
-#                     if selected_services.get("ppt_generation_service", 0) > 0:
-#                         user_services.ppt_generation_service = 1
-#                         subscribed_services.append("PPT Generation Service")
-#                     if selected_services.get("blog_generation_service", 0) > 0:
-#                         user_services.blog_generation_service = 1
-#                         subscribed_services.append("Blog Generation Service")
-#                     if selected_services.get("rephrasely_service", 0) > 0:
-#                         user_services.rephrasely_service = 1
-#                         subscribed_services.append("Rephrasely Service")
-
-#                 # Save the updated user services
-#                 user_services.save()
-                
-#                 # Get today's date and save it as the order date and time
-#                 order_datetime = datetime.now()  # Save current date and time
-
-#                 # Update Payment with order date, services, and link to UserService
-#                 payment.order_datetime = order_datetime
-#                 payment.subscribed_services = selected_services  # Storing the raw JSON of selected services
-#                 payment.service = user_services  # Link to the user services record
-#                 payment.save()
-
-#                 # Send the email confirmation without PDF
-#                 subject = 'Subscription Confirmation - ProdigiDesk Services'
-#                 services_list = '\n'.join([f"- {service}" for service in subscribed_services])  # Format services as a bullet-point list
-#                 message = f"""
-# Dear {user.get_full_name()},
-
-# We are pleased to confirm that your subscription to ProdigiDesk has been successfully processed.
-
-
-# The following services have been activated as part of your subscription, valid for the next 30 days:
-
-# {services_list}
-
-# You are now part of a community that leverages the best-in-class tools designed to boost productivity and help you achieve your goals efficiently. Your subscription unlocks access to exclusive features that are carefully tailored to meet your needs.
-
-# If you have any questions, need assistance, or would like to explore how to get the most out of your subscription, please feel free to reach out to us. We're here to help you make the most of your experience with ProdigiDesk.
-
-# Order Details:
-# - Order Number: {razorpay_order_id}
-# - Order Date and Time: {order_datetime.strftime("%Y-%m-%d %H:%M:%S")}
-# - Payment Amount: {payment.amount} {payment.currency}
-# - Registered Email: {email}
-
-# Thank you for choosing us. We look forward to supporting you on your journey to success.
-
-# Best regards,  
-# The ProdigiDesk Team
-# contact@espritanalytique.com
-# http://www.prodigidesk.ai/
-# """
-
-#                 email_message = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
-
-#                 try:
-#                     email_message.send(fail_silently=False)
-#                     logger.info(f"Subscription confirmation email sent to {email}")
-#                 except Exception as e:
-#                     logger.error(f"Error sending subscription confirmation email: {str(e)}")
-
-#                 # Return success response
-#                 return JsonResponse({'message': 'Payment and service save successful'}, status=200)
-
-#             except razorpay.errors.SignatureVerificationError:
-#                 logger.error("Payment signature verification failed")
-#                 return JsonResponse({"status": "Payment verification failed"}, status=400)
-
-#         except json.JSONDecodeError:
-#             logger.error("Invalid JSON format")
-#             return JsonResponse({"error": "Invalid JSON format"}, status=400)
-#         except Exception as e:
-#             logger.error(f"Exception occurred: {str(e)}")
-#             return JsonResponse({"error": str(e)}, status=500)
-
-#     return JsonResponse({"error": "Invalid request method"}, status=400)
-
 @csrf_exempt
 def verify_payment(request):
     if request.method == "POST":
@@ -545,6 +385,215 @@ def verify_payment(request):
 
                 # Return success response
                 return JsonResponse({'message': 'Payment and service save successful'}, status=200)
+
+            except razorpay.errors.SignatureVerificationError:
+                logger.error("Payment signature verification failed")
+                return JsonResponse({"status": "Payment verification failed"}, status=400)
+
+        except json.JSONDecodeError:
+            logger.error("Invalid JSON format")
+            return JsonResponse({"error": "Invalid JSON format"}, status=400)
+        except Exception as e:
+            logger.error(f"Exception occurred: {str(e)}")
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
+
+# @csrf_exempt
+# def extend_service(request):
+#     if request.method == "POST":
+#         try:
+#             data = json.loads(request.body)
+#             email = data.get('email')
+#             service_ids = data.get('service_ids') 
+#             days_to_extend = data.get('days_to_extend', 30)  # Default to 30 days if not provided
+
+#             user = get_object_or_404(User, email=email)
+#             user_services = get_object_or_404(UserService, user=user)
+
+#             # Update the end dates based on selected services
+#             current_date = timezone.now().date()
+
+#             for service_id in service_ids:
+#                 # Get remaining days for each service
+#                 remaining_days = 0
+#                 new_end_date = current_date + timedelta(days=days_to_extend)  # Add days_to_extend
+
+#                 if service_id == 1 and user_services.email_service:
+#                     remaining_days = (user_services.email_end_date - current_date).days if user_services.email_end_date else 0
+#                     user_services.email_end_date = current_date + timedelta(days=days_to_extend + remaining_days)
+#                 elif service_id == 2 and user_services.offer_letter_service:
+#                     remaining_days = (user_services.offer_letter_end_date - current_date).days if user_services.offer_letter_end_date else 0
+#                     user_services.offer_letter_end_date = current_date + timedelta(days=days_to_extend + remaining_days)
+#                 elif service_id == 3 and user_services.business_proposal_service:
+#                     remaining_days = (user_services.business_proposal_end_date - current_date).days if user_services.business_proposal_end_date else 0
+#                     user_services.business_proposal_end_date = current_date + timedelta(days=days_to_extend + remaining_days)
+#                 elif service_id == 4 and user_services.sales_script_service:
+#                     remaining_days = (user_services.sales_script_end_date - current_date).days if user_services.sales_script_end_date else 0
+#                     user_services.sales_script_end_date = current_date + timedelta(days=days_to_extend + remaining_days)
+#                 elif service_id == 5 and user_services.content_generation_service:
+#                     remaining_days = (user_services.content_generation_end_date - current_date).days if user_services.content_generation_end_date else 0
+#                     user_services.content_generation_end_date = current_date + timedelta(days=days_to_extend + remaining_days)
+#                 elif service_id == 6 and user_services.summarize_service:
+#                     remaining_days = (user_services.summarize_end_date - current_date).days if user_services.summarize_end_date else 0
+#                     user_services.summarize_end_date = current_date + timedelta(days=days_to_extend + remaining_days)
+#                 elif service_id == 7 and user_services.ppt_generation_service:
+#                     remaining_days = (user_services.ppt_generation_end_date - current_date).days if user_services.ppt_generation_end_date else 0
+#                     user_services.ppt_generation_end_date = current_date + timedelta(days=days_to_extend + remaining_days)
+#                 elif service_id == 9 and user_services.blog_generation_service:
+#                     remaining_days = (user_services.blog_generation_end_date - current_date).days if user_services.blog_generation_end_date else 0
+#                     user_services.blog_generation_end_date = current_date + timedelta(days=days_to_extend + remaining_days)
+#                 elif service_id == 10 and user_services.rephrasely_service:
+#                     remaining_days = (user_services.rephrasely_end_date - current_date).days if user_services.rephrasely_end_date else 0
+#                     user_services.rephrasely_end_date = current_date + timedelta(days=days_to_extend + remaining_days)
+
+#             user_services.save()
+
+#             return JsonResponse({'message': 'Service extended successfully'}, status=200)
+
+#         except Exception as e:
+#             logger.error(f"Error extending service: {str(e)}")
+#             return JsonResponse({"error": str(e)}, status=400)
+
+#     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+from dateutil.relativedelta import relativedelta
+
+@csrf_exempt
+def extend_service(request):
+    if request.method == "POST":
+        try:
+            # Parse the incoming JSON data
+            data = json.loads(request.body)
+            razorpay_order_id = data.get('razorpay_order_id')
+            razorpay_payment_id = data.get('razorpay_payment_id')
+            razorpay_signature = data.get('razorpay_signature')
+            service_ids = data.get('service_ids')
+            email = data.get('email')
+
+            logger.info(f"Received service extension request with order_id: {razorpay_order_id}, payment_id: {razorpay_payment_id}, signature: {razorpay_signature}")
+
+            # Verify payment signature
+            params_dict = {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_signature': razorpay_signature
+            }
+
+            try:
+                # Verify the payment signature using Razorpay's utility function
+                razorpay_client.utility.verify_payment_signature(params_dict)
+                logger.info("Payment signature verification successful")
+
+                # Update the Payment record in the database
+                payment = Payment.objects.get(order_id=razorpay_order_id)
+                payment.payment_id = razorpay_payment_id
+                payment.signature = razorpay_signature
+                payment.email = email
+                payment.verified = True  # Mark the payment as verified
+
+                if not service_ids or not email:
+                    return JsonResponse({'error': 'No services or email found in the request.'}, status=400)
+
+                user = get_object_or_404(User, email=email)
+                user_services, created = UserService.objects.get_or_create(user=user)
+
+                extended_services = []
+                current_date = timezone.now().date()
+                new_expiry_date = current_date + relativedelta(months=1)
+
+                # Extend each service by one month
+                for service_key in service_ids:
+                    if service_key == "email_service":
+                        user_services.email_service = True
+                        user_services.email_end_date = new_expiry_date if user_services.email_end_date is None else user_services.email_end_date + relativedelta(months=1)
+                        extended_services.append("Email Service")
+                    elif service_key == "offer_letter_service":
+                        user_services.offer_letter_service = True
+                        user_services.offer_letter_end_date = new_expiry_date if user_services.offer_letter_end_date is None else user_services.offer_letter_end_date + relativedelta(months=1)
+                        extended_services.append("Offer Letter Service")
+                    elif service_key == "business_proposal_service":
+                        user_services.business_proposal_service = True
+                        user_services.business_proposal_end_date = new_expiry_date if user_services.business_proposal_end_date is None else user_services.business_proposal_end_date + relativedelta(months=1)
+                        extended_services.append("Business Proposal Service")
+                    elif service_key == "sales_script_service":
+                        user_services.sales_script_service = True
+                        user_services.sales_script_end_date = new_expiry_date if user_services.sales_script_end_date is None else user_services.sales_script_end_date + relativedelta(months=1)
+                        extended_services.append("Sales Script Service")
+                    elif service_key == "content_generation_service":
+                        user_services.content_generation_service = True
+                        user_services.content_generation_end_date = new_expiry_date if user_services.content_generation_end_date is None else user_services.content_generation_end_date + relativedelta(months=1)
+                        extended_services.append("Content Generation Service")
+                    elif service_key == "summarize_service":
+                        user_services.summarize_service = True
+                        user_services.summarize_end_date = new_expiry_date if user_services.summarize_end_date is None else user_services.summarize_end_date + relativedelta(months=1)
+                        extended_services.append("Summarize Service")
+                    elif service_key == "ppt_generation_service":
+                        user_services.ppt_generation_service = True
+                        user_services.ppt_generation_end_date = new_expiry_date if user_services.ppt_generation_end_date is None else user_services.ppt_generation_end_date + relativedelta(months=1)
+                        extended_services.append("PPT Generation Service")
+                    elif service_key == "blog_generation_service":
+                        user_services.blog_generation_service = True
+                        user_services.blog_generation_end_date = new_expiry_date if user_services.blog_generation_end_date is None else user_services.blog_generation_end_date + relativedelta(months=1)
+                        extended_services.append("Blog Generation Service")
+                    elif service_key == "rephrasely_service":
+                        user_services.rephrasely_service = True
+                        user_services.rephrasely_end_date = new_expiry_date if user_services.rephrasely_end_date is None else user_services.rephrasely_end_date + relativedelta(months=1)
+                        extended_services.append("Rephrasely Service")
+
+                user_services.save()
+
+                # Update the Payment record with the new services
+                order_datetime = datetime.now()
+                payment.order_datetime = order_datetime
+                payment.subscribed_services = service_ids
+                payment.service = user_services
+                payment.save()
+
+                # Send confirmation email
+                subject = 'Service Extension Confirmation - ProdigiDesk Services'
+                services_list = ''.join([f"<li>{service}</li>" for service in extended_services])
+                message = f"""
+                <html>
+                <body>
+                <p>Dear {user.get_full_name()},</p>
+
+                <p>Your subscription extension to ProdigiDesk has been successfully processed.</p>
+
+                <p>The following services have been extended:</p>
+
+                <ul>
+                {services_list}
+                </ul>
+
+                <p>Order Details:</p>
+                <ul>
+                <li>Order Number: {razorpay_order_id}</li>
+                <li>Order Date and Time: {order_datetime.strftime("%Y-%m-%d %H:%M:%S")}</li>
+                <li>Payment Amount: {payment.amount} {payment.currency}</li>
+                <li>Registered Email: {email}</li>
+                </ul>
+
+                <p>To see more details of the transaction and to get the invoice, click <a href="https://prodigidesk.ai/userSummary">here</a>.</p>
+
+                <p>Thank you for choosing us. We look forward to supporting you further.</p>
+
+                <p>Best regards,<br>
+                The ProdigiDesk Team<br>
+                contact@espritanalytique.com<br>
+                <a href="http://www.prodigidesk.ai/">http://www.prodigidesk.ai/</a>
+                </p>
+                </body>
+                </html>
+                """
+
+                email_message = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+                email_message.content_subtype = 'html'
+                email_message.send()
+
+                return JsonResponse({'message': 'Payment and service extension save successful'}, status=200)
 
             except razorpay.errors.SignatureVerificationError:
                 logger.error("Payment signature verification failed")
@@ -4045,6 +4094,57 @@ def delete_user_account(request):
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 
+# @csrf_exempt
+# def delete_user_account(request):
+#     if request.method == "DELETE":
+#         try:
+#             # Decode and decrypt the request body
+#             body = request.body.decode('utf-8')
+#             data = json.loads(body)
+#             encrypted_content = data.get('encrypted_content')
+            
+#             if not encrypted_content:
+#                 return JsonResponse({"error": "No encrypted content found in the request."}, status=400)
+            
+#             decrypted_content = decrypt_data(encrypted_content)
+#             data = json.loads(decrypted_content)
+
+#             # Fetch the email from decrypted data
+#             email = data.get('email')
+
+#             if not email:
+#                 return JsonResponse({"error": "Email is required"}, status=400)
+
+#             # Find the user based on the email
+#             try:
+#                 user = User.objects.get(email=email)
+#             except User.DoesNotExist:
+#                 return JsonResponse({"error": "User not found"}, status=404)
+
+#             # Delete associated records
+#             UserService.objects.filter(user=user).delete()  # Delete user services
+#             Profile.objects.filter(user=user).delete()      # Delete user profile
+#             Payment.objects.filter(email=email).delete()    # Delete payments associated with the user
+#             UserSession.objects.filter(user=user).delete()  # Delete user sessions
+#             EmailVerificationOTP.objects.filter(user=user).delete()  # Delete email verification OTPs
+#             TemporaryEmailVerificationOTP.objects.filter(email=email).delete()  # Delete temp email verifications
+#             Cart.objects.filter(email=email).delete()  # Delete the cart
+
+#             # Finally, delete the user
+#             user.delete()
+
+#             # Prepare the response
+#             response_content = {"message": "User account and associated data deleted successfully"}
+#             encrypted_response_content = encrypt_data(response_content)
+
+#             return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
+
+#         except json.JSONDecodeError:
+#             return JsonResponse({"error": "Invalid JSON format"}, status=400)
+#         except Exception as e:
+#             return JsonResponse({"error": str(e)}, status=500)
+
+#     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 
 import os
@@ -4174,9 +4274,251 @@ semaphore = asyncio.Semaphore(10)
 from .email_llama3 import bhashini_translate
 
 
+# @csrf_exempt
+# def translate_json_files_new(request):
+#     # translator = Translator()
+#     translated_json = {}
+#     error = None
+#     translate_to = ""
+#     indian_languages = {
+#         "English": "en",
+#         "Hindi": "hi",
+#         "Tamil": "ta",
+#         "Telugu": "te",
+#         "Marathi": "mr",
+#         "Kannada": "kn",
+#         "Bengali": "bn",
+#         "Odia": "or",
+#         "Assamese": "as",
+#         "Punjabi": "pa",
+#         "Malayalam": "ml",
+#         "Gujarati": "gu",
+#         "Urdu": "ur",
+#         "Sanskrit": "sa",
+#         "Nepali": "ne",
+#         "Bodo": "brx",
+#         "Maithili": "mai",
+#         "Sindhi": "sd",
+#         "Kashmiri": "ks", 
+#         "Konkani": "kok",  
+#         "Dogri" :"doi",
+#         "Goan Konkani": "gom",
+#         "Santali": "sat"
+
+
+#     }
+
+#     if request.method == 'POST':
+#         try:
+#             # Extract file and target language from the request
+#             json_file = request.FILES.get('file')
+#             translate_to = request.POST.get('translate_to')
+            
+#             if not json_file:
+#                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
+            
+#             if not translate_to:
+#                 return JsonResponse({'error': 'No target language provided.'}, status=400)
+ 
+#             # Load the JSON file
+#             file_content = json_file.read().decode('utf-8')
+#             original_json = json.loads(file_content)
+ 
+#             # Collect all string values for translation in one batch
+#             translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
+#             translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
+ 
+#             # Use threading to parallelize translation calls for better performance
+#             async def translate_key_value(key, value, target_lang):
+#                 async with semaphore:
+
+#                     try:
+#                         """
+#                         translation_result = translator.translate(text = value, dest=indian_languages[target_lang])
+#                         translated_json[key] = translation_result.text
+#                         """
+#                         # translated_json[key] = GoogleTranslator(source='auto', target=target_lang).translate(value) 
+#                         translation_result = bhashini_translate(value, target_lang)
+#                         print(33333, translation_result)
+#                         translated_json[key] = translation_result["translated_content"]
+                        
+
+#                     except Exception as e:
+#                         print(f"Translation failed for key {key}. Retrying... Error: {str(e)}")
+#                         await asyncio.sleep(2)  # Async sleep for retry
+                
+#                         try:
+                            
+#                             translation_result = bhashini_translate(value, target_lang)
+#                             translated_json[key] = translation_result["translated_content"]
+#                             """
+#                             translation_result = translator.translate(text = value, dest=indian_languages[target_lang])
+#                             translated_json[key] = translation_result.text
+#                             """
+#                         except Exception as e:
+#                             translated_json[key] = f"Translation Error: {str(e)}"
+ 
+
+#             async def trans_main(translation_tasks, translate_to):
+#                 # Create a list of async tasks for each translation
+#                 tasks = [translate_key_value(key, value, translate_to) for key, value in translation_tasks]
+                
+#                 # Run tasks concurrently with limited concurrency via semaphore
+#                 await asyncio.gather(*tasks)
+#             asyncio.run(trans_main(translation_tasks, translate_to))
+ 
+#             # Create the translated JSON file in memory
+#             translated_file_name = f"translated_{translate_to}.json"
+#             # translated_json_str = json.dumps(translated_json, indent=4)
+#             translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
+#             translated_file_name = f"translated_{translate_to}.json"
+#             # translated_file = BytesIO(translated_json_str.encode('utf-8'))
+#             zip_buffer = BytesIO()
+#             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
+#                 zip_archive.writestr(translated_file_name, translated_json_str)
+#             # Return the translated file as an attachment
+#             zip_buffer.seek(0)
+#             response = HttpResponse(zip_buffer, content_type='application/zip')
+#             response['Content-Disposition'] = 'attachment; filename="translated_sorted_files.zip"'
+#             return response
+
+
+ 
+#         except json.JSONDecodeError:
+#             error = "Invalid JSON file format."
+#             return JsonResponse({'error': error}, status=400)
+#         except Exception as e:
+#             error = f"Error during translation: {str(e)}"
+#             return JsonResponse({'error': error}, status=500)
+#     else:
+#         return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+# @csrf_exempt
+# def translate_json_files_new(request):
+#     # translator = Translator()
+#     translated_json = {}
+#     error = None
+#     translate_to = ""
+#     indian_languages = {
+#         "English": "en",
+#         "Hindi": "hi",
+#         "Tamil": "ta",
+#         "Telugu": "te",
+#         "Marathi": "mr",
+#         "Kannada": "kn",
+#         "Bengali": "bn",
+#         "Odia": "or",
+#         "Assamese": "as",
+#         "Punjabi": "pa",
+#         "Malayalam": "ml",
+#         "Gujarati": "gu",
+#         "Urdu": "ur",
+#         "Sanskrit": "sa",
+#         "Nepali": "ne",
+#         "Bodo": "brx",
+#         "Maithili": "mai",
+#         "Sindhi": "sd",
+#         "Kashmiri": "ks", 
+#         "Konkani": "kok",  
+#         "Dogri" :"doi",
+#         "Goan Konkani": "gom",
+#         "Santali": "sat"
+
+
+#     }
+
+#     if request.method == 'POST':
+#         try:
+#             # Extract file and target language from the request
+#             json_file = request.FILES.get('file')
+#             translate_to = request.POST.get('translate_to')
+            
+#             if not json_file:
+#                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
+            
+#             if not translate_to:
+#                 return JsonResponse({'error': 'No target language provided.'}, status=400)
+ 
+#             # Load the JSON file
+#             file_content = json_file.read().decode('utf-8')
+#             original_json = json.loads(file_content)
+ 
+#             # Collect all string values for translation in one batch
+#             translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
+#             translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
+ 
+#             # Use threading to parallelize translation calls for better performance
+#             async def translate_key_value(key, value, target_lang):
+#                 async with semaphore:
+
+#                     try:
+#                         """
+#                         translation_result = translator.translate(text = value, dest=indian_languages[target_lang])
+#                         translated_json[key] = translation_result.text
+#                         """
+#                         # translated_json[key] = GoogleTranslator(source='auto', target=target_lang).translate(value) 
+#                         translation_result = bhashini_translate(value, target_lang)
+#                         print(33333, translation_result)
+#                         translated_json[key] = translation_result["translated_content"]
+                        
+
+#                     except Exception as e:
+#                         print(f"Translation failed for key {key}. Retrying... Error: {str(e)}")
+#                         await asyncio.sleep(2)  # Async sleep for retry
+                
+#                         try:
+                            
+#                             translation_result = bhashini_translate(value, target_lang)
+#                             translated_json[key] = translation_result["translated_content"]
+#                             """
+#                             translation_result = translator.translate(text = value, dest=indian_languages[target_lang])
+#                             translated_json[key] = translation_result.text
+#                             """
+#                         except Exception as e:
+#                             translated_json[key] = f"Translation Error: {str(e)}"
+ 
+
+#             async def trans_main(translation_tasks, translate_to):
+#                 # Create a list of async tasks for each translation
+#                 tasks = [translate_key_value(key, value, translate_to) for key, value in translation_tasks]
+                
+#                 # Run tasks concurrently with limited concurrency via semaphore
+#                 await asyncio.gather(*tasks)
+#             asyncio.run(trans_main(translation_tasks, translate_to))
+ 
+#             # Create the translated JSON file in memory
+#             translated_file_name = f"translated_{translate_to}.json"
+#             # translated_json_str = json.dumps(translated_json, indent=4)
+#             translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
+#             translated_file_name = f"translated_{translate_to}.json"
+#             # translated_file = BytesIO(translated_json_str.encode('utf-8'))
+#             zip_buffer = BytesIO()
+#             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
+#                 zip_archive.writestr(translated_file_name, translated_json_str)
+#             # Return the translated file as an attachment
+#             zip_buffer.seek(0)
+#             response = HttpResponse(zip_buffer, content_type='application/zip')
+#             response['Content-Disposition'] = 'attachment; filename="translated_sorted_files.zip"'
+#             return response
+
+
+ 
+#         except json.JSONDecodeError:
+#             error = "Invalid JSON file format."
+#             return JsonResponse({'error': error}, status=400)
+#         except Exception as e:
+#             error = f"Error during translation: {str(e)}"
+#             return JsonResponse({'error': error}, status=500)
+#     else:
+#         return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+line_number = 1  # Initialize the line counter
+
 @csrf_exempt
 def translate_json_files_new(request):
-    # translator = Translator()
+    global line_number
     translated_json = {}
     error = None
     translate_to = ""
@@ -4204,8 +4546,6 @@ def translate_json_files_new(request):
         "Dogri" :"doi",
         "Goan Konkani": "gom",
         "Santali": "sat"
-
-
     }
 
     if request.method == 'POST':
@@ -4230,31 +4570,24 @@ def translate_json_files_new(request):
  
             # Use threading to parallelize translation calls for better performance
             async def translate_key_value(key, value, target_lang):
+                global line_number
                 async with semaphore:
 
                     try:
-                        """
-                        translation_result = translator.translate(text = value, dest=indian_languages[target_lang])
-                        translated_json[key] = translation_result.text
-                        """
-                        # translated_json[key] = GoogleTranslator(source='auto', target=target_lang).translate(value) 
+                        # Simulating translation
                         translation_result = bhashini_translate(value, target_lang)
-                        print(33333, translation_result)
+                        print(f"Line {line_number}: {translation_result}")
+                        line_number += 1  # Increment line number
                         translated_json[key] = translation_result["translated_content"]
                         
-
                     except Exception as e:
-                        print(f"Translation failed for key {key}. Retrying... Error: {str(e)}")
+                        print(f"Line {line_number}: Translation failed for key {key}. Retrying... Error: {str(e)}")
+                        line_number += 1  # Increment line number
                         await asyncio.sleep(2)  # Async sleep for retry
-                
+                        
                         try:
-                            
                             translation_result = bhashini_translate(value, target_lang)
                             translated_json[key] = translation_result["translated_content"]
-                            """
-                            translation_result = translator.translate(text = value, dest=indian_languages[target_lang])
-                            translated_json[key] = translation_result.text
-                            """
                         except Exception as e:
                             translated_json[key] = f"Translation Error: {str(e)}"
  
@@ -4265,14 +4598,13 @@ def translate_json_files_new(request):
                 
                 # Run tasks concurrently with limited concurrency via semaphore
                 await asyncio.gather(*tasks)
+                
             asyncio.run(trans_main(translation_tasks, translate_to))
  
             # Create the translated JSON file in memory
             translated_file_name = f"translated_{translate_to}.json"
-            # translated_json_str = json.dumps(translated_json, indent=4)
             translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
             translated_file_name = f"translated_{translate_to}.json"
-            # translated_file = BytesIO(translated_json_str.encode('utf-8'))
             zip_buffer = BytesIO()
             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
                 zip_archive.writestr(translated_file_name, translated_json_str)
@@ -4282,8 +4614,6 @@ def translate_json_files_new(request):
             response['Content-Disposition'] = 'attachment; filename="translated_sorted_files.zip"'
             return response
 
-
- 
         except json.JSONDecodeError:
             error = "Invalid JSON file format."
             return JsonResponse({'error': error}, status=400)
@@ -4292,3 +4622,17 @@ def translate_json_files_new(request):
             return JsonResponse({'error': error}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+
+
+
+
+
+
+
+
+
+
+
+

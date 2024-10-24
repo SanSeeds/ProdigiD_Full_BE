@@ -64,6 +64,8 @@ urlpatterns = [
     path('empty_cart/', views.empty_cart, name='empty_cart'),  # Add the new path
     path('translate_json_files/',views.translate_json_files,name='translate_json_files'),
     path('translate_json_files_new/',views.translate_json_files_new,name='translate_json_files_new'),
+    path('extend_service/',views.extend_service,name='extend_service'),
+
 
 
 

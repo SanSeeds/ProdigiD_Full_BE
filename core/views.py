@@ -1226,7 +1226,55 @@ The ProdigiDesk Team
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-
+@csrf_exempt
+def fetch_filtered_payments(request):
+    if request.method == 'POST':
+        try:
+            # Load data from the request body
+            data = json.loads(request.body)
+            order_id = data.get('order_id')
+            payment_id = data.get('payment_id')
+            email = data.get('email')
+            # Filter based on the provided parameters
+            filters = {}
+            if order_id:
+                filters['order_id'] = order_id
+            if payment_id:
+                filters['payment_id'] = payment_id
+            if email:
+                filters['email'] = email
+ 
+            # Fetch the filtered payments
+            payments = Payment.objects.filter(**filters)
+ 
+            # Serialize the records into a list of dictionaries
+            payment_list = []
+            for payment in payments:
+                payment_data = {
+                    'order_id': payment.order_id,
+                    'payment_id': payment.payment_id,
+                    'signature': payment.signature,
+                    'email': payment.email,
+                    'amount': str(payment.amount),  # Converting Decimal to string
+                    'currency': payment.currency,
+                    'payment_capture': payment.payment_capture,
+                    'created_at': payment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                    'verified': payment.verified,
+                    'order_datetime': payment.order_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.order_datetime else None,
+                    'subscribed_services': payment.subscribed_services,
+                    'service': payment.service.id if payment.service else None  # ForeignKey field
+                }
+                payment_list.append(payment_data)
+ 
+            # Return the serialized data as JSON
+            return JsonResponse(payment_list, safe=False, status=200)
+ 
+        except Payment.DoesNotExist:
+            return JsonResponse({"error": "No matching payment found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+ 
+    return JsonResponse({"error": "Invalid request method"}, status=400)
 
 # Backend OTP Verification API
 @csrf_exempt

@@ -74,7 +74,7 @@ urlpatterns = [
     path('verify_payment_yearly/',views.verify_payment_yearly,name='verify_payment_yearly'),
     path('translate_and_download_document/',views.translate_and_download_document,name='translate_and_download_document'),
 
-    
+    path('fetch_filtered_payments/', views.fetch_filtered_payments, name='fetch_filtered_payments'),
 
 
 

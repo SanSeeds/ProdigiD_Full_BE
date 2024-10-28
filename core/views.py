@@ -1,5 +1,3 @@
-from concurrent.futures import ThreadPoolExecutor
-from io import BytesIO
 import io
 import os
 import random
@@ -9,7 +7,6 @@ from threading import Thread
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, HttpResponse, JsonResponse
 from gtts import gTTS
 from .email_llama3 import BHASHINI_API_KEY, BHASHINI_USER_ID, add_slide, ask_question_chatbot, generate_blog, generate_slide_titles, extract_document_content, generate_email, bhashini_translate,generate_bus_pro, generate_offer_letter, generate_slide_content, generate_slide_titles, generate_summary, generate_content, generate_sales_script, rephrasely, translate_multiple_texts  
@@ -20,41 +17,28 @@ from rest_framework_api_key.permissions import HasAPIKey
 from django.conf import settings
 from datetime import date, datetime, timedelta
 from .models import Cart, EmailVerificationOTP, GuestLogin, PasswordResetRequest, Payment, Profile, TemporaryEmailVerificationOTP, UserService, UserSession, YearlyCart
-from django.core.mail import send_mail, BadHeaderError
+from django.core.mail import send_mail
 from django.contrib.auth import update_session_auth_hash
-from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-import json
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth.password_validation import validate_password  
-import json
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 import base64
 from django.contrib.auth.hashers import make_password  # Import the function
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from rest_framework import status
 from rest_framework.renderers import BaseRenderer
 from pptx import Presentation
-from pptx.util import Inches, Pt
-from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
-from django.core.files.storage import default_storage
 from django.utils.dateparse import parse_date
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.core.files.storage import default_storage
 from django.shortcuts import render
-import fitz  # PyMuPDF
-from docx import Document as DocxDocument
 import logging
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from datetime import timedelta
@@ -66,47 +50,35 @@ from datetime import timedelta
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 # from validate_email_address import validate_email
-import dns.resolver
-from django.views.decorators.csrf import csrf_exempt
+
 import json
 import logging
-import dns.resolver
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.contrib.auth.hashers import make_password
-from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from django.utils import timezone
 import json
 import razorpay
-from django.core.files.base import ContentFile
-import os
 from io import BytesIO
 from django.core.mail import EmailMessage
 from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_date
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 import json
-from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse, HttpResponse
 import json
-import io
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 from django.views.decorators.csrf import csrf_exempt
 from .models import Payment
-from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib import colors
-from reportlab.pdfgen import canvas
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -222,11 +194,9 @@ def create_razorpay_order(request):
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 
-from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 # from xhtml2pdf import pisa
 from io import BytesIO
-import os
 
 
 @csrf_exempt
@@ -4732,11 +4702,8 @@ def delete_user_account(request):
 #     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 
-import os
-import json
 import zipfile
 from io import BytesIO
-from concurrent.futures import ThreadPoolExecutor
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -4853,7 +4820,6 @@ def translate_json_files(request):
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
-import time
 import asyncio
 semaphore = asyncio.Semaphore(10)  
 from .email_llama3 import bhashini_translate
@@ -5215,16 +5181,13 @@ from django.views.decorators.csrf import csrf_exempt
 from docx import Document
 import zipfile
 import asyncio
-import io
-import os
 from django.http import JsonResponse, FileResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from docx import Document
 import zipfile
 import asyncio
-import io
-import os
+
 @csrf_exempt
 def translate_and_download_document(request):
     if request.method != 'POST':

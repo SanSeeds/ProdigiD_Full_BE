@@ -16,7 +16,6 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.username
 
-
 class PasswordResetRequest(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     otp = models.CharField(max_length=6)
@@ -24,8 +23,6 @@ class PasswordResetRequest(models.Model):
 
     def is_valid(self):
         return timezone.now() < self.expiry_time
-
-
 
 class UserService(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -87,14 +84,12 @@ class UserService(models.Model):
     def __str__(self):
         return f'{self.user.username} - Services'
 
-
 class UserSession(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     session_id = models.CharField(max_length=255, unique=True)
     email = models.EmailField()  # New field to store the user's email
     created_at = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
-
 
 class EmailVerificationOTP(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='email_verification_otp')
@@ -112,7 +107,6 @@ class EmailVerificationOTP(models.Model):
     def __str__(self):
         return f"OTP for {self.user.email} - {'Expired' if self.is_otp_expired() else 'Valid'}"
     
-
 class TemporaryEmailVerificationOTP(models.Model):
     email = models.EmailField(unique=True)
     otp = models.CharField(max_length=6)
@@ -126,28 +120,6 @@ class TemporaryEmailVerificationOTP(models.Model):
     def __str__(self):
         return f"OTP for {self.email} - {'Expired' if self.is_otp_expired() else 'Valid'}"
     
- 
-
-# class Payment(models.Model):
-#     order_id = models.CharField(max_length=255, unique=True)
-#     payment_id = models.CharField(max_length=255, null=True, blank=True)
-#     signature = models.CharField(max_length=255, null=True, blank=True)
-#     email = models.EmailField(null=True, blank=True)
-#     amount = models.DecimalField(max_digits=10, decimal_places=2)
-#     currency = models.CharField(max_length=10)
-#     payment_capture = models.BooleanField(default=False)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     verified = models.BooleanField(default=False)
-    
-#     # New field to associate the payment with a service
-#     # service = models.ForeignKey(UserService, on_delete=models.CASCADE, null=True, blank=True)
-
-#     def __str__(self):
-#         return f"Order {self.order_id} - {self.amount} {self.currency}"
-
-
-
-
 class Payment(models.Model):
     order_id = models.CharField(max_length=255, unique=True)
     payment_id = models.CharField(max_length=255, null=True, blank=True)
@@ -167,24 +139,6 @@ class Payment(models.Model):
     def __str__(self):
         return f"Order {self.order_id} - {self.amount} {self.currency}"
     
-# class GuestLogin(models.Model):
-#     mobile_number = models.CharField(max_length=15, unique=True)  # Ensure mobile number is unique
-#     otp = models.CharField(max_length=6)
-#     session_id = models.CharField(max_length=255, unique=True, default=uuid.uuid4)
-#     logged_in_at = models.DateTimeField(auto_now_add=True)
-#     valid_till = models.DateTimeField()
-#     is_active = models.BooleanField(default=True)
-
-#     def is_valid(self):
-#         return timezone.now() < self.valid_till
-
-#     def deactivate_session(self):
-#         self.is_active = False
-#         self.save()
-
-#     def __str__(self):
-#         return f"Guest {self.mobile_number} - Session ID {self.session_id} - Active: {self.is_active}"
-
 class GuestLogin(models.Model):
     email = models.EmailField(max_length=255)  # Ensure email is unique
     otp = models.CharField(max_length=6)
@@ -202,9 +156,6 @@ class GuestLogin(models.Model):
 
     def __str__(self):
         return f"Guest {self.email} - Session ID {self.session_id} - Active: {self.is_active}"
-
-
-
 
 class Cart(models.Model):
     email = models.EmailField(max_length=254, blank=False, unique=True)  # Email is unique
@@ -262,8 +213,6 @@ class Cart(models.Model):
         if self.rephrasely_service:
             services.append({"id": self.SERVICE_IDS["rephrasely_service"], "name": "Rephrasely Service"})
         return services
-
-
 
 class YearlyCart(models.Model):
     email = models.EmailField(max_length=254, blank=False, unique=True)  # Email is unique

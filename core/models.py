@@ -262,3 +262,62 @@ class Cart(models.Model):
         if self.rephrasely_service:
             services.append({"id": self.SERVICE_IDS["rephrasely_service"], "name": "Rephrasely Service"})
         return services
+
+
+
+class YearlyCart(models.Model):
+    email = models.EmailField(max_length=254, blank=False, unique=True)  # Email is unique
+    
+    # Service flags with IDs
+    email_service = models.BooleanField(default=False)
+    offer_letter_service = models.BooleanField(default=False)
+    business_proposal_service = models.BooleanField(default=False)
+    sales_script_service = models.BooleanField(default=False)
+    content_generation_service = models.BooleanField(default=False)
+    summarize_service = models.BooleanField(default=False)
+    ppt_generation_service = models.BooleanField(default=False)
+    blog_generation_service = models.BooleanField(default=False)
+    rephrasely_service = models.BooleanField(default=False)
+    
+    created_at = models.DateTimeField(auto_now_add=True)  # Track when the cart was created
+    updated_at = models.DateTimeField(auto_now=True)      # Track when the cart was last updated
+
+    SERVICE_IDS = {
+        "email_service": 1,
+        "offer_letter_service": 2,
+        "business_proposal_service": 3,
+        "sales_script_service": 4,
+        "content_generation_service": 5,
+        "summarize_service": 6,
+        "ppt_generation_service": 7,
+        "blog_generation_service": 9,
+        "rephrasely_service": 10,
+    }
+
+    def __str__(self):
+        return f"Cart for {self.email} - Services: {self.get_active_services()}"
+
+    def get_active_services(self):
+        """
+        Return a list of active (True) services in the cart along with their IDs.
+        """
+        services = []
+        if self.email_service:
+            services.append({"id": self.SERVICE_IDS["email_service"], "name": "Email Service"})
+        if self.offer_letter_service:
+            services.append({"id": self.SERVICE_IDS["offer_letter_service"], "name": "Offer Letter Service"})
+        if self.business_proposal_service:
+            services.append({"id": self.SERVICE_IDS["business_proposal_service"], "name": "Business Proposal Service"})
+        if self.sales_script_service:
+            services.append({"id": self.SERVICE_IDS["sales_script_service"], "name": "Sales Script Service"})
+        if self.content_generation_service:
+            services.append({"id": self.SERVICE_IDS["content_generation_service"], "name": "Content Generation Service"})
+        if self.summarize_service:
+            services.append({"id": self.SERVICE_IDS["summarize_service"], "name": "Summarize Service"})
+        if self.ppt_generation_service:
+            services.append({"id": self.SERVICE_IDS["ppt_generation_service"], "name": "PPT Generation Service"})
+        if self.blog_generation_service:
+            services.append({"id": self.SERVICE_IDS["blog_generation_service"], "name": "Blog Generation Service"})
+        if self.rephrasely_service:
+            services.append({"id": self.SERVICE_IDS["rephrasely_service"], "name": "Rephrasely Service"})
+        return services

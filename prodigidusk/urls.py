@@ -57,6 +57,12 @@ urlpatterns = [
     path('create_cart/', views.create_cart, name='create_cart'), 
     path('get_cart/', views.get_cart, name='get_cart'), 
     path('remove_service/', views.remove_service, name='remove_service'), 
+
+    path('create_cart_yearly/', views.create_cart_yearly, name='create_cart_yearly'), 
+    path('get_cart_yearly/', views.get_cart_yearly, name='get_cart_yearly'), 
+    path('remove_service_yearly/', views.remove_service_yearly, name='remove_service_yearly'), 
+    path('empty_cart_yearly/', views.empty_cart_yearly, name='empty_cart_yearly'),  # Add the new path
+
     path('delete_user_account/', views.delete_user_account, name='delete_user_account'), 
     path('generate_invoice/', views.generate_invoice, name='generate_invoice'), 
     path('invoice-details/', views.invoice_details, name='invoice_details'),  # Add the new path
@@ -65,6 +71,10 @@ urlpatterns = [
     path('translate_json_files/',views.translate_json_files,name='translate_json_files'),
     path('translate_json_files_new/',views.translate_json_files_new,name='translate_json_files_new'),
     path('extend_service/',views.extend_service,name='extend_service'),
+    path('verify_payment_yearly/',views.verify_payment_yearly,name='verify_payment_yearly'),
+    path('translate_and_download_document/',views.translate_and_download_document,name='translate_and_download_document'),
+
+    
 
 
 

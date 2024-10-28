@@ -3,6 +3,7 @@ from io import BytesIO
 import io
 import os
 import random
+import tempfile
 import threading
 from threading import Thread
 from django.shortcuts import get_object_or_404
@@ -18,7 +19,7 @@ from django.utils import timezone
 from rest_framework_api_key.permissions import HasAPIKey
 from django.conf import settings
 from datetime import date, datetime, timedelta
-from .models import Cart, EmailVerificationOTP, GuestLogin, PasswordResetRequest, Payment, Profile, TemporaryEmailVerificationOTP, UserService, UserSession
+from .models import Cart, EmailVerificationOTP, GuestLogin, PasswordResetRequest, Payment, Profile, TemporaryEmailVerificationOTP, UserService, UserSession, YearlyCart
 from django.core.mail import send_mail, BadHeaderError
 from django.contrib.auth import update_session_auth_hash
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
@@ -400,6 +401,144 @@ def verify_payment(request):
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 
+@csrf_exempt
+def verify_payment_yearly(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            razorpay_order_id = data.get('razorpay_order_id')
+            razorpay_payment_id = data.get('razorpay_payment_id')
+            razorpay_signature = data.get('razorpay_signature')
+            selected_services = data.get('selected_services')
+            email = data.get('email')
+
+            logger.info(f"Received yearly payment verification request with order_id: {razorpay_order_id}")
+
+            params_dict = {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_signature': razorpay_signature
+            }
+
+            try:
+                razorpay_client.utility.verify_payment_signature(params_dict)
+                logger.info("Payment signature verification successful for yearly subscription")
+
+                payment = Payment.objects.get(order_id=razorpay_order_id)
+                payment.payment_id = razorpay_payment_id
+                payment.signature = razorpay_signature
+                payment.email = email
+                payment.verified = True
+
+                if not selected_services or not email:
+                    return JsonResponse({'error': 'No services or email found in the request.'}, status=400)
+
+                user = get_object_or_404(User, email=email)
+                user_services, created = UserService.objects.get_or_create(user=user)
+                subscribed_services = []
+                expiration_date = timezone.now().date() + relativedelta(years=1)
+
+                if selected_services.get("introductory_offer_service", False):
+                    user_services.email_service = 1
+                    user_services.offer_letter_service = 1
+                    user_services.business_proposal_service = 1
+                    user_services.sales_script_service = 1
+                    user_services.content_generation_service = 1
+                    user_services.summarize_service = 1
+                    user_services.ppt_generation_service = 1
+                    user_services.blog_generation_service = 1
+                    user_services.rephrasely_service = 1
+
+                    subscribed_services = [
+                        "Email Service", "Offer Letter Service", "Business Proposal Service",
+                        "Sales Script Service", "Content Generation Service", "Summarize Service",
+                        "PPT Generation Service", "Blog Generation Service", "Rephrasely Service"
+                    ]
+                else:
+                    if selected_services.get("email_service", 0) > 0:
+                        user_services.email_service = 1
+                        user_services.email_end_date = expiration_date
+                        subscribed_services.append("Email Service")
+                    if selected_services.get("offer_letter_service", 0) > 0:
+                        user_services.offer_letter_service = 1
+                        user_services.offer_letter_end_date = expiration_date
+                        subscribed_services.append("Offer Letter Service")
+                    if selected_services.get("business_proposal_service", 0) > 0:
+                        user_services.business_proposal_service = 1
+                        user_services.business_proposal_end_date = expiration_date
+                        subscribed_services.append("Business Proposal Service")
+                    if selected_services.get("sales_script_service", 0) > 0:
+                        user_services.sales_script_service = 1
+                        user_services.sales_script_end_date = expiration_date
+                        subscribed_services.append("Sales Script Service")
+                    if selected_services.get("content_generation_service", 0) > 0:
+                        user_services.content_generation_service = 1
+                        user_services.content_generation_end_date = expiration_date
+                        subscribed_services.append("Content Generation Service")
+                    if selected_services.get("summarize_service", 0) > 0:
+                        user_services.summarize_service = 1
+                        user_services.summarize_end_date = expiration_date
+                        subscribed_services.append("Summarize Service")
+                    if selected_services.get("ppt_generation_service", 0) > 0:
+                        user_services.ppt_generation_service = 1
+                        user_services.ppt_generation_end_date = expiration_date
+                        subscribed_services.append("PPT Generation Service")
+                    if selected_services.get("blog_generation_service", 0) > 0:
+                        user_services.blog_generation_service = 1
+                        user_services.blog_generation_end_date = expiration_date
+                        subscribed_services.append("Blog Generation Service")
+                    if selected_services.get("rephrasely_service", 0) > 0:
+                        user_services.rephrasely_service = 1
+                        user_services.rephrasely_end_date = expiration_date
+                        subscribed_services.append("Rephrasely Service")
+
+                user_services.save()
+                payment.order_datetime = datetime.now()
+                payment.subscribed_services = selected_services
+                payment.service = user_services
+                payment.save()
+
+                subject = 'Annual Subscription Confirmation - ProdigiDesk Services'
+                services_list = '\n'.join([f"- {service}" for service in subscribed_services])
+                message = f"""
+                <html>
+                <body>
+                <p>Dear {user.get_full_name()},</p>
+                <p>Your annual subscription to ProdigiDesk has been activated.</p>
+                <p>These services are now active for one year:</p>
+                <ul>{''.join(f"<li>{service}</li>" for service in subscribed_services)}</ul>
+                <p>Best regards,<br>
+                The ProdigiDesk Team<br>
+                contact@espritanalytique.com<br>
+                <a href="http://www.prodigidesk.ai/">http://www.prodigidesk.ai/</a>
+                </p>
+                </body>
+                </html>
+                """
+
+                email_message = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+                email_message.content_subtype = 'html'
+
+                try:
+                    email_message.send(fail_silently=False)
+                    logger.info(f"Yearly subscription confirmation email sent to {email}")
+                except Exception as e:
+                    logger.error(f"Error sending yearly subscription confirmation email: {str(e)}")
+
+                return JsonResponse({'message': 'Yearly payment and service save successful'}, status=200)
+
+            except razorpay.errors.SignatureVerificationError:
+                logger.error("Yearly payment signature verification failed")
+                return JsonResponse({"status": "Payment verification failed"}, status=400)
+
+        except json.JSONDecodeError:
+            logger.error("Invalid JSON format")
+            return JsonResponse({"error": "Invalid JSON format"}, status=400)
+        except Exception as e:
+            logger.error(f"Exception occurred: {str(e)}")
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
 
 # @csrf_exempt
 # def extend_service(request):
@@ -607,6 +746,156 @@ def extend_service(request):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
+
+@csrf_exempt
+def extend_service_yearly(request):
+    if request.method == "POST":
+        try:
+            # Parse the incoming JSON data
+            data = json.loads(request.body)
+            razorpay_order_id = data.get('razorpay_order_id')
+            razorpay_payment_id = data.get('razorpay_payment_id')
+            razorpay_signature = data.get('razorpay_signature')
+            service_ids = data.get('service_ids')
+            email = data.get('email')
+
+            logger.info(f"Received service extension request with order_id: {razorpay_order_id}, payment_id: {razorpay_payment_id}, signature: {razorpay_signature}")
+
+            # Verify payment signature
+            params_dict = {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_signature': razorpay_signature
+            }
+
+            try:
+                # Verify the payment signature using Razorpay's utility function
+                razorpay_client.utility.verify_payment_signature(params_dict)
+                logger.info("Payment signature verification successful")
+
+                # Update the Payment record in the database
+                payment = Payment.objects.get(order_id=razorpay_order_id)
+                payment.payment_id = razorpay_payment_id
+                payment.signature = razorpay_signature
+                payment.email = email
+                payment.verified = True  # Mark the payment as verified
+
+                if not service_ids or not email:
+                    return JsonResponse({'error': 'No services or email found in the request.'}, status=400)
+
+                user = get_object_or_404(User, email=email)
+                user_services, created = UserService.objects.get_or_create(user=user)
+
+                extended_services = []
+                current_date = timezone.now().date()
+                new_expiry_date = current_date + relativedelta(months=1)
+
+                # Extend each service by one month
+                for service_key in service_ids:
+                    if service_key == "email_service":
+                        user_services.email_service = True
+                        user_services.email_end_date = new_expiry_date if user_services.email_end_date is None else user_services.email_end_date + relativedelta(year=1)
+                        extended_services.append("Email Service")
+                    elif service_key == "offer_letter_service":
+                        user_services.offer_letter_service = True
+                        user_services.offer_letter_end_date = new_expiry_date if user_services.offer_letter_end_date is None else user_services.offer_letter_end_date + relativedelta(year=1)
+                        extended_services.append("Offer Letter Service")
+                    elif service_key == "business_proposal_service":
+                        user_services.business_proposal_service = True
+                        user_services.business_proposal_end_date = new_expiry_date if user_services.business_proposal_end_date is None else user_services.business_proposal_end_date + relativedelta(year=1)
+                        extended_services.append("Business Proposal Service")
+                    elif service_key == "sales_script_service":
+                        user_services.sales_script_service = True
+                        user_services.sales_script_end_date = new_expiry_date if user_services.sales_script_end_date is None else user_services.sales_script_end_date + relativedelta(year=1)
+                        extended_services.append("Sales Script Service")
+                    elif service_key == "content_generation_service":
+                        user_services.content_generation_service = True
+                        user_services.content_generation_end_date = new_expiry_date if user_services.content_generation_end_date is None else user_services.content_generation_end_date + relativedelta(year=1)
+                        extended_services.append("Content Generation Service")
+                    elif service_key == "summarize_service":
+                        user_services.summarize_service = True
+                        user_services.summarize_end_date = new_expiry_date if user_services.summarize_end_date is None else user_services.summarize_end_date + relativedelta(year=1)
+                        extended_services.append("Summarize Service")
+                    elif service_key == "ppt_generation_service":
+                        user_services.ppt_generation_service = True
+                        user_services.ppt_generation_end_date = new_expiry_date if user_services.ppt_generation_end_date is None else user_services.ppt_generation_end_date + relativedelta(year=1)
+                        extended_services.append("PPT Generation Service")
+                    elif service_key == "blog_generation_service":
+                        user_services.blog_generation_service = True
+                        user_services.blog_generation_end_date = new_expiry_date if user_services.blog_generation_end_date is None else user_services.blog_generation_end_date + relativedelta(year=1)
+                        extended_services.append("Blog Generation Service")
+                    elif service_key == "rephrasely_service":
+                        user_services.rephrasely_service = True
+                        user_services.rephrasely_end_date = new_expiry_date if user_services.rephrasely_end_date is None else user_services.rephrasely_end_date + relativedelta(year=1)
+                        extended_services.append("Rephrasely Service")
+
+                user_services.save()
+
+                # Update the Payment record with the new services
+                order_datetime = datetime.now()
+                payment.order_datetime = order_datetime
+                payment.subscribed_services = service_ids
+                payment.service = user_services
+                payment.save()
+
+                # Send confirmation email
+                subject = 'Service Extension Confirmation - ProdigiDesk Services'
+                services_list = ''.join([f"<li>{service}</li>" for service in extended_services])
+                message = f"""
+                <html>
+                <body>
+                <p>Dear {user.get_full_name()},</p>
+
+                <p>Your subscription extension to ProdigiDesk has been successfully processed.</p>
+
+                <p>The following services have been extended:</p>
+
+                <ul>
+                {services_list}
+                </ul>
+
+                <p>Order Details:</p>
+                <ul>
+                <li>Order Number: {razorpay_order_id}</li>
+                <li>Order Date and Time: {order_datetime.strftime("%Y-%m-%d %H:%M:%S")}</li>
+                <li>Payment Amount: {payment.amount} {payment.currency}</li>
+                <li>Registered Email: {email}</li>
+                </ul>
+
+                <p>To see more details of the transaction and to get the invoice, click <a href="https://prodigidesk.ai/userSummary">here</a>.</p>
+
+                <p>Thank you for choosing us. We look forward to supporting you further.</p>
+
+                <p>Best regards,<br>
+                The ProdigiDesk Team<br>
+                contact@espritanalytique.com<br>
+                <a href="http://www.prodigidesk.ai/">http://www.prodigidesk.ai/</a>
+                </p>
+                </body>
+                </html>
+                """
+
+                email_message = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+                email_message.content_subtype = 'html'
+                email_message.send()
+
+                return JsonResponse({'message': 'Payment and service extension save successful'}, status=200)
+
+            except razorpay.errors.SignatureVerificationError:
+                logger.error("Payment signature verification failed")
+                return JsonResponse({"status": "Payment verification failed"}, status=400)
+
+        except json.JSONDecodeError:
+            logger.error("Invalid JSON format")
+            return JsonResponse({"error": "Invalid JSON format"}, status=400)
+        except Exception as e:
+            logger.error(f"Exception occurred: {str(e)}")
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
+
 
 
 @csrf_exempt
@@ -3858,6 +4147,52 @@ def create_cart(request):
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+
+@csrf_exempt
+def create_cart_yearly(request):
+    if request.method == 'PUT':  # Changed to PUT method for updating
+        try:
+            data = json.loads(request.body)
+
+            email = data.get('email')
+            if not email:
+                return JsonResponse({'error': 'Email is required'}, status=400)
+
+            # Fetch selected services from the request
+            selected_services = data.get('selected_services', [])
+
+            # Check if the cart exists, otherwise create a new one
+            cart, created = YearlyCart.objects.get_or_create(email=email)
+
+            # Update the cart services based on the selected services
+            cart.email_service = 1 in selected_services
+            cart.offer_letter_service = 2 in selected_services
+            cart.business_proposal_service = 3 in selected_services
+            cart.sales_script_service = 4 in selected_services
+            cart.content_generation_service = 5 in selected_services
+            cart.summarize_service = 6 in selected_services
+            cart.ppt_generation_service = 7 in selected_services
+            cart.blog_generation_service = 9 in selected_services
+            cart.rephrasely_service = 10 in selected_services
+
+            # Save the updated cart
+            cart.save()
+
+            # Return the updated cart details
+            return JsonResponse({
+                'email': cart.email,
+                'selected_services': selected_services,
+                'created_at': cart.created_at.isoformat(),
+                'updated_at': cart.updated_at.isoformat(),
+            }, status=200)  # Use 200 status code for successful updates
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+
 @csrf_exempt
 def remove_service(request):
     if request.method == "POST":
@@ -3904,12 +4239,171 @@ def remove_service(request):
 
 
 @csrf_exempt
+def remove_service_yearly(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            email = data.get("email")
+            service_id = data.get("service_id")  # Change service to service_id
+
+            if not email or service_id is None:  # Check for service_id being None
+                return JsonResponse({"error": "Missing email or service ID"}, status=400)
+
+            # Get the cart for the given email
+            cart = get_object_or_404(YearlyCart, email=email)
+
+            # Map service IDs to their corresponding attribute names in the Cart model
+            service_mapping = {
+                1: 'email_service',
+                2: 'offer_letter_service',
+                3: 'business_proposal_service',
+                4: 'sales_script_service',
+                5: 'content_generation_service',
+                6: 'summarize_service',
+                7: 'ppt_generation_service',
+                9: 'blog_generation_service',
+                10: 'rephrasely_service',
+            }
+
+            # Get the service name corresponding to the given service ID
+            service_name = service_mapping.get(service_id)
+
+            if service_name is None:
+                return JsonResponse({"error": f"Invalid service ID: {service_id}"}, status=400)
+
+            # Set the service to False to remove it
+            setattr(cart, service_name, False)
+            cart.save()
+
+            return JsonResponse({"message": f"{service_name} removed successfully"}, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+
+@csrf_exempt
 def get_cart(request):
     email = request.GET.get('email', None)
 
     if email:
         # Try to get the cart for the provided email
         cart, created = Cart.objects.get_or_create(email=email)
+
+        # If the cart was created, it means the user was not found and a new row was created
+        if created:
+            # Optionally, you can initialize any services to false
+            cart.save()  # Save the newly created cart instance
+
+        # Create a dictionary to hold the service details with IDs
+        cart_services = {
+            "email_service": {
+                "id": 1,
+                "is_active": cart.email_service,
+            },
+            "offer_letter_service": {
+                "id": 2,
+                "is_active": cart.offer_letter_service,
+            },
+            "business_proposal_service": {
+                "id": 3,
+                "is_active": cart.business_proposal_service,
+            },
+            "sales_script_service": {
+                "id": 4,
+                "is_active": cart.sales_script_service,
+            },
+            "content_generation_service": {
+                "id": 5,
+                "is_active": cart.content_generation_service,
+            },
+            "summarize_service": {
+                "id": 6,
+                "is_active": cart.summarize_service,
+            },
+            "ppt_generation_service": {
+                "id": 7,
+                "is_active": cart.ppt_generation_service,
+            },
+            "blog_generation_service": {
+                "id": 9,
+                "is_active": cart.blog_generation_service,
+            },
+            "rephrasely_service": {
+                "id": 10,
+                "is_active": cart.rephrasely_service,
+            },
+        }
+
+        return JsonResponse({
+            'email': cart.email,
+            'services': cart_services,  # Include services with their IDs and status
+            'created_at': cart.created_at.isoformat(),
+            'updated_at': cart.updated_at.isoformat(),
+        }, status=200)
+    else:
+        carts = Cart.objects.all()
+        cart_list = []
+        for cart in carts:
+            cart_services = {
+                "email_service": {
+                    "id": 1,
+                    "is_active": cart.email_service,
+                },
+                "offer_letter_service": {
+                    "id": 2,
+                    "is_active": cart.offer_letter_service,
+                },
+                "business_proposal_service": {
+                    "id": 3,
+                    "is_active": cart.business_proposal_service,
+                },
+                "sales_script_service": {
+                    "id": 4,
+                    "is_active": cart.sales_script_service,
+                },
+                "content_generation_service": {
+                    "id": 5,
+                    "is_active": cart.content_generation_service,
+                },
+                "summarize_service": {
+                    "id": 6,
+                    "is_active": cart.summarize_service,
+                },
+                "ppt_generation_service": {
+                    "id": 7,
+                    "is_active": cart.ppt_generation_service,
+                },
+                "blog_generation_service": {
+                    "id": 9,
+                    "is_active": cart.blog_generation_service,
+                },
+                "rephrasely_service": {
+                    "id": 10,
+                    "is_active": cart.rephrasely_service,
+                },
+            }
+
+            cart_list.append({
+                'email': cart.email,
+                'services': cart_services,  # Include services for each cart
+                'created_at': cart.created_at.isoformat(),
+                'updated_at': cart.updated_at.isoformat(),
+            })
+
+        return JsonResponse(cart_list, safe=False, status=200)
+
+
+
+@csrf_exempt
+def get_cart_yearly(request):
+    email = request.GET.get('email', None)
+
+    if email:
+        # Try to get the cart for the provided email
+        cart, created = YearlyCart.objects.get_or_create(email=email)
 
         # If the cart was created, it means the user was not found and a new row was created
         if created:
@@ -4055,6 +4549,49 @@ def empty_cart(request):
         }, status=200)
     else:
         return JsonResponse({'error': 'Email parameter is required'}, status=400)
+
+
+@csrf_exempt
+def empty_cart_yearly(request):
+    email = request.GET.get('email', None)
+
+    if email:
+        # Get or create a Cart for the provided email
+        cart, created = YearlyCart.objects.get_or_create(email=email)
+
+        # Set all service flags to False
+        cart.email_service = False
+        cart.offer_letter_service = False
+        cart.business_proposal_service = False
+        cart.sales_script_service = False
+        cart.content_generation_service = False
+        cart.summarize_service = False
+        cart.ppt_generation_service = False
+        cart.blog_generation_service = False
+        cart.rephrasely_service = False
+
+        # Save the cart with updated values
+        cart.save()
+
+        return JsonResponse({
+            'email': cart.email,
+            'services': {
+                "email_service": cart.email_service,
+                "offer_letter_service": cart.offer_letter_service,
+                "business_proposal_service": cart.business_proposal_service,
+                "sales_script_service": cart.sales_script_service,
+                "content_generation_service": cart.content_generation_service,
+                "summarize_service": cart.summarize_service,
+                "ppt_generation_service": cart.ppt_generation_service,
+                "blog_generation_service": cart.blog_generation_service,
+                "rephrasely_service": cart.rephrasely_service,
+            },
+            'created_at': cart.created_at.isoformat(),
+            'updated_at': cart.updated_at.isoformat(),
+        }, status=200)
+    else:
+        return JsonResponse({'error': 'Email parameter is required'}, status=400)
+
 
 
 @csrf_exempt
@@ -4625,14 +5162,76 @@ def translate_json_files_new(request):
 
 
 
+from django.http import JsonResponse, FileResponse
+from django.views.decorators.csrf import csrf_exempt
+from docx import Document
+import zipfile
+import asyncio
+import io
+import os
+from django.http import JsonResponse, FileResponse
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from docx import Document
+import zipfile
+import asyncio
+import io
+import os
+@csrf_exempt
+def translate_and_download_document(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
+    try:
+        # Extract the uploaded file and target languages from the request
+        document = request.FILES.get('document')
+        languages = request.POST.get('languages')
 
+        if not document or not languages:
+            return JsonResponse({'error': 'Both document and target languages are required.'}, status=400)
 
+        # Parse languages into a list
+        target_languages = [lang.strip() for lang in languages.split(',')]
 
+        # Set up a temporary directory and zip file to store translated files
+        temp_dir = tempfile.mkdtemp()
+        zip_path = os.path.join(temp_dir, "translated_documents.zip")
 
+        with zipfile.ZipFile(zip_path, 'w') as zip_file:
+            for lang in target_languages:
+                # Reset file pointer and read content based on file type
+                document.seek(0)
 
+                if document.name.endswith('.docx'):
+                    # Load the .docx document
+                    doc = Document(document)
+                    translated_doc = Document()  # New doc for translated content
 
+                    # Translate each paragraph
+                    for para in doc.paragraphs:
+                        if para.text.strip():  # Avoid translating empty paragraphs
+                            response = bhashini_translate(para.text, to_code=lang)
+                            if response["status_code"] != 200:
+                                return JsonResponse({'error': f'Translation failed for {lang}.'}, status=500)
+                            translated_text = response["translated_content"]
+                            translated_doc.add_paragraph(translated_text)
+                        else:
+                            translated_doc.add_paragraph('')  # Keep empty paragraphs
 
+                    # Save translated document to temporary directory
+                    filename = f'translated_{lang}.docx'
+                    file_path = os.path.join(temp_dir, filename)
+                    translated_doc.save(file_path)
+                    zip_file.write(file_path, filename)
 
+                else:
+                    return JsonResponse({'error': 'Only .docx files are supported.'}, status=400)
 
+        # Return the zip file as a response
+        with open(zip_path, 'rb') as f:
+            response = HttpResponse(f.read(), content_type='application/zip')
+            response['Content-Disposition'] = 'attachment; filename="translated_documents.zip"'
+            return response
 
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

@@ -301,6 +301,8 @@ def verify_payment(request):
                 payment.order_datetime = order_datetime
                 payment.subscribed_services = selected_services  # Storing the raw JSON of selected services
                 payment.service = user_services  # Link to the user services record
+                payment.subscription_duration = 'monthly' 
+
                 payment.save()
 
                 # Send the email confirmation in HTML format
@@ -370,6 +372,145 @@ def verify_payment(request):
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
+
+# @csrf_exempt
+# def verify_payment_yearly(request):
+#     if request.method == "POST":
+#         try:
+#             data = json.loads(request.body)
+#             razorpay_order_id = data.get('razorpay_order_id')
+#             razorpay_payment_id = data.get('razorpay_payment_id')
+#             razorpay_signature = data.get('razorpay_signature')
+#             selected_services = data.get('selected_services')
+#             email = data.get('email')
+
+#             logger.info(f"Received yearly payment verification request with order_id: {razorpay_order_id}")
+
+#             params_dict = {
+#                 'razorpay_order_id': razorpay_order_id,
+#                 'razorpay_payment_id': razorpay_payment_id,
+#                 'razorpay_signature': razorpay_signature
+#             }
+
+#             try:
+#                 razorpay_client.utility.verify_payment_signature(params_dict)
+#                 logger.info("Payment signature verification successful for yearly subscription")
+
+#                 payment = Payment.objects.get(order_id=razorpay_order_id)
+#                 payment.payment_id = razorpay_payment_id
+#                 payment.signature = razorpay_signature
+#                 payment.email = email
+#                 payment.verified = True
+
+#                 if not selected_services or not email:
+#                     return JsonResponse({'error': 'No services or email found in the request.'}, status=400)
+
+#                 user = get_object_or_404(User, email=email)
+#                 user_services, created = UserService.objects.get_or_create(user=user)
+#                 subscribed_services = []
+#                 expiration_date = timezone.now().date() + relativedelta(years=1)
+
+#                 if selected_services.get("introductory_offer_service", False):
+#                     user_services.email_service = 1
+#                     user_services.offer_letter_service = 1
+#                     user_services.business_proposal_service = 1
+#                     user_services.sales_script_service = 1
+#                     user_services.content_generation_service = 1
+#                     user_services.summarize_service = 1
+#                     user_services.ppt_generation_service = 1
+#                     user_services.blog_generation_service = 1
+#                     user_services.rephrasely_service = 1
+
+#                     subscribed_services = [
+#                         "Email Service", "Offer Letter Service", "Business Proposal Service",
+#                         "Sales Script Service", "Content Generation Service", "Summarize Service",
+#                         "PPT Generation Service", "Blog Generation Service", "Rephrasely Service"
+#                     ]
+#                 else:
+#                     if selected_services.get("email_service", 0) > 0:
+#                         user_services.email_service = 1
+#                         user_services.email_end_date = expiration_date
+#                         subscribed_services.append("Email Service")
+#                     if selected_services.get("offer_letter_service", 0) > 0:
+#                         user_services.offer_letter_service = 1
+#                         user_services.offer_letter_end_date = expiration_date
+#                         subscribed_services.append("Offer Letter Service")
+#                     if selected_services.get("business_proposal_service", 0) > 0:
+#                         user_services.business_proposal_service = 1
+#                         user_services.business_proposal_end_date = expiration_date
+#                         subscribed_services.append("Business Proposal Service")
+#                     if selected_services.get("sales_script_service", 0) > 0:
+#                         user_services.sales_script_service = 1
+#                         user_services.sales_script_end_date = expiration_date
+#                         subscribed_services.append("Sales Script Service")
+#                     if selected_services.get("content_generation_service", 0) > 0:
+#                         user_services.content_generation_service = 1
+#                         user_services.content_generation_end_date = expiration_date
+#                         subscribed_services.append("Content Generation Service")
+#                     if selected_services.get("summarize_service", 0) > 0:
+#                         user_services.summarize_service = 1
+#                         user_services.summarize_end_date = expiration_date
+#                         subscribed_services.append("Summarize Service")
+#                     if selected_services.get("ppt_generation_service", 0) > 0:
+#                         user_services.ppt_generation_service = 1
+#                         user_services.ppt_generation_end_date = expiration_date
+#                         subscribed_services.append("PPT Generation Service")
+#                     if selected_services.get("blog_generation_service", 0) > 0:
+#                         user_services.blog_generation_service = 1
+#                         user_services.blog_generation_end_date = expiration_date
+#                         subscribed_services.append("Blog Generation Service")
+#                     if selected_services.get("rephrasely_service", 0) > 0:
+#                         user_services.rephrasely_service = 1
+#                         user_services.rephrasely_end_date = expiration_date
+#                         subscribed_services.append("Rephrasely Service")
+
+#                 user_services.save()
+#                 payment.order_datetime = datetime.now()
+#                 payment.subscribed_services = selected_services
+#                 payment.service = user_services
+#                 payment.save()
+
+#                 subject = 'Annual Subscription Confirmation - ProdigiDesk Services'
+#                 services_list = '\n'.join([f"- {service}" for service in subscribed_services])
+#                 message = f"""
+#                 <html>
+#                 <body>
+#                 <p>Dear {user.get_full_name()},</p>
+#                 <p>Your annual subscription to ProdigiDesk has been activated.</p>
+#                 <p>These services are now active for one year:</p>
+#                 <ul>{''.join(f"<li>{service}</li>" for service in subscribed_services)}</ul>
+#                 <p>Best regards,<br>
+#                 The ProdigiDesk Team<br>
+#                 contact@espritanalytique.com<br>
+#                 <a href="http://www.prodigidesk.ai/">http://www.prodigidesk.ai/</a>
+#                 </p>
+#                 </body>
+#                 </html>
+#                 """
+
+#                 email_message = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+#                 email_message.content_subtype = 'html'
+
+#                 try:
+#                     email_message.send(fail_silently=False)
+#                     logger.info(f"Yearly subscription confirmation email sent to {email}")
+#                 except Exception as e:
+#                     logger.error(f"Error sending yearly subscription confirmation email: {str(e)}")
+
+#                 return JsonResponse({'message': 'Yearly payment and service save successful'}, status=200)
+
+#             except razorpay.errors.SignatureVerificationError:
+#                 logger.error("Yearly payment signature verification failed")
+#                 return JsonResponse({"status": "Payment verification failed"}, status=400)
+
+#         except json.JSONDecodeError:
+#             logger.error("Invalid JSON format")
+#             return JsonResponse({"error": "Invalid JSON format"}, status=400)
+#         except Exception as e:
+#             logger.error(f"Exception occurred: {str(e)}")
+#             return JsonResponse({"error": str(e)}, status=500)
+
+#     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 @csrf_exempt
 def verify_payment_yearly(request):
@@ -465,6 +606,7 @@ def verify_payment_yearly(request):
                 user_services.save()
                 payment.order_datetime = datetime.now()
                 payment.subscribed_services = selected_services
+                payment.subscription_duration = 'yearly'  # Set subscription_duration as yearly
                 payment.service = user_services
                 payment.save()
 
@@ -509,6 +651,8 @@ def verify_payment_yearly(request):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
 
 # @csrf_exempt
 # def extend_service(request):
@@ -602,6 +746,7 @@ def extend_service(request):
                 payment.signature = razorpay_signature
                 payment.email = email
                 payment.verified = True  # Mark the payment as verified
+                payment.subscription_duration = 'monthly' 
 
                 if not service_ids or not email:
                     return JsonResponse({'error': 'No services or email found in the request.'}, status=400)
@@ -751,6 +896,7 @@ def extend_service_yearly(request):
                 payment.signature = razorpay_signature
                 payment.email = email
                 payment.verified = True  # Mark the payment as verified
+                payment.subscription_duration = 'yearly' 
 
                 if not service_ids or not email:
                     return JsonResponse({'error': 'No services or email found in the request.'}, status=400)
@@ -1196,7 +1342,8 @@ The ProdigiDesk Team
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def fetch_filtered_payments(request):
     if request.method == 'POST':
         try:
@@ -1205,6 +1352,7 @@ def fetch_filtered_payments(request):
             order_id = data.get('order_id')
             payment_id = data.get('payment_id')
             email = data.get('email')
+            
             # Filter based on the provided parameters
             filters = {}
             if order_id:
@@ -1213,10 +1361,10 @@ def fetch_filtered_payments(request):
                 filters['payment_id'] = payment_id
             if email:
                 filters['email'] = email
- 
+
             # Fetch the filtered payments
             payments = Payment.objects.filter(**filters)
- 
+
             # Serialize the records into a list of dictionaries
             payment_list = []
             for payment in payments:
@@ -1232,18 +1380,20 @@ def fetch_filtered_payments(request):
                     'verified': payment.verified,
                     'order_datetime': payment.order_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.order_datetime else None,
                     'subscribed_services': payment.subscribed_services,
-                    'service': payment.service.id if payment.service else None  # ForeignKey field
+                    'service': payment.service.id if payment.service else None,  # ForeignKey field
+                    'invoice_number': payment.invoice_number if payment.invoice_number else None,  # Ensure invoice_number is included
+                    'subscription_duration': payment.subscription_duration  # New field
                 }
                 payment_list.append(payment_data)
- 
+
             # Return the serialized data as JSON
             return JsonResponse(payment_list, safe=False, status=200)
- 
+
         except Payment.DoesNotExist:
             return JsonResponse({"error": "No matching payment found"}, status=404)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
- 
+
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 # Backend OTP Verification API

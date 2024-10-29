@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 import uuid
+from django.db.models import Max
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -120,6 +121,25 @@ class TemporaryEmailVerificationOTP(models.Model):
     def __str__(self):
         return f"OTP for {self.email} - {'Expired' if self.is_otp_expired() else 'Valid'}"
     
+# class Payment(models.Model):
+#     order_id = models.CharField(max_length=255, unique=True)
+#     payment_id = models.CharField(max_length=255, null=True, blank=True)
+#     signature = models.CharField(max_length=255, null=True, blank=True)
+#     email = models.EmailField(null=True, blank=True)
+#     amount = models.DecimalField(max_digits=10, decimal_places=2)
+#     currency = models.CharField(max_length=10)
+#     payment_capture = models.BooleanField(default=False)
+#     created_at = models.DateTimeField(auto_now_add=True)  # When the record was created
+#     verified = models.BooleanField(default=False)
+    
+#     # New fields
+#     order_datetime = models.DateTimeField(null=True, blank=True)  # When the order was placed
+#     subscribed_services = models.JSONField(null=True, blank=True)  # Stores service details as a JSON object
+#     service = models.ForeignKey('UserService', on_delete=models.CASCADE, null=True, blank=True)
+
+#     def __str__(self):
+#         return f"Order {self.order_id} - {self.amount} {self.currency}"
+    
 class Payment(models.Model):
     order_id = models.CharField(max_length=255, unique=True)
     payment_id = models.CharField(max_length=255, null=True, blank=True)
@@ -135,10 +155,30 @@ class Payment(models.Model):
     order_datetime = models.DateTimeField(null=True, blank=True)  # When the order was placed
     subscribed_services = models.JSONField(null=True, blank=True)  # Stores service details as a JSON object
     service = models.ForeignKey('UserService', on_delete=models.CASCADE, null=True, blank=True)
+    
+    # Temporary nullable invoice number
+    invoice_number = models.CharField(max_length=255, null=True, editable=False)
+    subscription_duration = models.TextField(max_length=255, null=True, blank=True)  # Text field for subscription duration
+
+    def save(self, *args, **kwargs):
+        # Automatically generate the invoice number if it's not already set
+        if not self.invoice_number:
+            last_invoice = Payment.objects.aggregate(Max('invoice_number'))['invoice_number__max']
+            if last_invoice:
+                # Extract the numeric part and increment
+                last_number = int(last_invoice[3:])  # Skip 'ESP'
+                new_number = last_number + 1
+            else:
+                new_number = 100000  # Start from 100000 if no previous entries
+            
+            self.invoice_number = f"ESP{new_number}"
+        
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Order {self.order_id} - {self.amount} {self.currency}"
-    
+        return f"Order {self.order_id} - {self.amount} {self.currency} - Invoice: {self.invoice_number}"    
+
+
 class GuestLogin(models.Model):
     email = models.EmailField(max_length=255)  # Ensure email is unique
     otp = models.CharField(max_length=6)

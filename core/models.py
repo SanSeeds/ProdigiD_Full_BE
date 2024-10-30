@@ -51,32 +51,32 @@ class UserService(models.Model):
     blog_generation_end_date = models.DateField(null=True, blank=True)
     rephrasely_end_date = models.DateField(null=True, blank=True)
 
+    
     def save(self, *args, **kwargs):
-        # Set email from the user object if not already set
         if not self.email:
             self.email = self.user.email
-        
-        # Check each service and set end dates if the service is activated
+
         current_date = timezone.now().date()
         expiration_date = current_date + relativedelta(months=1)
-        
-        if self.email_service and self.email_end_date is None:
+
+        # Check and update end dates if the service is active or expired
+        if self.email_service and (self.email_end_date is None or self.email_end_date < current_date):
             self.email_end_date = expiration_date
-        if self.offer_letter_service and self.offer_letter_end_date is None:
+        if self.offer_letter_service and (self.offer_letter_end_date is None or self.offer_letter_end_date < current_date):
             self.offer_letter_end_date = expiration_date
-        if self.business_proposal_service and self.business_proposal_end_date is None:
+        if self.business_proposal_service and (self.business_proposal_end_date is None or self.business_proposal_end_date < current_date):
             self.business_proposal_end_date = expiration_date
-        if self.sales_script_service and self.sales_script_end_date is None:
+        if self.sales_script_service and (self.sales_script_end_date is None or self.sales_script_end_date < current_date):
             self.sales_script_end_date = expiration_date
-        if self.content_generation_service and self.content_generation_end_date is None:
+        if self.content_generation_service and (self.content_generation_end_date is None or self.content_generation_end_date < current_date):
             self.content_generation_end_date = expiration_date
-        if self.summarize_service and self.summarize_end_date is None:
+        if self.summarize_service and (self.summarize_end_date is None or self.summarize_end_date < current_date):
             self.summarize_end_date = expiration_date
-        if self.ppt_generation_service and self.ppt_generation_end_date is None:
+        if self.ppt_generation_service and (self.ppt_generation_end_date is None or self.ppt_generation_end_date < current_date):
             self.ppt_generation_end_date = expiration_date
-        if self.blog_generation_service and self.blog_generation_end_date is None:
+        if self.blog_generation_service and (self.blog_generation_end_date is None or self.blog_generation_end_date < current_date):
             self.blog_generation_end_date = expiration_date
-        if self.rephrasely_service and self.rephrasely_end_date is None:
+        if self.rephrasely_service and (self.rephrasely_end_date is None or self.rephrasely_end_date < current_date):
             self.rephrasely_end_date = expiration_date
 
         # Save the instance

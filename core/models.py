@@ -11,6 +11,8 @@ class Profile(models.Model):
     bio = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=30, blank=True)
     birth_date = models.DateField(null=True, blank=True)
+    user_gst = models.TextField(max_length=500,null=True, blank=True)
+
     # valid_from = models.DateField(null=True, blank=True)
     # valid_till = models.DateField(null=True, blank=True)
 

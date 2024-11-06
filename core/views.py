@@ -193,7 +193,7 @@ def guest_otp_expiry_time():
 
 #     return JsonResponse({"error": "Invalid request method"}, status=400)
 
-#Working
+
 @csrf_exempt
 def create_razorpay_order(request):
     if request.method == "POST":
@@ -1818,18 +1818,80 @@ The ProdigiDesk Team
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def fetch_filtered_payments(request):
+#     if request.method == 'POST':
+#         try:
+#             # Load data from the request body
+#             data = json.loads(request.body)
+#             order_id = data.get('order_id')
+#             payment_id = data.get('payment_id')
+#             email = data.get('email')
+            
+#             # Filter based on the provided parameters
+#             filters = {}
+#             if order_id:
+#                 filters['order_id'] = order_id
+#             if payment_id:
+#                 filters['payment_id'] = payment_id
+#             if email:
+#                 filters['email'] = email
+
+#             # Fetch the filtered payments
+#             payments = Payment.objects.filter(**filters)
+
+#             # Serialize the records into a list of dictionaries
+#             payment_list = []
+#             for payment in payments:
+#                 payment_data = {
+#                     'order_id': payment.order_id,
+#                     'payment_id': payment.payment_id,
+#                     'signature': payment.signature,
+#                     'email': payment.email,
+#                     'amount': str(payment.amount),  # Converting Decimal to string
+#                     'currency': payment.currency,
+#                     'payment_capture': payment.payment_capture,
+#                     'created_at': payment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+#                     'verified': payment.verified,
+#                     'order_datetime': payment.order_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.order_datetime else None,
+#                     'subscribed_services': payment.subscribed_services,
+#                     'service': payment.service.id if payment.service else None,  # ForeignKey field
+#                     'invoice_number': payment.invoice_number if payment.invoice_number else None,  # Ensure invoice_number is included
+#                     'subscription_duration': payment.subscription_duration  # New field
+#                 }
+#                 payment_list.append(payment_data)
+
+#             # Return the serialized data as JSON
+#             return JsonResponse(payment_list, safe=False, status=200)
+
+#         except Payment.DoesNotExist:
+#             return JsonResponse({"error": "No matching payment found"}, status=404)
+#         except Exception as e:
+#             return JsonResponse({"error": str(e)}, status=500)
+
+#     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def fetch_filtered_payments(request):
     if request.method == 'POST':
         try:
-            # Load data from the request body
-            data = json.loads(request.body)
+            # Decrypt the request payload
+            encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+            if not encrypted_content:
+                return JsonResponse({"error": "No encrypted content found in the request."}, status=400)
+            
+            decrypted_content = decrypt_data(encrypted_content)
+            data = json.loads(decrypted_content)
+
+            # Extract parameters from decrypted data
             order_id = data.get('order_id')
             payment_id = data.get('payment_id')
             email = data.get('email')
             
-            # Filter based on the provided parameters
+            # Filter payments based on provided parameters
             filters = {}
             if order_id:
                 filters['order_id'] = order_id
@@ -1856,21 +1918,27 @@ def fetch_filtered_payments(request):
                     'verified': payment.verified,
                     'order_datetime': payment.order_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.order_datetime else None,
                     'subscribed_services': payment.subscribed_services,
-                    'service': payment.service.id if payment.service else None,  # ForeignKey field
-                    'invoice_number': payment.invoice_number if payment.invoice_number else None,  # Ensure invoice_number is included
-                    'subscription_duration': payment.subscription_duration  # New field
+                    'service': payment.service.id if payment.service else None,
+                    'invoice_number': payment.invoice_number if payment.invoice_number else None,
+                    'subscription_duration': payment.subscription_duration
                 }
                 payment_list.append(payment_data)
 
-            # Return the serialized data as JSON
-            return JsonResponse(payment_list, safe=False, status=200)
+            # Encrypt the response data
+            encrypted_response = encrypt_data(payment_list)
+            
+            # Return the encrypted response as JSON
+            return JsonResponse({'encrypted_content': encrypted_response}, status=200)
 
         except Payment.DoesNotExist:
             return JsonResponse({"error": "No matching payment found"}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
 
 # Backend OTP Verification API
 @csrf_exempt
@@ -2160,162 +2228,6 @@ def get_user_services(request, email):
 
 def generate_otp():
     return ''.join(random.choices('0123456789', k=6))
-
-#Encrypted API to send OTP for Password Reset
-# @csrf_exempt
-# def send_otp(request):
-#     if request.method == 'POST':
-#         try:
-#             # Extract and decrypt the incoming payload
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             logger.debug(f"Encrypted content received: {encrypted_content}")
-
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             logger.debug(f"Decrypted content: {decrypted_content}")
-#             data = json.loads(decrypted_content)
-
-#             email = data.get('email')
-#             logger.debug(f"Received OTP request for email: {email}")
-
-#             try:
-#                 user = User.objects.get(email=email)
-#             except User.DoesNotExist:
-#                 logger.warning(f"Email does not exist: {email}")
-#                 encrypted_response = encrypt_data({'error': 'Email does not exist'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=404)
-
-#             # Generate OTP
-#             otp = generate_otp()
-#             expiry_time = timezone.now() + timedelta(minutes=10)
-
-#             # Store OTP and expiry time in the database
-#             PasswordResetRequest.objects.update_or_create(
-#                 user=user,
-#                 defaults={
-#                     'otp': otp,
-#                     'expiry_time': expiry_time
-#                 }
-#             )
-#             logger.info(f"Generated OTP for user {user.username}")
-
-#             # Send OTP via email
-#             subject = 'Password Reset OTP'
-#             message = f'Your OTP for password reset is {otp}. This OTP is valid only for 10 minutes.'
-#             from_email = settings.DEFAULT_FROM_EMAIL
-#             recipient_list = [email]
-
-#             try:
-#                 send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-#                 logger.info(f"OTP email sent to {email}")
-#             except Exception as e:
-#                 logger.error(f"Error sending email: {str(e)}")
-#                 encrypted_response = encrypt_data({'error': f'Error sending email: {str(e)}'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=500)
-
-#             encrypted_response = encrypt_data({'success': 'OTP sent successfully'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#         except json.JSONDecodeError:
-#             logger.error("Invalid JSON format in request")
-#             encrypted_response = encrypt_data({'error': 'Invalid JSON format'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-#         except Exception as e:
-#             logger.error(f"Unexpected error: {str(e)}")
-#             encrypted_response = encrypt_data({'error': str(e)})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=500)
-
-#     logger.error("Invalid request method")
-#     encrypted_response = encrypt_data({'error': 'Invalid request method'})
-#     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
-
-# Encrypted API to send OTP for Password Reset
-# @csrf_exempt
-# def send_otp(request):
-#     if request.method == 'POST':
-#         try:
-#             # Extract and decrypt the incoming payload
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             logger.debug(f"Encrypted content received: {encrypted_content}")
-
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             logger.debug(f"Decrypted content: {decrypted_content}")
-#             data = json.loads(decrypted_content)
-
-#             email = data.get('email')
-#             logger.debug(f"Received OTP request for email: {email}")
-
-#             try:
-#                 user = User.objects.get(email=email)
-#             except User.DoesNotExist:
-#                 logger.warning(f"Email does not exist: {email}")
-#                 encrypted_response = encrypt_data({'error': 'Email does not exist'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=404)
-
-#             # Generate OTP
-#             otp = generate_otp()
-#             expiry_time = timezone.now() + timedelta(minutes=10)
-
-#             # Store OTP and expiry time in the database
-#             PasswordResetRequest.objects.update_or_create(
-#                 user=user,
-#                 defaults={
-#                     'otp': otp,
-#                     'expiry_time': expiry_time
-#                 }
-#             )
-#             logger.info(f"Generated OTP for user {user.username}")
-
-#             # Send OTP via email
-#             subject = 'Password Reset OTP'
-#             message = f"""
-# Dear Sir/Madam,
-
-# We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is {otp} and will remain valid for a period of 10 minutes.
-
-# Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.
-
-# This notification is intended to provide you with the necessary information to complete your task. If you have any concerns or require assistance, please contact our support team through the appropriate channels.
-
-# Thank you for your understanding and cooperation.
-
-# Sincerely,
-# The ProdigiDesk Team
-# """
-
-#             from_email = settings.DEFAULT_FROM_EMAIL
-#             recipient_list = [email]
-
-#             try:
-#                 send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-#                 logger.info(f"OTP email sent to {email}")
-#             except Exception as e:
-#                 logger.error(f"Error sending email: {str(e)}")
-#                 encrypted_response = encrypt_data({'error': f'Error sending email: {str(e)}'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=500)
-
-#             encrypted_response = encrypt_data({'success': 'OTP sent successfully'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#         except json.JSONDecodeError:
-#             logger.error("Invalid JSON format in request")
-#             encrypted_response = encrypt_data({'error': 'Invalid JSON format'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-#         except Exception as e:
-#             logger.error(f"Unexpected error: {str(e)}")
-#             encrypted_response = encrypt_data({'error': str(e)})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=500)
-
-#     logger.error("Invalid request method")
-#     encrypted_response = encrypt_data({'error': 'Invalid request method'})
-#     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
 
 
 # Encrypted API to send OTP for Password Reset
@@ -2897,66 +2809,6 @@ def email_generator(request):
             return JsonResponse({'error': 'An error occurred while processing the request.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-#Encrypted API to translate the the generated content
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def translate_content(request):
-#     translated_content = None
-#     error = None
-#     language = ""
-
-#     if request.method == 'POST':
-#         try:
-#             # Extract and decrypt the incoming payload
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             logger.debug(f'Encrypted content received: {encrypted_content}')
-
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             logger.debug(f'Decrypted content: {decrypted_content}')
-#             data = json.loads(decrypted_content)
-
-#             generated_content = data.get('generated_content')
-#             language = data.get('language')
-
-#             if not generated_content or not language:
-#                 logger.warning('Both generated_content and language are required fields.')
-#                 return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
-
-#             logger.info(f'Translating content: {generated_content} to language: {language}')
-#             response = bhashini_translate(generated_content, language)
-
-#             if response["status_code"] == 200:
-#                 translated_content = response["translated_content"]
-#                 logger.info('Content translated successfully.')
-#                 # Encrypt the response content
-#                 encrypted_response = encrypt_data({
-#                     'generated_content': generated_content,
-#                     'translated_content': translated_content,
-#                     'selected_language': language
-#                 })
-#                 logger.debug(f'Encrypted response: {encrypted_response}')
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-#             else:
-#                 logger.error('Translation failed with status code: {}'.format(response["status_code"]))
-#                 return JsonResponse({'error': 'Translation failed.'}, status=500)
-
-#         except json.JSONDecodeError:
-#             logger.error('Invalid JSON format in request.')
-#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-#         except ValueError as e:
-#             logger.warning(f'ValueError: {str(e)}')
-#             return JsonResponse({'error': str(e)}, status=400)
-#         except Exception as e:
-#             logger.error(f'Unexpected error: {str(e)}')
-#             return JsonResponse({'error': str(e)}, status=500)
-
-#     logger.error('Method not allowed.')
-#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
-
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -3262,93 +3114,6 @@ def offer_letter_generator(request):
 
 
 
-# @api_view(['GET', 'POST'])
-# @permission_classes([IsAuthenticated])
-# def profile(request):
-#     user = request.user
-#     profile = Profile.objects.get(user=user)
-#     errors = []
-
-#     if request.method == 'POST':
-#         try:
-#             # Decrypt the incoming payload
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             data = json.loads(decrypted_content)
-#             logger.debug(f'Decrypted content: {data}')
-
-#             # Update user and profile data based on received JSON
-#             user.first_name = data.get('first_name', user.first_name)
-#             user.last_name = data.get('last_name', user.last_name)
-#             user.email = data.get('email', user.email)
-#             profile.bio = data.get('bio', profile.bio)
-#             profile.location = data.get('location', profile.location)
-
-#             birth_date = data.get('birth_date')
-#             if birth_date:
-#                 parsed_date = parse_date(birth_date)
-#                 if parsed_date:
-#                     profile.birth_date = parsed_date
-#                 else:
-#                     errors.append("Invalid date format for birth date.")
-#                     profile.birth_date = None
-
-#             if not user.first_name:
-#                 errors.append("First name is required.")
-#             if not user.last_name:
-#                 errors.append("Last name is required.")
-#             if not user.email:
-#                 errors.append("Email is required.")
-
-#             if not errors:
-#                 user.save()
-#                 profile.save()
-#                 response_data = {'message': 'Profile updated successfully.'}
-#             else:
-#                 response_data = {'errors': errors}
-
-#             # Encrypt the response content
-#             encrypted_response = encrypt_data(response_data)
-#             logger.info('Profile updated successfully.')
-
-#             # Return the encrypted response
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#         except json.JSONDecodeError:
-#             logger.error('Invalid JSON format received.')
-#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-#         except ValueError as e:
-#             logger.error(f'ValueError: {str(e)}')
-#             return JsonResponse({'error': str(e)}, status=400)
-#         except Exception as e:
-#             logger.error(f'Exception: {str(e)}')
-#             return JsonResponse({'error': str(e)}, status=500)
-
-#     # Handle GET request
-#     response_data = {
-#         'user': {
-#             'first_name': user.first_name,
-#             'last_name': user.last_name,
-#             'email': user.email
-#         },
-#         'profile': {
-#             'bio': profile.bio,
-#             'location': profile.location,
-#             'birth_date': profile.birth_date.isoformat() if profile.birth_date else None
-#         }
-#     }
-
-#     # Encrypt the response content
-#     encrypted_response = encrypt_data(response_data)
-#     logger.info('Profile data retrieved successfully.')
-
-#     # Return the encrypted response
-#     return JsonResponse({'encrypted_content': encrypted_response})
-
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def profile(request):
@@ -3451,16 +3216,110 @@ from django.contrib.auth.models import User
 from rest_framework.decorators import api_view, permission_classes
 from django.core.exceptions import ObjectDoesNotExist
 
+# @api_view(['GET'])
+# @permission_classes([])
+# def profile_info(request):
+#     # Get the email from the request query parameters
+#     email = request.GET.get('email')
+    
+#     if not email:
+#         return JsonResponse({'error': 'Email parameter is required.'}, status=400)
+
+#     try:
+#         # Fetch the user based on the provided email
+#         user = User.objects.get(email=email)
+
+#         # Get the user's subscribed services
+#         user_service = UserService.objects.get(user=user)
+
+#         # Get all payments made by the user
+#         payments = Payment.objects.filter(email=user.email)
+
+#         # Prepare the payment details
+#         payment_info = []
+#         for payment in payments:
+#             payment_info.append({
+#                 'order_id': payment.order_id,
+#                 'payment_id': payment.payment_id,
+#                 'amount': str(payment.amount),
+#                 'currency': payment.currency,
+#                 'created_at': payment.created_at.isoformat(),
+#                 'verified': payment.verified,
+#             })
+
+#         # Prepare the response data
+#         response_data = {
+#             'user_info': {
+#                 'first_name': user.first_name,
+#                 'last_name': user.last_name,
+#                 'email': user.email,
+#                 'last_login': user.last_login.isoformat() if user.last_login else None,
+#                 'username': user.username,
+#                 'date_joined': user.date_joined.isoformat(),
+#             },
+#             'services': {
+#                 'email_service': user_service.email_service,
+#                 'offer_letter_service': user_service.offer_letter_service,
+#                 'business_proposal_service': user_service.business_proposal_service,
+#                 'sales_script_service': user_service.sales_script_service,
+#                 'content_generation_service': user_service.content_generation_service,
+#                 'summarize_service': user_service.summarize_service,
+#                 'ppt_generation_service': user_service.ppt_generation_service,
+#                 'blog_generation_service': user_service.blog_generation_service,
+#                 'rephrasely_service': user_service.rephrasely_service,
+#                 'service_start_dates': {
+#                     'email_service_start': user_service.email_end_date,
+#                     'offer_letter_service_start': user_service.offer_letter_end_date,
+#                     'business_proposal_service_start': user_service.business_proposal_end_date,
+#                     'sales_script_service_start': user_service.sales_script_end_date,
+#                     'content_generation_service_start': user_service.content_generation_end_date,
+#                     'summarize_service_start': user_service.summarize_end_date,
+#                     'ppt_generation_service_start': user_service.ppt_generation_end_date,
+#                     'blog_generation_service_start': user_service.blog_generation_end_date,
+#                     'rephrasely_service_start': user_service.rephrasely_end_date,
+#                 },
+#                 'service_end_dates': {
+#                     'email_service_end': user_service.email_end_date,
+#                     'offer_letter_service_end': user_service.offer_letter_end_date,
+#                     'business_proposal_service_end': user_service.business_proposal_end_date,
+#                     'sales_script_service_end': user_service.sales_script_end_date,
+#                     'content_generation_service_end': user_service.content_generation_end_date,
+#                     'summarize_service_end': user_service.summarize_end_date,
+#                     'ppt_generation_service_end': user_service.ppt_generation_end_date,
+#                     'blog_generation_service_end': user_service.blog_generation_end_date,
+#                     'rephrasely_service_end': user_service.rephrasely_end_date,
+#                 },
+#             },
+#             'payments': payment_info,
+#         }
+
+#         return JsonResponse(response_data, status=200)
+
+#     except ObjectDoesNotExist:
+#         return JsonResponse({'error': 'User not found.'}, status=404)
+#     except UserService.DoesNotExist:
+#         return JsonResponse({'error': 'User services not found.'}, status=404)
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
+
 @api_view(['GET'])
 @permission_classes([])
 def profile_info(request):
-    # Get the email from the request query parameters
-    email = request.GET.get('email')
-    
-    if not email:
-        return JsonResponse({'error': 'Email parameter is required.'}, status=400)
-
     try:
+        # Get the encrypted content from the query parameter
+        encrypted_content = request.GET.get('encrypted_content')
+        if not encrypted_content:
+            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+        
+        # Decrypt the content to get the original data
+        decrypted_content = decrypt_data(encrypted_content)
+        data = json.loads(decrypted_content)
+        
+        # Extract email from decrypted data
+        email = data.get('email')
+        if not email:
+            return JsonResponse({'error': 'Email parameter is required.'}, status=400)
+
         # Fetch the user based on the provided email
         user = User.objects.get(email=email)
 
@@ -3478,11 +3337,11 @@ def profile_info(request):
                 'payment_id': payment.payment_id,
                 'amount': str(payment.amount),
                 'currency': payment.currency,
-                'created_at': payment.created_at.isoformat(),
+                'created_at': payment.created_at.isoformat(),  # Convert to ISO string
                 'verified': payment.verified,
             })
 
-        # Prepare the response data
+        # Prepare the response data with date fields converted to ISO format
         response_data = {
             'user_info': {
                 'first_name': user.first_name,
@@ -3503,41 +3362,43 @@ def profile_info(request):
                 'blog_generation_service': user_service.blog_generation_service,
                 'rephrasely_service': user_service.rephrasely_service,
                 'service_start_dates': {
-                    'email_service_start': user_service.email_end_date,
-                    'offer_letter_service_start': user_service.offer_letter_end_date,
-                    'business_proposal_service_start': user_service.business_proposal_end_date,
-                    'sales_script_service_start': user_service.sales_script_end_date,
-                    'content_generation_service_start': user_service.content_generation_end_date,
-                    'summarize_service_start': user_service.summarize_end_date,
-                    'ppt_generation_service_start': user_service.ppt_generation_end_date,
-                    'blog_generation_service_start': user_service.blog_generation_end_date,
-                    'rephrasely_service_start': user_service.rephrasely_end_date,
+                    'email_service_start': user_service.email_end_date.isoformat() if user_service.email_end_date else None,
+                    'offer_letter_service_start': user_service.offer_letter_end_date.isoformat() if user_service.offer_letter_end_date else None,
+                    'business_proposal_service_start': user_service.business_proposal_end_date.isoformat() if user_service.business_proposal_end_date else None,
+                    'sales_script_service_start': user_service.sales_script_end_date.isoformat() if user_service.sales_script_end_date else None,
+                    'content_generation_service_start': user_service.content_generation_end_date.isoformat() if user_service.content_generation_end_date else None,
+                    'summarize_service_start': user_service.summarize_end_date.isoformat() if user_service.summarize_end_date else None,
+                    'ppt_generation_service_start': user_service.ppt_generation_end_date.isoformat() if user_service.ppt_generation_end_date else None,
+                    'blog_generation_service_start': user_service.blog_generation_end_date.isoformat() if user_service.blog_generation_end_date else None,
+                    'rephrasely_service_start': user_service.rephrasely_end_date.isoformat() if user_service.rephrasely_end_date else None,
                 },
                 'service_end_dates': {
-                    'email_service_end': user_service.email_end_date,
-                    'offer_letter_service_end': user_service.offer_letter_end_date,
-                    'business_proposal_service_end': user_service.business_proposal_end_date,
-                    'sales_script_service_end': user_service.sales_script_end_date,
-                    'content_generation_service_end': user_service.content_generation_end_date,
-                    'summarize_service_end': user_service.summarize_end_date,
-                    'ppt_generation_service_end': user_service.ppt_generation_end_date,
-                    'blog_generation_service_end': user_service.blog_generation_end_date,
-                    'rephrasely_service_end': user_service.rephrasely_end_date,
+                    'email_service_end': user_service.email_end_date.isoformat() if user_service.email_end_date else None,
+                    'offer_letter_service_end': user_service.offer_letter_end_date.isoformat() if user_service.offer_letter_end_date else None,
+                    'business_proposal_service_end': user_service.business_proposal_end_date.isoformat() if user_service.business_proposal_end_date else None,
+                    'sales_script_service_end': user_service.sales_script_end_date.isoformat() if user_service.sales_script_end_date else None,
+                    'content_generation_service_end': user_service.content_generation_end_date.isoformat() if user_service.content_generation_end_date else None,
+                    'summarize_service_end': user_service.summarize_end_date.isoformat() if user_service.summarize_end_date else None,
+                    'ppt_generation_service_end': user_service.ppt_generation_end_date.isoformat() if user_service.ppt_generation_end_date else None,
+                    'blog_generation_service_end': user_service.blog_generation_end_date.isoformat() if user_service.blog_generation_end_date else None,
+                    'rephrasely_service_end': user_service.rephrasely_end_date.isoformat() if user_service.rephrasely_end_date else None,
                 },
             },
             'payments': payment_info,
         }
 
-        return JsonResponse(response_data, status=200)
+        # Encrypt the response data
+        encrypted_response = encrypt_data(response_data)
+        return JsonResponse({'encrypted_content': encrypted_response}, status=200)
 
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
     except ObjectDoesNotExist:
         return JsonResponse({'error': 'User not found.'}, status=404)
     except UserService.DoesNotExist:
         return JsonResponse({'error': 'User services not found.'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
-
 
 @csrf_exempt
 @api_view(['POST'])
@@ -4014,41 +3875,6 @@ GREETING_MESSAGES = [
 ]
 
 
-
-
-# @api_view(['GET','POST'])
-# @permission_classes([])
-# def chatbot_view(request):
-#     if settings.FAISS_VECTOR_STORE is None:
-#         return JsonResponse({"error": "Vector store not initialized"}, status=500)
-
-#     if request.method == 'GET':
-#         # Randomly select a greeting message
-#         greeting_message = random.choice(GREETING_MESSAGES)
-#         return JsonResponse({'answer': greeting_message}, status=200)
- 
-#     elif request.method == 'POST':
-#         try:
-#             # Decrypt or read the incoming data (handling encrypted payloads if needed)
-#             data = json.loads(request.body)
-#             question = data.get('question')
- 
-#             if not question:
-#                 return JsonResponse({'error': 'No question provided.'}, status=400)
- 
-#             # Handle user input (follow-up question)
-#             result = ask_question_chatbot(question)
- 
-#             return JsonResponse({'answer': result}, status=200)
- 
-#         except json.JSONDecodeError:
-#             return JsonResponse({'error': 'Invalid JSON'}, status=400)
-#         except Exception as e:
-#             return JsonResponse({'error': str(e)}, status=500)
- 
-#     else:
-#         return JsonResponse({'error': 'Invalid request method'}, status=405)
- 
 @api_view(['GET', 'POST'])
 @permission_classes([])  # Add appropriate permissions if necessary
 def chatbot_view(request):

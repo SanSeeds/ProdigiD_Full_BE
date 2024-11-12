@@ -188,6 +188,7 @@ class GuestLogin(models.Model):
     logged_in_at = models.DateTimeField(auto_now_add=True)
     valid_till = models.DateTimeField()
     is_active = models.BooleanField(default=True)
+    word_count = models.IntegerField(default=0)  # New column for word count
 
     def is_valid(self):
         return timezone.now() < self.valid_till
@@ -312,3 +313,11 @@ class YearlyCart(models.Model):
         if self.rephrasely_service:
             services.append({"id": self.SERVICE_IDS["rephrasely_service"], "name": "Rephrasely Service"})
         return services
+
+
+class GuestWordsCount(models.Model):
+    email = models.EmailField()  # Stores the email of the guest
+    word_count = models.IntegerField()  # Stores the word count for the guest
+
+    def __str__(self):
+        return self.email

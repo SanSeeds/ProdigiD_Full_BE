@@ -16,7 +16,7 @@ from django.utils import timezone
 from rest_framework_api_key.permissions import HasAPIKey
 from django.conf import settings
 from datetime import date, datetime, timedelta
-from .models import Cart, EmailVerificationOTP, GuestLogin, PasswordResetRequest, Payment, Profile, TemporaryEmailVerificationOTP, UserService, UserSession, YearlyCart
+from .models import Cart, EmailVerificationOTP, GuestLogin, GuestWordsCount, PasswordResetRequest, Payment, Profile, TemporaryEmailVerificationOTP, UserService, UserSession, YearlyCart
 from django.core.mail import send_mail
 from django.contrib.auth import update_session_auth_hash
 from django.views.decorators.csrf import csrf_exempt
@@ -193,7 +193,7 @@ def guest_otp_expiry_time():
 
 #     return JsonResponse({"error": "Invalid request method"}, status=400)
 
-#Working
+
 @csrf_exempt
 def create_razorpay_order(request):
     if request.method == "POST":
@@ -1818,18 +1818,80 @@ The ProdigiDesk Team
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def fetch_filtered_payments(request):
+#     if request.method == 'POST':
+#         try:
+#             # Load data from the request body
+#             data = json.loads(request.body)
+#             order_id = data.get('order_id')
+#             payment_id = data.get('payment_id')
+#             email = data.get('email')
+            
+#             # Filter based on the provided parameters
+#             filters = {}
+#             if order_id:
+#                 filters['order_id'] = order_id
+#             if payment_id:
+#                 filters['payment_id'] = payment_id
+#             if email:
+#                 filters['email'] = email
+
+#             # Fetch the filtered payments
+#             payments = Payment.objects.filter(**filters)
+
+#             # Serialize the records into a list of dictionaries
+#             payment_list = []
+#             for payment in payments:
+#                 payment_data = {
+#                     'order_id': payment.order_id,
+#                     'payment_id': payment.payment_id,
+#                     'signature': payment.signature,
+#                     'email': payment.email,
+#                     'amount': str(payment.amount),  # Converting Decimal to string
+#                     'currency': payment.currency,
+#                     'payment_capture': payment.payment_capture,
+#                     'created_at': payment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+#                     'verified': payment.verified,
+#                     'order_datetime': payment.order_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.order_datetime else None,
+#                     'subscribed_services': payment.subscribed_services,
+#                     'service': payment.service.id if payment.service else None,  # ForeignKey field
+#                     'invoice_number': payment.invoice_number if payment.invoice_number else None,  # Ensure invoice_number is included
+#                     'subscription_duration': payment.subscription_duration  # New field
+#                 }
+#                 payment_list.append(payment_data)
+
+#             # Return the serialized data as JSON
+#             return JsonResponse(payment_list, safe=False, status=200)
+
+#         except Payment.DoesNotExist:
+#             return JsonResponse({"error": "No matching payment found"}, status=404)
+#         except Exception as e:
+#             return JsonResponse({"error": str(e)}, status=500)
+
+#     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def fetch_filtered_payments(request):
     if request.method == 'POST':
         try:
-            # Load data from the request body
-            data = json.loads(request.body)
+            # Decrypt the request payload
+            encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+            if not encrypted_content:
+                return JsonResponse({"error": "No encrypted content found in the request."}, status=400)
+            
+            decrypted_content = decrypt_data(encrypted_content)
+            data = json.loads(decrypted_content)
+
+            # Extract parameters from decrypted data
             order_id = data.get('order_id')
             payment_id = data.get('payment_id')
             email = data.get('email')
             
-            # Filter based on the provided parameters
+            # Filter payments based on provided parameters
             filters = {}
             if order_id:
                 filters['order_id'] = order_id
@@ -1856,21 +1918,27 @@ def fetch_filtered_payments(request):
                     'verified': payment.verified,
                     'order_datetime': payment.order_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.order_datetime else None,
                     'subscribed_services': payment.subscribed_services,
-                    'service': payment.service.id if payment.service else None,  # ForeignKey field
-                    'invoice_number': payment.invoice_number if payment.invoice_number else None,  # Ensure invoice_number is included
-                    'subscription_duration': payment.subscription_duration  # New field
+                    'service': payment.service.id if payment.service else None,
+                    'invoice_number': payment.invoice_number if payment.invoice_number else None,
+                    'subscription_duration': payment.subscription_duration
                 }
                 payment_list.append(payment_data)
 
-            # Return the serialized data as JSON
-            return JsonResponse(payment_list, safe=False, status=200)
+            # Encrypt the response data
+            encrypted_response = encrypt_data(payment_list)
+            
+            # Return the encrypted response as JSON
+            return JsonResponse({'encrypted_content': encrypted_response}, status=200)
 
         except Payment.DoesNotExist:
             return JsonResponse({"error": "No matching payment found"}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
 
 # Backend OTP Verification API
 @csrf_exempt
@@ -2160,162 +2228,6 @@ def get_user_services(request, email):
 
 def generate_otp():
     return ''.join(random.choices('0123456789', k=6))
-
-#Encrypted API to send OTP for Password Reset
-# @csrf_exempt
-# def send_otp(request):
-#     if request.method == 'POST':
-#         try:
-#             # Extract and decrypt the incoming payload
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             logger.debug(f"Encrypted content received: {encrypted_content}")
-
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             logger.debug(f"Decrypted content: {decrypted_content}")
-#             data = json.loads(decrypted_content)
-
-#             email = data.get('email')
-#             logger.debug(f"Received OTP request for email: {email}")
-
-#             try:
-#                 user = User.objects.get(email=email)
-#             except User.DoesNotExist:
-#                 logger.warning(f"Email does not exist: {email}")
-#                 encrypted_response = encrypt_data({'error': 'Email does not exist'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=404)
-
-#             # Generate OTP
-#             otp = generate_otp()
-#             expiry_time = timezone.now() + timedelta(minutes=10)
-
-#             # Store OTP and expiry time in the database
-#             PasswordResetRequest.objects.update_or_create(
-#                 user=user,
-#                 defaults={
-#                     'otp': otp,
-#                     'expiry_time': expiry_time
-#                 }
-#             )
-#             logger.info(f"Generated OTP for user {user.username}")
-
-#             # Send OTP via email
-#             subject = 'Password Reset OTP'
-#             message = f'Your OTP for password reset is {otp}. This OTP is valid only for 10 minutes.'
-#             from_email = settings.DEFAULT_FROM_EMAIL
-#             recipient_list = [email]
-
-#             try:
-#                 send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-#                 logger.info(f"OTP email sent to {email}")
-#             except Exception as e:
-#                 logger.error(f"Error sending email: {str(e)}")
-#                 encrypted_response = encrypt_data({'error': f'Error sending email: {str(e)}'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=500)
-
-#             encrypted_response = encrypt_data({'success': 'OTP sent successfully'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#         except json.JSONDecodeError:
-#             logger.error("Invalid JSON format in request")
-#             encrypted_response = encrypt_data({'error': 'Invalid JSON format'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-#         except Exception as e:
-#             logger.error(f"Unexpected error: {str(e)}")
-#             encrypted_response = encrypt_data({'error': str(e)})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=500)
-
-#     logger.error("Invalid request method")
-#     encrypted_response = encrypt_data({'error': 'Invalid request method'})
-#     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
-
-# Encrypted API to send OTP for Password Reset
-# @csrf_exempt
-# def send_otp(request):
-#     if request.method == 'POST':
-#         try:
-#             # Extract and decrypt the incoming payload
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             logger.debug(f"Encrypted content received: {encrypted_content}")
-
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             logger.debug(f"Decrypted content: {decrypted_content}")
-#             data = json.loads(decrypted_content)
-
-#             email = data.get('email')
-#             logger.debug(f"Received OTP request for email: {email}")
-
-#             try:
-#                 user = User.objects.get(email=email)
-#             except User.DoesNotExist:
-#                 logger.warning(f"Email does not exist: {email}")
-#                 encrypted_response = encrypt_data({'error': 'Email does not exist'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=404)
-
-#             # Generate OTP
-#             otp = generate_otp()
-#             expiry_time = timezone.now() + timedelta(minutes=10)
-
-#             # Store OTP and expiry time in the database
-#             PasswordResetRequest.objects.update_or_create(
-#                 user=user,
-#                 defaults={
-#                     'otp': otp,
-#                     'expiry_time': expiry_time
-#                 }
-#             )
-#             logger.info(f"Generated OTP for user {user.username}")
-
-#             # Send OTP via email
-#             subject = 'Password Reset OTP'
-#             message = f"""
-# Dear Sir/Madam,
-
-# We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is {otp} and will remain valid for a period of 10 minutes.
-
-# Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.
-
-# This notification is intended to provide you with the necessary information to complete your task. If you have any concerns or require assistance, please contact our support team through the appropriate channels.
-
-# Thank you for your understanding and cooperation.
-
-# Sincerely,
-# The ProdigiDesk Team
-# """
-
-#             from_email = settings.DEFAULT_FROM_EMAIL
-#             recipient_list = [email]
-
-#             try:
-#                 send_mail(subject, message, from_email, recipient_list, fail_silently=False)
-#                 logger.info(f"OTP email sent to {email}")
-#             except Exception as e:
-#                 logger.error(f"Error sending email: {str(e)}")
-#                 encrypted_response = encrypt_data({'error': f'Error sending email: {str(e)}'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=500)
-
-#             encrypted_response = encrypt_data({'success': 'OTP sent successfully'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#         except json.JSONDecodeError:
-#             logger.error("Invalid JSON format in request")
-#             encrypted_response = encrypt_data({'error': 'Invalid JSON format'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-#         except Exception as e:
-#             logger.error(f"Unexpected error: {str(e)}")
-#             encrypted_response = encrypt_data({'error': str(e)})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=500)
-
-#     logger.error("Invalid request method")
-#     encrypted_response = encrypt_data({'error': 'Invalid request method'})
-#     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
 
 
 # Encrypted API to send OTP for Password Reset
@@ -2897,66 +2809,6 @@ def email_generator(request):
             return JsonResponse({'error': 'An error occurred while processing the request.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-#Encrypted API to translate the the generated content
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def translate_content(request):
-#     translated_content = None
-#     error = None
-#     language = ""
-
-#     if request.method == 'POST':
-#         try:
-#             # Extract and decrypt the incoming payload
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             logger.debug(f'Encrypted content received: {encrypted_content}')
-
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             logger.debug(f'Decrypted content: {decrypted_content}')
-#             data = json.loads(decrypted_content)
-
-#             generated_content = data.get('generated_content')
-#             language = data.get('language')
-
-#             if not generated_content or not language:
-#                 logger.warning('Both generated_content and language are required fields.')
-#                 return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
-
-#             logger.info(f'Translating content: {generated_content} to language: {language}')
-#             response = bhashini_translate(generated_content, language)
-
-#             if response["status_code"] == 200:
-#                 translated_content = response["translated_content"]
-#                 logger.info('Content translated successfully.')
-#                 # Encrypt the response content
-#                 encrypted_response = encrypt_data({
-#                     'generated_content': generated_content,
-#                     'translated_content': translated_content,
-#                     'selected_language': language
-#                 })
-#                 logger.debug(f'Encrypted response: {encrypted_response}')
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-#             else:
-#                 logger.error('Translation failed with status code: {}'.format(response["status_code"]))
-#                 return JsonResponse({'error': 'Translation failed.'}, status=500)
-
-#         except json.JSONDecodeError:
-#             logger.error('Invalid JSON format in request.')
-#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-#         except ValueError as e:
-#             logger.warning(f'ValueError: {str(e)}')
-#             return JsonResponse({'error': str(e)}, status=400)
-#         except Exception as e:
-#             logger.error(f'Unexpected error: {str(e)}')
-#             return JsonResponse({'error': str(e)}, status=500)
-
-#     logger.error('Method not allowed.')
-#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
-
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -3262,93 +3114,6 @@ def offer_letter_generator(request):
 
 
 
-# @api_view(['GET', 'POST'])
-# @permission_classes([IsAuthenticated])
-# def profile(request):
-#     user = request.user
-#     profile = Profile.objects.get(user=user)
-#     errors = []
-
-#     if request.method == 'POST':
-#         try:
-#             # Decrypt the incoming payload
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             data = json.loads(decrypted_content)
-#             logger.debug(f'Decrypted content: {data}')
-
-#             # Update user and profile data based on received JSON
-#             user.first_name = data.get('first_name', user.first_name)
-#             user.last_name = data.get('last_name', user.last_name)
-#             user.email = data.get('email', user.email)
-#             profile.bio = data.get('bio', profile.bio)
-#             profile.location = data.get('location', profile.location)
-
-#             birth_date = data.get('birth_date')
-#             if birth_date:
-#                 parsed_date = parse_date(birth_date)
-#                 if parsed_date:
-#                     profile.birth_date = parsed_date
-#                 else:
-#                     errors.append("Invalid date format for birth date.")
-#                     profile.birth_date = None
-
-#             if not user.first_name:
-#                 errors.append("First name is required.")
-#             if not user.last_name:
-#                 errors.append("Last name is required.")
-#             if not user.email:
-#                 errors.append("Email is required.")
-
-#             if not errors:
-#                 user.save()
-#                 profile.save()
-#                 response_data = {'message': 'Profile updated successfully.'}
-#             else:
-#                 response_data = {'errors': errors}
-
-#             # Encrypt the response content
-#             encrypted_response = encrypt_data(response_data)
-#             logger.info('Profile updated successfully.')
-
-#             # Return the encrypted response
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#         except json.JSONDecodeError:
-#             logger.error('Invalid JSON format received.')
-#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-#         except ValueError as e:
-#             logger.error(f'ValueError: {str(e)}')
-#             return JsonResponse({'error': str(e)}, status=400)
-#         except Exception as e:
-#             logger.error(f'Exception: {str(e)}')
-#             return JsonResponse({'error': str(e)}, status=500)
-
-#     # Handle GET request
-#     response_data = {
-#         'user': {
-#             'first_name': user.first_name,
-#             'last_name': user.last_name,
-#             'email': user.email
-#         },
-#         'profile': {
-#             'bio': profile.bio,
-#             'location': profile.location,
-#             'birth_date': profile.birth_date.isoformat() if profile.birth_date else None
-#         }
-#     }
-
-#     # Encrypt the response content
-#     encrypted_response = encrypt_data(response_data)
-#     logger.info('Profile data retrieved successfully.')
-
-#     # Return the encrypted response
-#     return JsonResponse({'encrypted_content': encrypted_response})
-
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def profile(request):
@@ -3451,16 +3216,110 @@ from django.contrib.auth.models import User
 from rest_framework.decorators import api_view, permission_classes
 from django.core.exceptions import ObjectDoesNotExist
 
+# @api_view(['GET'])
+# @permission_classes([])
+# def profile_info(request):
+#     # Get the email from the request query parameters
+#     email = request.GET.get('email')
+    
+#     if not email:
+#         return JsonResponse({'error': 'Email parameter is required.'}, status=400)
+
+#     try:
+#         # Fetch the user based on the provided email
+#         user = User.objects.get(email=email)
+
+#         # Get the user's subscribed services
+#         user_service = UserService.objects.get(user=user)
+
+#         # Get all payments made by the user
+#         payments = Payment.objects.filter(email=user.email)
+
+#         # Prepare the payment details
+#         payment_info = []
+#         for payment in payments:
+#             payment_info.append({
+#                 'order_id': payment.order_id,
+#                 'payment_id': payment.payment_id,
+#                 'amount': str(payment.amount),
+#                 'currency': payment.currency,
+#                 'created_at': payment.created_at.isoformat(),
+#                 'verified': payment.verified,
+#             })
+
+#         # Prepare the response data
+#         response_data = {
+#             'user_info': {
+#                 'first_name': user.first_name,
+#                 'last_name': user.last_name,
+#                 'email': user.email,
+#                 'last_login': user.last_login.isoformat() if user.last_login else None,
+#                 'username': user.username,
+#                 'date_joined': user.date_joined.isoformat(),
+#             },
+#             'services': {
+#                 'email_service': user_service.email_service,
+#                 'offer_letter_service': user_service.offer_letter_service,
+#                 'business_proposal_service': user_service.business_proposal_service,
+#                 'sales_script_service': user_service.sales_script_service,
+#                 'content_generation_service': user_service.content_generation_service,
+#                 'summarize_service': user_service.summarize_service,
+#                 'ppt_generation_service': user_service.ppt_generation_service,
+#                 'blog_generation_service': user_service.blog_generation_service,
+#                 'rephrasely_service': user_service.rephrasely_service,
+#                 'service_start_dates': {
+#                     'email_service_start': user_service.email_end_date,
+#                     'offer_letter_service_start': user_service.offer_letter_end_date,
+#                     'business_proposal_service_start': user_service.business_proposal_end_date,
+#                     'sales_script_service_start': user_service.sales_script_end_date,
+#                     'content_generation_service_start': user_service.content_generation_end_date,
+#                     'summarize_service_start': user_service.summarize_end_date,
+#                     'ppt_generation_service_start': user_service.ppt_generation_end_date,
+#                     'blog_generation_service_start': user_service.blog_generation_end_date,
+#                     'rephrasely_service_start': user_service.rephrasely_end_date,
+#                 },
+#                 'service_end_dates': {
+#                     'email_service_end': user_service.email_end_date,
+#                     'offer_letter_service_end': user_service.offer_letter_end_date,
+#                     'business_proposal_service_end': user_service.business_proposal_end_date,
+#                     'sales_script_service_end': user_service.sales_script_end_date,
+#                     'content_generation_service_end': user_service.content_generation_end_date,
+#                     'summarize_service_end': user_service.summarize_end_date,
+#                     'ppt_generation_service_end': user_service.ppt_generation_end_date,
+#                     'blog_generation_service_end': user_service.blog_generation_end_date,
+#                     'rephrasely_service_end': user_service.rephrasely_end_date,
+#                 },
+#             },
+#             'payments': payment_info,
+#         }
+
+#         return JsonResponse(response_data, status=200)
+
+#     except ObjectDoesNotExist:
+#         return JsonResponse({'error': 'User not found.'}, status=404)
+#     except UserService.DoesNotExist:
+#         return JsonResponse({'error': 'User services not found.'}, status=404)
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
+
 @api_view(['GET'])
 @permission_classes([])
 def profile_info(request):
-    # Get the email from the request query parameters
-    email = request.GET.get('email')
-    
-    if not email:
-        return JsonResponse({'error': 'Email parameter is required.'}, status=400)
-
     try:
+        # Get the encrypted content from the query parameter
+        encrypted_content = request.GET.get('encrypted_content')
+        if not encrypted_content:
+            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+        
+        # Decrypt the content to get the original data
+        decrypted_content = decrypt_data(encrypted_content)
+        data = json.loads(decrypted_content)
+        
+        # Extract email from decrypted data
+        email = data.get('email')
+        if not email:
+            return JsonResponse({'error': 'Email parameter is required.'}, status=400)
+
         # Fetch the user based on the provided email
         user = User.objects.get(email=email)
 
@@ -3478,11 +3337,11 @@ def profile_info(request):
                 'payment_id': payment.payment_id,
                 'amount': str(payment.amount),
                 'currency': payment.currency,
-                'created_at': payment.created_at.isoformat(),
+                'created_at': payment.created_at.isoformat(),  # Convert to ISO string
                 'verified': payment.verified,
             })
 
-        # Prepare the response data
+        # Prepare the response data with date fields converted to ISO format
         response_data = {
             'user_info': {
                 'first_name': user.first_name,
@@ -3503,41 +3362,43 @@ def profile_info(request):
                 'blog_generation_service': user_service.blog_generation_service,
                 'rephrasely_service': user_service.rephrasely_service,
                 'service_start_dates': {
-                    'email_service_start': user_service.email_end_date,
-                    'offer_letter_service_start': user_service.offer_letter_end_date,
-                    'business_proposal_service_start': user_service.business_proposal_end_date,
-                    'sales_script_service_start': user_service.sales_script_end_date,
-                    'content_generation_service_start': user_service.content_generation_end_date,
-                    'summarize_service_start': user_service.summarize_end_date,
-                    'ppt_generation_service_start': user_service.ppt_generation_end_date,
-                    'blog_generation_service_start': user_service.blog_generation_end_date,
-                    'rephrasely_service_start': user_service.rephrasely_end_date,
+                    'email_service_start': user_service.email_end_date.isoformat() if user_service.email_end_date else None,
+                    'offer_letter_service_start': user_service.offer_letter_end_date.isoformat() if user_service.offer_letter_end_date else None,
+                    'business_proposal_service_start': user_service.business_proposal_end_date.isoformat() if user_service.business_proposal_end_date else None,
+                    'sales_script_service_start': user_service.sales_script_end_date.isoformat() if user_service.sales_script_end_date else None,
+                    'content_generation_service_start': user_service.content_generation_end_date.isoformat() if user_service.content_generation_end_date else None,
+                    'summarize_service_start': user_service.summarize_end_date.isoformat() if user_service.summarize_end_date else None,
+                    'ppt_generation_service_start': user_service.ppt_generation_end_date.isoformat() if user_service.ppt_generation_end_date else None,
+                    'blog_generation_service_start': user_service.blog_generation_end_date.isoformat() if user_service.blog_generation_end_date else None,
+                    'rephrasely_service_start': user_service.rephrasely_end_date.isoformat() if user_service.rephrasely_end_date else None,
                 },
                 'service_end_dates': {
-                    'email_service_end': user_service.email_end_date,
-                    'offer_letter_service_end': user_service.offer_letter_end_date,
-                    'business_proposal_service_end': user_service.business_proposal_end_date,
-                    'sales_script_service_end': user_service.sales_script_end_date,
-                    'content_generation_service_end': user_service.content_generation_end_date,
-                    'summarize_service_end': user_service.summarize_end_date,
-                    'ppt_generation_service_end': user_service.ppt_generation_end_date,
-                    'blog_generation_service_end': user_service.blog_generation_end_date,
-                    'rephrasely_service_end': user_service.rephrasely_end_date,
+                    'email_service_end': user_service.email_end_date.isoformat() if user_service.email_end_date else None,
+                    'offer_letter_service_end': user_service.offer_letter_end_date.isoformat() if user_service.offer_letter_end_date else None,
+                    'business_proposal_service_end': user_service.business_proposal_end_date.isoformat() if user_service.business_proposal_end_date else None,
+                    'sales_script_service_end': user_service.sales_script_end_date.isoformat() if user_service.sales_script_end_date else None,
+                    'content_generation_service_end': user_service.content_generation_end_date.isoformat() if user_service.content_generation_end_date else None,
+                    'summarize_service_end': user_service.summarize_end_date.isoformat() if user_service.summarize_end_date else None,
+                    'ppt_generation_service_end': user_service.ppt_generation_end_date.isoformat() if user_service.ppt_generation_end_date else None,
+                    'blog_generation_service_end': user_service.blog_generation_end_date.isoformat() if user_service.blog_generation_end_date else None,
+                    'rephrasely_service_end': user_service.rephrasely_end_date.isoformat() if user_service.rephrasely_end_date else None,
                 },
             },
             'payments': payment_info,
         }
 
-        return JsonResponse(response_data, status=200)
+        # Encrypt the response data
+        encrypted_response = encrypt_data(response_data)
+        return JsonResponse({'encrypted_content': encrypted_response}, status=200)
 
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
     except ObjectDoesNotExist:
         return JsonResponse({'error': 'User not found.'}, status=404)
     except UserService.DoesNotExist:
         return JsonResponse({'error': 'User services not found.'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
-
 
 @csrf_exempt
 @api_view(['POST'])
@@ -4014,41 +3875,6 @@ GREETING_MESSAGES = [
 ]
 
 
-
-
-# @api_view(['GET','POST'])
-# @permission_classes([])
-# def chatbot_view(request):
-#     if settings.FAISS_VECTOR_STORE is None:
-#         return JsonResponse({"error": "Vector store not initialized"}, status=500)
-
-#     if request.method == 'GET':
-#         # Randomly select a greeting message
-#         greeting_message = random.choice(GREETING_MESSAGES)
-#         return JsonResponse({'answer': greeting_message}, status=200)
- 
-#     elif request.method == 'POST':
-#         try:
-#             # Decrypt or read the incoming data (handling encrypted payloads if needed)
-#             data = json.loads(request.body)
-#             question = data.get('question')
- 
-#             if not question:
-#                 return JsonResponse({'error': 'No question provided.'}, status=400)
- 
-#             # Handle user input (follow-up question)
-#             result = ask_question_chatbot(question)
- 
-#             return JsonResponse({'answer': result}, status=200)
- 
-#         except json.JSONDecodeError:
-#             return JsonResponse({'error': 'Invalid JSON'}, status=400)
-#         except Exception as e:
-#             return JsonResponse({'error': str(e)}, status=500)
- 
-#     else:
-#         return JsonResponse({'error': 'Invalid request method'}, status=405)
- 
 @api_view(['GET', 'POST'])
 @permission_classes([])  # Add appropriate permissions if necessary
 def chatbot_view(request):
@@ -4123,20 +3949,106 @@ def speech_api(request):
         return JsonResponse({'status': 'error', 'message': 'Only POST requests are allowed.'})
 
 
+
+# @csrf_exempt
+# def email_generator_guest(request):
+#     if request.method == 'POST':
+#         try:
+#             # Extract and decrypt the incoming payload
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             print(f'Encrypted content received: {encrypted_content}')
+
+#             if not encrypted_content:
+#                 print('No encrypted content found in the request.')
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#             decrypted_content = decrypt_data(encrypted_content)
+#             print(f'Decrypted content: {decrypted_content}')
+#             data = json.loads(decrypted_content)
+
+#             purpose = data.get('purpose')
+#             if purpose == 'Other':
+#                 purpose = data.get('otherPurpose')
+#             num_words = data.get('num_words')
+#             subject = data.get('subject')
+#             rephrase = data.get('rephraseSubject', False)
+#             to = data.get('to')
+#             tone = data.get('tone')
+#             keywords = data.get('keywords', [])
+#             contextual_background = data.get('contextualBackground')
+#             call_to_action = data.get('callToAction')
+#             if call_to_action == 'Other':
+#                 call_to_action = data.get('otherCallToAction')
+#             additional_details = data.get('additionalDetails')
+#             priority_level = data.get('priorityLevel')
+#             closing_remarks = data.get('closingRemarks')
+
+#             print(f'Generating email with the following data: {data}')
+
+#             # Generate email content based on the data
+#             generated_content = generate_email(
+#                 purpose, num_words, subject, rephrase, to, tone, keywords,
+#                 contextual_background, call_to_action, additional_details,
+#                 priority_level, closing_remarks
+#             )
+
+#             if generated_content:
+#                 print('Email content generated successfully.')
+
+#                 # Calculate the word count for the generated content
+#                 word_count = len(generated_content.split())
+#                 print(f"Generated content word count: {word_count}")
+
+#                 # Encrypt the response content
+#                 encrypted_response = encrypt_data({'generated_content': generated_content})
+#                 print(f'Encrypted response: {encrypted_response}')
+
+#                 # Store email and word count in the GuestWordCount model
+#                 guest_email = data.get('email')  # Assuming the email is part of the data
+#                 if guest_email:
+#                     # Retrieve the existing word count for the email if it exists
+#                     guest_word_count = GuestLogin.objects.filter(email=guest_email).first()
+#                     if guest_word_count:
+#                         # Add the new word count to the existing count
+#                         new_word_count = guest_word_count.word_count + word_count
+#                         guest_word_count.word_count = new_word_count
+#                         guest_word_count.save()
+#                         print(f'Word count for {guest_email} updated successfully. New word count: {new_word_count}')
+#                     else:
+#                         # If no existing word count found, create a new record
+#                         guest_word_count = GuestLogin.objects.create(
+#                             email=guest_email,
+#                             word_count=word_count
+#                         )
+#                         print(f'Word count for {guest_email} saved successfully. Word count: {word_count}')
+#                 else:
+#                     print('No email found in the request data.')
+
+#                 # Return the encrypted response with the generated content
+#                 return JsonResponse({'encrypted_content': encrypted_response})
+
+#             else:
+#                 print('Failed to generate email content.')
+#                 return JsonResponse({'error': 'Failed to generate email content.'}, status=500)
+
+#         except Exception as e:
+#             print(f'Error processing request: {e}')
+#             return JsonResponse({'error': 'An error occurred while processing the request.'}, status=500)
+
 @csrf_exempt
 def email_generator_guest(request):
     if request.method == 'POST':
         try:
             # Extract and decrypt the incoming payload
             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-            logger.debug(f'Encrypted content received: {encrypted_content}')
+            print(f'Encrypted content received: {encrypted_content}')
 
             if not encrypted_content:
-                logger.warning('No encrypted content found in the request.')
-                return JsonResponse({'error': 'No encrypted content found in the request.'}, status=status.HTTP_400_BAD_REQUEST)
+                print('No encrypted content found in the request.')
+                return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
 
             decrypted_content = decrypt_data(encrypted_content)
-            logger.debug(f'Decrypted content: {decrypted_content}')
+            print(f'Decrypted content: {decrypted_content}')
             data = json.loads(decrypted_content)
 
             purpose = data.get('purpose')
@@ -4156,31 +4068,151 @@ def email_generator_guest(request):
             priority_level = data.get('priorityLevel')
             closing_remarks = data.get('closingRemarks')
 
-            logger.info(f'Generating email with the following data: {data}')     
+            print(f'Generating email with the following data: {data}')
 
+            # Retrieve the guest email and existing word count if it exists
+            guest_email = data.get('email')  # Assuming the email is part of the data
+            if guest_email:
+                guest_word_count = GuestLogin.objects.filter(email=guest_email).first()
+                if guest_word_count and guest_word_count.word_count >= 2000:
+                    print('Word Count limit already exceeded')
+                    return JsonResponse({'error': 'Word Count limit already exceeded'}, status=400)
 
+            # Generate email content based on the data
             generated_content = generate_email(
                 purpose, num_words, subject, rephrase, to, tone, keywords,
                 contextual_background, call_to_action, additional_details,
                 priority_level, closing_remarks
             )
 
-           
-
-
             if generated_content:
-                logger.info('Email content generated successfully.')
+                print('Email content generated successfully.')
+
+                # Calculate the word count for the generated content
+                word_count = len(generated_content.split())
+                print(f"Generated content word count: {word_count}")
+
                 # Encrypt the response content
                 encrypted_response = encrypt_data({'generated_content': generated_content})
-                logger.debug(f'Encrypted response: {encrypted_response}')
+                print(f'Encrypted response: {encrypted_response}')
 
+                # Update or create the word count in the GuestLogin model
+                if guest_email:
+                    if guest_word_count:
+                        # Update existing word count
+                        guest_word_count.word_count += word_count
+                        guest_word_count.save()
+                        print(f'Word count for {guest_email} updated successfully. New word count: {guest_word_count.word_count}')
+                    else:
+                        # Create new record if no existing word count found
+                        guest_word_count = GuestLogin.objects.create(
+                            email=guest_email,
+                            word_count=word_count
+                        )
+                        print(f'Word count for {guest_email} saved successfully. Word count: {word_count}')
+                else:
+                    print('No email found in the request data.')
+
+                # Return the encrypted response with the generated content
                 return JsonResponse({'encrypted_content': encrypted_response})
+
             else:
-                logger.error('Failed to generate email content.')
-                return JsonResponse({'error': 'Failed to generate email content.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                print('Failed to generate email content.')
+                return JsonResponse({'error': 'Failed to generate email content.'}, status=500)
+
         except Exception as e:
-            logger.error(f'Error processing request: {e}')
-            return JsonResponse({'error': 'An error occurred while processing the request.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            print(f'Error processing request: {e}')
+            return JsonResponse({'error': 'An error occurred while processing the request.'}, status=500)
+
+# @csrf_exempt
+# def business_proposal_generator_guest(request):
+#     if request.method == 'POST':
+#         try:
+#             # Extract and decrypt the incoming payload
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             if not encrypted_content:
+#                 logger.warning('No encrypted content found in the request.')
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#             decrypted_content = decrypt_data(encrypted_content)
+#             data = json.loads(decrypted_content)
+#             logger.debug(f'Decrypted content: {data}')
+
+#             # Extract fields for the business proposal
+#             business_intro = data.get('businessIntroduction')
+#             proposal_objective = data.get('proposalObjective')
+#             # Handle otherObjective if proposalObjective is 'Others'
+#             other_objective = data.get('otherObjective')
+#             if proposal_objective == 'Others' and other_objective:
+#                 proposal_objective = other_objective
+
+#             num_words = data.get('numberOfWords')
+#             scope_of_work = data.get('scopeOfWork')
+#             project_phases = data.get('projectPhases')
+#             expected_outcomes = data.get('expectedOutcomes')
+#             tech_innovations = data.get('technologiesAndInnovations')  # Combined field
+#             target_audience = data.get('targetAudience')
+#             budget_info = data.get('budgetInformation')
+#             timeline = data.get('timeline')
+#             benefits = data.get('benefitsToRecipient')
+#             closing_remarks = data.get('closingRemarks')
+
+#             logger.info('Generating business proposal content.')
+#             proposal_content = generate_bus_pro(
+#                 business_intro, proposal_objective, num_words, scope_of_work,
+#                 project_phases, expected_outcomes, tech_innovations, target_audience,
+#                 budget_info, timeline, benefits, closing_remarks
+#             )
+
+#             # Calculate the word count for the generated content
+#             word_count = len(proposal_content.split())
+#             logger.debug(f"Generated proposal content word count: {word_count}")
+#             print(word_count)
+#             # Restrict word count to a maximum of 2000
+#             if word_count > 2000:
+#                 return JsonResponse({'error': 'The generated proposal exceeds the maximum allowed word count of 2000.'}, status=400)
+
+#             # Encrypt the response content
+#             encrypted_content = encrypt_data({'generated_content': proposal_content})
+#             logger.info('Business proposal content generated successfully.')
+
+#             # Extract email from the data
+#             guest_email = data.get('email')
+#             if guest_email:
+#                 # Retrieve the existing word count for the email if it exists
+#                 guest_word_count = GuestLogin.objects.filter(email=guest_email).first()
+#                 if guest_word_count:
+#                     # Add the new word count to the existing count
+#                     new_word_count = guest_word_count.word_count + word_count
+#                     guest_word_count.word_count = new_word_count
+#                     guest_word_count.save()
+#                     logger.info(f'Word count for {guest_email} updated successfully. New word count: {new_word_count}')
+#                 else:
+#                     # If no existing word count found, create a new record
+#                     guest_word_count = GuestLogin.objects.create(
+#                         email=guest_email,
+#                         word_count=word_count
+#                     )
+#                     logger.info(f'Word count for {guest_email} saved successfully. Word count: {word_count}')
+#             else:
+#                 logger.warning('No email found in the request data.')
+
+#             # Return the encrypted response with the generated content
+#             return JsonResponse({'encrypted_content': encrypted_content}, status=200)
+
+#         except json.JSONDecodeError:
+#             logger.error('Invalid JSON format received.')
+#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#         except ValueError as e:
+#             logger.error(f'ValueError: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=400)
+#         except Exception as e:
+#             logger.error(f'Exception: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=500)
+
+#     logger.warning('Method not allowed.')
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
 
 @csrf_exempt
 def business_proposal_generator_guest(request):
@@ -4196,6 +4228,7 @@ def business_proposal_generator_guest(request):
             data = json.loads(decrypted_content)
             logger.debug(f'Decrypted content: {data}')
 
+            # Extract fields for the business proposal
             business_intro = data.get('businessIntroduction')
             proposal_objective = data.get('proposalObjective')
             # Handle otherObjective if proposalObjective is 'Others'
@@ -4214,6 +4247,14 @@ def business_proposal_generator_guest(request):
             benefits = data.get('benefitsToRecipient')
             closing_remarks = data.get('closingRemarks')
 
+            # Retrieve the guest email and existing word count if it exists
+            guest_email = data.get('email')
+            if guest_email:
+                guest_word_count = GuestLogin.objects.filter(email=guest_email).first()
+                if guest_word_count and guest_word_count.word_count >= 2000:
+                    logger.info('Word Count limit already exceeded')
+                    return JsonResponse({'error': 'Word Count limit already exceeded'}, status=400)
+
             logger.info('Generating business proposal content.')
             proposal_content = generate_bus_pro(
                 business_intro, proposal_objective, num_words, scope_of_work,
@@ -4221,10 +4262,33 @@ def business_proposal_generator_guest(request):
                 budget_info, timeline, benefits, closing_remarks
             )
 
+            # Calculate the word count for the generated content
+            word_count = len(proposal_content.split())
+            logger.debug(f"Generated proposal content word count: {word_count}")
+            print(word_count)
+
             # Encrypt the response content
             encrypted_content = encrypt_data({'generated_content': proposal_content})
             logger.info('Business proposal content generated successfully.')
 
+            # Update or create the word count in the GuestLogin model
+            if guest_email:
+                if guest_word_count:
+                    # Update existing word count
+                    guest_word_count.word_count += word_count
+                    guest_word_count.save()
+                    logger.info(f'Word count for {guest_email} updated successfully. New word count: {guest_word_count.word_count}')
+                else:
+                    # Create new record if no existing word count found
+                    guest_word_count = GuestLogin.objects.create(
+                        email=guest_email,
+                        word_count=word_count
+                    )
+                    logger.info(f'Word count for {guest_email} saved successfully. Word count: {word_count}')
+            else:
+                logger.warning('No email found in the request data.')
+
+            # Return the encrypted response with the generated content
             return JsonResponse({'encrypted_content': encrypted_content}, status=200)
 
         except json.JSONDecodeError:
@@ -4241,169 +4305,606 @@ def business_proposal_generator_guest(request):
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 
+# @csrf_exempt
+# def offer_letter_generator_guest(request):
+#     if request.method == 'POST':
+#         try:
+#             # Extract and decrypt the incoming payload
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             if not encrypted_content:
+#                 logger.warning('No encrypted content found in the request.')
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#             decrypted_content = decrypt_data(encrypted_content)
+#             data = json.loads(decrypted_content)
+#             logger.debug(f'Decrypted content: {data}')
+
+#             # Extract fields for the offer letter
+#             company_details = data.get('companyDetails')
+#             candidate_name = data.get('candidateFullName')
+#             position_title = data.get('positionTitle')
+#             department = data.get('department')
+#             status = data.get('status')
+#             location = data.get('location')
+#             start_date = data.get('expectedStartDate')
+#             compensation_benefits = data.get('compensationBenefits')
+#             work_hours = data.get('workHours')
+#             terms = data.get('termsConditions')
+#             acceptance_deadline = data.get('deadline')
+#             contact_info = data.get('contactInfo')
+#             documents_needed = data.get('documentsNeeded')
+#             closing_remarks = data.get('closingRemarks')
+
+#             logger.info('Generating offer letter content.')
+#             offer_letter_content = generate_offer_letter(
+#                 company_details, candidate_name, position_title, department, status,
+#                 location, start_date, compensation_benefits, work_hours,
+#                 terms, acceptance_deadline, contact_info, documents_needed, closing_remarks
+#             )
+
+#             # Calculate the word count for the generated content
+#             word_count = len(offer_letter_content.split())
+#             print("Word Count is: ", word_count)
+#             logger.debug(f"Generated offer letter content word count: {word_count}")
+
+#             # Restrict word count to a maximum of 2000
+#             if word_count > 2000:
+#                 return JsonResponse({'error': 'The generated offer letter exceeds the maximum allowed word count of 2000.'}, status=400)
+
+#             # Encrypt the response content
+#             encrypted_content = encrypt_data({'generated_content': offer_letter_content})
+#             logger.info('Offer letter content generated successfully.')
+
+#             # Extract email from the data
+#             guest_email = data.get('email')
+#             if guest_email:
+#                 # Retrieve the existing guest record if it exists
+#                 guest_record = GuestLogin.objects.filter(email=guest_email).first()
+#                 if guest_record:
+#                     # Update the words count in the record
+#                     new_word_count = guest_record.word_count + word_count
+#                     guest_record.word_count = new_word_count
+#                     print("New Word Count is: ", new_word_count)
+
+#                     guest_record.save()
+#                     logger.info(f'Word count for {guest_email} updated successfully. New word count: {new_word_count}')
+#                 else:
+#                     logger.warning('No active session found for the given email.')
+#             else:
+#                 logger.warning('No email found in the request data.')
+
+#             # Return the encrypted response with the generated content
+#             return JsonResponse({'encrypted_content': encrypted_content}, status=200)
+
+#         except json.JSONDecodeError:
+#             logger.error('Invalid JSON format received.')
+#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#         except ValueError as e:
+#             logger.error(f'ValueError: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=400)
+#         except Exception as e:
+#             logger.error(f'Exception: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=500)
+
+#     logger.warning('Method not allowed.')
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+
+
 @csrf_exempt
 def offer_letter_generator_guest(request):
-    try:
-        encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-        if not encrypted_content:
-            logger.warning('No encrypted content found in the request.')
-            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+    if request.method == 'POST':
+        try:
+            # Extract and decrypt the incoming payload
+            encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+            if not encrypted_content:
+                logger.warning('No encrypted content found in the request.')
+                return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
 
-        decrypted_content = decrypt_data(encrypted_content)
-        data = json.loads(decrypted_content)
-        logger.debug(f'Decrypted content: {data}')
+            decrypted_content = decrypt_data(encrypted_content)
+            data = json.loads(decrypted_content)
+            logger.debug(f'Decrypted content: {data}')
 
-        company_details = data.get('companyDetails')
-        candidate_name = data.get('candidateFullName')
-        position_title = data.get('positionTitle')
-        department = data.get('department')
-        status = data.get('status')
-        location = data.get('location')
-        start_date = data.get('expectedStartDate')
-        compensation_benefits = data.get('compensationBenefits')  # Merged field
-        work_hours = data.get('workHours')
-        terms = data.get('termsConditions')
-        acceptance_deadline = data.get('deadline')
-        contact_info = data.get('contactInfo')
-        documents_needed = data.get('documentsNeeded')
-        closing_remarks = data.get('closingRemarks')
+            # Extract fields for the offer letter
+            company_details = data.get('companyDetails')
+            candidate_name = data.get('candidateFullName')
+            position_title = data.get('positionTitle')
+            department = data.get('department')
+            status = data.get('status')
+            location = data.get('location')
+            start_date = data.get('expectedStartDate')
+            compensation_benefits = data.get('compensationBenefits')
+            work_hours = data.get('workHours')
+            terms = data.get('termsConditions')
+            acceptance_deadline = data.get('deadline')
+            contact_info = data.get('contactInfo')
+            documents_needed = data.get('documentsNeeded')
+            closing_remarks = data.get('closingRemarks')
 
-        logger.info('Generating offer letter content.')
-        offer_letter_content = generate_offer_letter(
-            company_details,  candidate_name, position_title, department, status,
-            location, start_date, compensation_benefits, work_hours,
-            terms, acceptance_deadline, contact_info, documents_needed, closing_remarks
-        )
+            # Retrieve the guest email and existing word count if it exists
+            guest_email = data.get('email')
+            if guest_email:
+                guest_record = GuestLogin.objects.filter(email=guest_email).first()
+                if guest_record and guest_record.word_count >= 2000:
+                    logger.info('Word Count limit already exceeded')
+                    return JsonResponse({'error': 'Word Count limit already exceeded'}, status=400)
 
-        if offer_letter_content:
+            logger.info('Generating offer letter content.')
+            offer_letter_content = generate_offer_letter(
+                company_details, candidate_name, position_title, department, status,
+                location, start_date, compensation_benefits, work_hours,
+                terms, acceptance_deadline, contact_info, documents_needed, closing_remarks
+            )
+
+            # Calculate the word count for the generated content
+            word_count = len(offer_letter_content.split())
+            logger.debug(f"Generated offer letter content word count: {word_count}")
+            print("Word Count is: ", word_count)
+
+            # Encrypt the response content
             encrypted_content = encrypt_data({'generated_content': offer_letter_content})
             logger.info('Offer letter content generated successfully.')
+
+            # Update or create the word count in the GuestLogin model
+            if guest_email:
+                if guest_record:
+                    # Update existing word count
+                    guest_record.word_count += word_count
+                    guest_record.save()
+                    logger.info(f'Word count for {guest_email} updated successfully. New word count: {guest_record.word_count}')
+                else:
+                    # Create new record if no existing word count found
+                    guest_record = GuestLogin.objects.create(
+                        email=guest_email,
+                        word_count=word_count
+                    )
+                    logger.info(f'Word count for {guest_email} saved successfully. Word count: {word_count}')
+            else:
+                logger.warning('No email found in the request data.')
+
+            # Return the encrypted response with the generated content
             return JsonResponse({'encrypted_content': encrypted_content}, status=200)
 
-        logger.error('Failed to generate offer letter content.')
-        return JsonResponse({'error': 'Failed to generate offer letter. Please try again.'}, status=500)
-
-    except json.JSONDecodeError:
-        logger.error('Invalid JSON format received.')
-        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-    except ValueError as e:
-        logger.error(f'ValueError: {str(e)}')
-        return JsonResponse({'error': str(e)}, status=400)
-    except Exception as e:
-        logger.error(f'Exception: {str(e)}')
-        return JsonResponse({'error': str(e)}, status=500)
+        except json.JSONDecodeError:
+            logger.error('Invalid JSON format received.')
+            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+        except ValueError as e:
+            logger.error(f'ValueError: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            logger.error(f'Exception: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=500)
 
     logger.warning('Method not allowed.')
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 
+# @csrf_exempt
+# def sales_script_generator_guest(request):
+#     if request.method == 'POST':
+#         try:
+#             # Load and decode the request body
+#             body = request.body.decode('utf-8')
+#             logger.debug(f"Request body received: {body}")
+
+#             # Extract and decrypt the incoming payload
+#             data = json.loads(body)
+#             encrypted_content = data.get('encrypted_content')
+#             if not encrypted_content:
+#                 logger.warning("No encrypted content found in the request.")
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#             logger.debug(f"Encrypted content received: {encrypted_content}")
+
+#             decrypted_content = decrypt_data(encrypted_content)
+#             logger.debug(f"Decrypted content: {decrypted_content}")
+
+#             data = json.loads(decrypted_content)
+
+#             # Extract fields from the decrypted JSON data
+#             num_words = data.get('num_words')
+#             company_details = data.get('company_details')
+#             product_descriptions = data.get('product_descriptions')
+#             features_benefits = data.get('features_benefits')
+#             pricing_info = data.get('pricing_info')
+#             promotions = data.get('promotions')
+#             target_audience = data.get('target_audience')
+#             sales_objectives = data.get('sales_objectives')
+#             competitive_advantage = data.get('competitive_advantage')
+#             compliance = data.get('compliance')
+
+#             logger.debug(f"Data extracted for sales script generation: num_words={num_words}, company_details={company_details}")
+
+#             # Generate the sales script
+#             logger.info("Generating sales script...")
+#             sales_script = generate_sales_script(
+#                 company_details,
+#                 num_words,
+#                 product_descriptions,
+#                 features_benefits,
+#                 pricing_info,
+#                 promotions,
+#                 target_audience,
+#                 sales_objectives,
+#                 competitive_advantage,
+#                 compliance,
+#             )
+
+#             # Calculate the word count for the generated content
+#             word_count = len(sales_script.split())
+#             logger.debug(f"Generated sales script word count: {word_count}")
+
+#             # Restrict word count to a maximum of 2000
+#             if word_count > 2000:
+#                 return JsonResponse({'error': 'The generated sales script exceeds the maximum allowed word count of 2000.'}, status=400)
+
+#             # Encrypt the response content
+#             encrypted_response_content = encrypt_data({'generated_content': sales_script})
+#             logger.info("Sales script generated successfully.")
+
+#             # Extract email from the data
+#             guest_email = data.get('email')
+#             if guest_email:
+#                 # Retrieve the existing guest record if it exists
+#                 guest_record = GuestLogin.objects.filter(email=guest_email).first()
+#                 if guest_record:
+#                     # Update the words count in the record
+#                     new_word_count = guest_record.word_count + word_count
+#                     guest_record.word_count = new_word_count
+#                     guest_record.save()
+#                     logger.info(f'Word count for {guest_email} updated successfully. New word count: {new_word_count}')
+#                 else:
+#                     logger.warning('No active session found for the given email.')
+#             else:
+#                 logger.warning('No email found in the request data.')
+
+#             # Return the encrypted response with the generated content
+#             return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
+
+#         except json.JSONDecodeError:
+#             logger.error("Invalid JSON format received.")
+#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#         except ValueError as e:
+#             logger.error(f"ValueError occurred: {str(e)}")
+#             return JsonResponse({'error': str(e)}, status=400)
+#         except Exception as e:
+#             logger.error(f"An unexpected error occurred: {str(e)}")
+#             return JsonResponse({'error': str(e)}, status=500)
+
+#     logger.error("Method not allowed.")
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
 @csrf_exempt
 def sales_script_generator_guest(request):
-    try:
-        # Load and decode the request body
-        body = request.body.decode('utf-8')
-        logger.debug(f"Request body received: {body}")
+    if request.method == 'POST':
+        try:
+            # Load and decode the request body
+            body = request.body.decode('utf-8')
+            logger.debug(f"Request body received: {body}")
 
-        # Extract and decrypt the incoming payload
-        data = json.loads(body)
-        encrypted_content = data.get('encrypted_content')
-        if not encrypted_content:
-            logger.warning("No encrypted content found in the request.")
-            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+            # Extract and decrypt the incoming payload
+            data = json.loads(body)
+            encrypted_content = data.get('encrypted_content')
+            if not encrypted_content:
+                logger.warning("No encrypted content found in the request.")
+                return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
 
-        logger.debug(f"Encrypted content received: {encrypted_content}")
+            logger.debug(f"Encrypted content received: {encrypted_content}")
 
-        decrypted_content = decrypt_data(encrypted_content)
-        logger.debug(f"Decrypted content: {decrypted_content}")
+            decrypted_content = decrypt_data(encrypted_content)
+            logger.debug(f"Decrypted content: {decrypted_content}")
 
-        data = json.loads(decrypted_content)
+            data = json.loads(decrypted_content)
 
-        # Extract fields from the decrypted JSON data
-        num_words = data.get('num_words')
-        company_details = data.get('company_details')
-        product_descriptions = data.get('product_descriptions')
-        features_benefits = data.get('features_benefits')
-        pricing_info = data.get('pricing_info')
-        promotions = data.get('promotions')
-        target_audience = data.get('target_audience')
-        sales_objectives = data.get('sales_objectives')
-        competitive_advantage = data.get('competitive_advantage')
-        compliance = data.get('compliance')
+            # Extract fields from the decrypted JSON data
+            num_words = data.get('num_words')
+            company_details = data.get('company_details')
+            product_descriptions = data.get('product_descriptions')
+            features_benefits = data.get('features_benefits')
+            pricing_info = data.get('pricing_info')
+            promotions = data.get('promotions')
+            target_audience = data.get('target_audience')
+            sales_objectives = data.get('sales_objectives')
+            competitive_advantage = data.get('competitive_advantage')
+            compliance = data.get('compliance')
 
-        logger.debug(f"Data extracted for sales script generation: num_words={num_words}, company_details={company_details}")
+            logger.debug(f"Data extracted for sales script generation: num_words={num_words}, company_details={company_details}")
 
-        # Generate the sales script
-        logger.info("Generating sales script...")
-        sales_script = generate_sales_script(
-            company_details,
-            num_words,
-            product_descriptions,
-            features_benefits,
-            pricing_info,
-            promotions,
-            target_audience,
-            sales_objectives,
-            competitive_advantage,
-            compliance,
-        )
+            # Retrieve the guest email and existing word count if it exists
+            guest_email = data.get('email')
+            if guest_email:
+                guest_record = GuestLogin.objects.filter(email=guest_email).first()
+                if guest_record and guest_record.word_count >= 2000:
+                    logger.info('Word Count limit already exceeded')
+                    return JsonResponse({'error': 'Word Count limit already exceeded'}, status=400)
 
-        if sales_script:
-            logger.info("Sales script generated successfully.")
+            # Generate the sales script
+            logger.info("Generating sales script...")
+            sales_script = generate_sales_script(
+                company_details,
+                num_words,
+                product_descriptions,
+                features_benefits,
+                pricing_info,
+                promotions,
+                target_audience,
+                sales_objectives,
+                competitive_advantage,
+                compliance,
+            )
+
+            # Calculate the word count for the generated content
+            word_count = len(sales_script.split())
+            logger.debug(f"Generated sales script word count: {word_count}")
+
+            # Encrypt the response content
             encrypted_response_content = encrypt_data({'generated_content': sales_script})
+            logger.info("Sales script generated successfully.")
+
+            # Update or create the word count in the GuestLogin model
+            if guest_email:
+                if guest_record:
+                    # Update existing word count
+                    guest_record.word_count += word_count
+                    guest_record.save()
+                    logger.info(f'Word count for {guest_email} updated successfully. New word count: {guest_record.word_count}')
+                else:
+                    # Create new record if no existing word count found
+                    guest_record = GuestLogin.objects.create(
+                        email=guest_email,
+                        word_count=word_count
+                    )
+                    logger.info(f'Word count for {guest_email} saved successfully. Word count: {word_count}')
+            else:
+                logger.warning('No email found in the request data.')
+
+            # Return the encrypted response with the generated content
             return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
 
-        logger.error("Failed to generate sales script.")
-        return JsonResponse({'error': 'Failed to generate sales script. Please try again.'}, status=500)
-
-    except json.JSONDecodeError:
-        logger.error("Invalid JSON format received.")
-        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-    except ValueError as e:
-        logger.error(f"ValueError occurred: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=400)
-    except Exception as e:
-        logger.error(f"An unexpected error occurred: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
+        except json.JSONDecodeError:
+            logger.error("Invalid JSON format received.")
+            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+        except ValueError as e:
+            logger.error(f"ValueError occurred: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            logger.error(f"An unexpected error occurred: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
 
     logger.error("Method not allowed.")
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
+
+# @csrf_exempt
+# def summarize_document_guest(request):
+#     if request.method == 'POST':
+#         try:
+#             # Extract form data
+#             document_context = request.POST.get('documentContext')
+#             main_subject = request.POST.get('mainSubject')
+#             summary_purpose = request.POST.get('summaryPurpose')
+#             length_detail = request.POST.get('lengthDetail')
+#             important_elements = request.POST.get('importantElements')
+#             audience = request.POST.get('audience')
+#             tone = request.POST.get('tone')
+#             format_ = request.POST.get('format')
+#             additional_instructions = request.POST.get('additionalInstructions')
+#             document_file = request.FILES.get('documentFile')
+#             guest_email = request.POST.get('email')  # Extract email from payload
+
+#             # Check if the file is provided
+#             if not document_file:
+#                 return JsonResponse({'error': 'No document file provided.'}, status=400)
+
+#             # Generate summary (ensure this function handles the file correctly)
+#             summary = generate_summary(
+#                 document_context, main_subject, summary_purpose, length_detail,
+#                 important_elements, audience, tone, format_, additional_instructions, document_file
+#             )
+
+#             # Handle errors in the summary generation process
+#             if summary.startswith("Error:"):
+#                 logger.error(summary)
+#                 return JsonResponse({'error': summary}, status=500)
+
+#             # Calculate the word count of the generated summary
+#             word_count = len(summary.split())
+#             logger.debug(f"Generated summary word count: {word_count}")
+
+#             # Restrict word count to a maximum of 2000
+#             if word_count > 2000:
+#                 return JsonResponse({'error': 'The generated summary exceeds the maximum allowed word count of 2000.'}, status=400)
+
+#             # Update the word count for the guest email if provided
+#             if guest_email:
+#                 # Retrieve the existing guest record if it exists
+#                 guest_record = GuestLogin.objects.filter(email=guest_email).first()
+#                 if guest_record:
+#                     # Update the words count in the record
+#                     new_word_count = guest_record.word_count + word_count
+#                     guest_record.word_count = new_word_count
+#                     guest_record.save()
+#                     logger.info(f'Word count for {guest_email} updated successfully. New word count: {new_word_count}')
+#                 else:
+#                     logger.warning('No active session found for the given email.')
+#             else:
+#                 logger.warning('No email found in the request data.')
+
+#             # Return the generated summary in the response
+#             return JsonResponse({'summary': summary}, status=200)
+
+#         except Exception as e:
+#             logger.error(f'Exception: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=500)
+
+#     logger.error("Method not allowed.")
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
 @csrf_exempt
 def summarize_document_guest(request):
-    try:
-        # Extract form data
-        document_context = request.POST.get('documentContext')
-        main_subject = request.POST.get('mainSubject')
-        summary_purpose = request.POST.get('summaryPurpose')
-        length_detail = request.POST.get('lengthDetail')
-        important_elements = request.POST.get('importantElements')
-        audience = request.POST.get('audience')
-        tone = request.POST.get('tone')
-        format_ = request.POST.get('format')
-        additional_instructions = request.POST.get('additionalInstructions')
-        document_file = request.FILES.get('documentFile')
+    if request.method == 'POST':
+        try:
+            # Extract form data
+            document_context = request.POST.get('documentContext')
+            main_subject = request.POST.get('mainSubject')
+            summary_purpose = request.POST.get('summaryPurpose')
+            length_detail = request.POST.get('lengthDetail')
+            important_elements = request.POST.get('importantElements')
+            audience = request.POST.get('audience')
+            tone = request.POST.get('tone')
+            format_ = request.POST.get('format')
+            additional_instructions = request.POST.get('additionalInstructions')
+            document_file = request.FILES.get('documentFile')
+            guest_email = request.POST.get('email')  # Extract email from payload
 
-        # Check if the file is provided
-        if not document_file:
-            return JsonResponse({'error': 'No document file provided.'}, status=400)
+            # Check if the file is provided
+            if not document_file:
+                return JsonResponse({'error': 'No document file provided.'}, status=400)
 
-        # Generate summary (ensure this function handles the file correctly)
-        summary = generate_summary(
-            document_context, main_subject, summary_purpose, length_detail,
-            important_elements, audience, tone, format_, additional_instructions, document_file
-        )
+            # Retrieve the guest email and existing word count if it exists
+            if guest_email:
+                guest_record = GuestLogin.objects.filter(email=guest_email).first()
+                if guest_record and guest_record.word_count >= 2000:
+                    logger.info('Word Count limit already exceeded')
+                    return JsonResponse({'error': 'Word Count limit already exceeded'}, status=400)
 
-        # Handle errors in the summary generation process
-        if summary.startswith("Error:"):
-            logger.error(summary)
-            return JsonResponse({'error': summary}, status=500)
+            # Generate summary (ensure this function handles the file correctly)
+            summary = generate_summary(
+                document_context, main_subject, summary_purpose, length_detail,
+                important_elements, audience, tone, format_, additional_instructions, document_file
+            )
 
-        # Return the summary in the response
-        return JsonResponse({'summary': summary}, status=200)
+            # Handle errors in the summary generation process
+            if summary.startswith("Error:"):
+                logger.error(summary)
+                return JsonResponse({'error': summary}, status=500)
 
-    except Exception as e:
-        logger.error(f'Exception: {str(e)}')
-        return JsonResponse({'error': str(e)}, status=500)
+            # Calculate the word count of the generated summary
+            word_count = len(summary.split())
+            logger.debug(f"Generated summary word count: {word_count}")
+
+            # Encrypt and send back the generated summary
+            # Update the word count for the guest email if provided
+            if guest_email:
+                if guest_record:
+                    # Update the word count in the record
+                    new_word_count = guest_record.word_count + word_count
+                    guest_record.word_count = new_word_count
+                    guest_record.save()
+                    logger.info(f'Word count for {guest_email} updated successfully. New word count: {new_word_count}')
+                else:
+                    logger.warning('No active session found for the given email.')
+
+            # Return the generated summary in the response
+            return JsonResponse({'summary': summary}, status=200)
+
+        except Exception as e:
+            logger.error(f'Exception: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=500)
+
+    logger.error("Method not allowed.")
+    return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+
+
+# @csrf_exempt
+# def content_generator_guest(request):
+#     try:
+#         # Load and decode the request body
+#         body = request.body.decode('utf-8')
+#         logger.debug(f"Request body received: {body}")
+
+#         # Extract and decrypt the incoming payload
+#         data = json.loads(body)
+#         encrypted_content = data.get('encrypted_content')
+
+#         if not encrypted_content:
+#             logger.warning("No encrypted content found in the request.")
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         logger.debug(f"Encrypted content received: {encrypted_content}")
+
+#         decrypted_content = decrypt_data(encrypted_content)
+#         logger.debug(f"Decrypted content: {decrypted_content}")
+
+#         data = json.loads(decrypted_content)
+
+#         # Extract fields from the decrypted JSON data
+#         company_info = data.get('company_info')
+#         content_purpose = data.get('content_purpose')
+#         desired_action = data.get('desired_action')
+#         topic_details = data.get('topic_details')
+#         keywords = data.get('keywords')
+#         audience_profile = data.get('audience_profile')
+#         format_structure = data.get('format_structure')
+#         num_words = data.get('num_words')
+#         seo_keywords = data.get('seo_keywords')
+#         references = data.get('references')
+#         guest_email = data.get('email')  # Extract email from the payload
+        
+#         logger.debug(f"Data extracted for content generation: company_info={company_info}, content_purpose={content_purpose}, desired_action={desired_action}")
+
+#         # Generate the content
+#         logger.info("Generating content...")
+#         content = generate_content(
+#             company_info,
+#             content_purpose,
+#             desired_action,
+#             topic_details,
+#             keywords,
+#             audience_profile,
+#             format_structure,
+#             num_words,
+#             seo_keywords,
+#             references
+#         )
+
+#         if content:
+#             logger.info("Content generated successfully.")
+            
+#             # Calculate word count of generated content
+#             word_count = len(content.split())
+#             logger.debug(f"Generated content word count: {word_count}")
+
+#             # Restrict word count to a maximum of 2000
+#             if word_count > 2000:
+#                 return JsonResponse({'error': 'The generated content exceeds the maximum allowed word count of 2000.'}, status=400)
+
+#             # Update the word count for the guest email if provided
+#             if guest_email:
+#                 # Retrieve the existing guest record if it exists
+#                 guest_record = GuestLogin.objects.filter(email=guest_email).first()
+#                 if guest_record:
+#                     # Update the words count in the record
+#                     new_word_count = guest_record.word_count + word_count
+#                     guest_record.word_count = new_word_count
+
+#                     guest_record.save()
+#                     logger.info(f'Word count for {guest_email} updated successfully. New word count: {new_word_count}')
+#                 else:
+#                     logger.warning('No active session found for the given email.')
+#             else:
+#                 logger.warning('No email found in the request data.')
+
+#             # Encrypt and return the generated content in the response
+#             encrypted_response_content = encrypt_data({'generated_content': content})
+#             return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
+
+#         logger.error("Failed to generate content.")
+#         return JsonResponse({'error': 'Failed to generate content. Please try again.'}, status=500)
+
+#     except json.JSONDecodeError:
+#         logger.error("Invalid JSON format received.")
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         logger.error(f"ValueError occurred: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f"An unexpected error occurred: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=500)
+
+#     logger.error("Method not allowed.")
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 @csrf_exempt
 def content_generator_guest(request):
@@ -4415,6 +4916,7 @@ def content_generator_guest(request):
         # Extract and decrypt the incoming payload
         data = json.loads(body)
         encrypted_content = data.get('encrypted_content')
+
         if not encrypted_content:
             logger.warning("No encrypted content found in the request.")
             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
@@ -4437,8 +4939,16 @@ def content_generator_guest(request):
         num_words = data.get('num_words')
         seo_keywords = data.get('seo_keywords')
         references = data.get('references')
+        guest_email = data.get('email')  # Extract email from the payload
 
         logger.debug(f"Data extracted for content generation: company_info={company_info}, content_purpose={content_purpose}, desired_action={desired_action}")
+
+        # Retrieve the guest email and existing word count if it exists
+        if guest_email:
+            guest_record = GuestLogin.objects.filter(email=guest_email).first()
+            if guest_record and guest_record.word_count >= 2000:
+                logger.info('Word Count limit already exceeded')
+                return JsonResponse({'error': 'Word Count limit already exceeded'}, status=400)
 
         # Generate the content
         logger.info("Generating content...")
@@ -4457,6 +4967,25 @@ def content_generator_guest(request):
 
         if content:
             logger.info("Content generated successfully.")
+            
+            # Calculate word count of generated content
+            word_count = len(content.split())
+            logger.debug(f"Generated content word count: {word_count}")
+
+            # Encrypt and send back the generated content
+            # Update the word count for the guest email if provided
+            if guest_email:
+                if guest_record:
+                    # Update the word count in the record
+                    new_word_count = guest_record.word_count + word_count
+                    guest_record.word_count = new_word_count
+
+                    guest_record.save()
+                    logger.info(f'Word count for {guest_email} updated successfully. New word count: {new_word_count}')
+                else:
+                    logger.warning('No active session found for the given email.')
+
+            # Encrypt and return the generated content in the response
             encrypted_response_content = encrypt_data({'generated_content': content})
             return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
 
@@ -4476,12 +5005,87 @@ def content_generator_guest(request):
     logger.error("Method not allowed.")
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
+
+# @csrf_exempt
+# def rephrasely_view_guest(request):
+#     if request.method == 'POST':
+#         try:
+#             # Extract and decrypt the incoming payload
+#             request_body = json.loads(request.body.decode('utf-8'))
+#             encrypted_content = request_body.get('encrypted_content')
+           
+
+#             if not encrypted_content:
+#                 logger.warning('No encrypted content found in the request.')
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#             # Decrypt the content
+#             decrypted_content = decrypt_data(encrypted_content)
+#             data = json.loads(decrypted_content)
+#             logger.debug(f'Decrypted content: {data}')
+
+#             # Extract required fields
+#             text_to_rephrase = data.get('text_to_rephrase')
+#             tone = data.get('tone')
+#             target_audience = data.get('target_audience')
+#             num_words = data.get('num_words', "default")  # Optional, default is "default"
+#             guest_email = data.get('email')  # Extract email from the payload
+#             print(guest_email)
+#             # Call the rephrasely function
+#             rephrased_text = rephrasely(text_to_rephrase, tone, target_audience, num_words)
+
+#             # Calculate word count of rephrased content
+#             word_count = len(rephrased_text.split())
+#             print("Word count is", word_count)
+#             logger.debug(f'Rephrased content word count: {word_count}')
+
+#             # Restrict word count to a maximum of 2000
+#             if word_count > 2000:
+#                 return JsonResponse({'error': 'The rephrased content exceeds the maximum allowed word count of 2000.'}, status=400)
+
+#             # Update the word count for the guest email if provided
+#             if guest_email:
+#                 guest_record = GuestLogin.objects.filter(email=guest_email).first()
+#                 if guest_record:
+#                     new_word_count = guest_record.word_count + word_count
+#                     guest_record.word_count = new_word_count
+#                     print("New Word count is", new_word_count)
+
+#                     guest_record.save()
+#                     logger.info(f'Word count for {guest_email} updated successfully. New word count: {new_word_count}')
+#                 else:
+#                     logger.warning('No active session found for the given email.')
+#             else:
+#                 logger.warning('No email found in the request data.')
+
+#             # Encrypt and return the rephrased content in the response
+#             encrypted_response = encrypt_data({'rephrased_text': rephrased_text})
+#             logger.info('Rephrased content generated successfully.')
+
+#             # Return the encrypted response
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+#         except json.JSONDecodeError:
+#             logger.error('Invalid JSON format received.')
+#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#         except ValueError as e:
+#             logger.error(f'ValueError: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=400)
+#         except Exception as e:
+#             logger.error(f'Exception: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=500)
+
+#     logger.warning('Method not allowed.')
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
 @csrf_exempt
 def rephrasely_view_guest(request):
     if request.method == 'POST':
         try:
             # Extract and decrypt the incoming payload
-            encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+            request_body = json.loads(request.body.decode('utf-8'))
+            encrypted_content = request_body.get('encrypted_content')
+
             if not encrypted_content:
                 logger.warning('No encrypted content found in the request.')
                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
@@ -4496,11 +5100,39 @@ def rephrasely_view_guest(request):
             tone = data.get('tone')
             target_audience = data.get('target_audience')
             num_words = data.get('num_words', "default")  # Optional, default is "default"
+            guest_email = data.get('email')  # Extract email from the payload
+
+            # Retrieve the guest email and existing word count if it exists
+            if guest_email:
+                guest_record = GuestLogin.objects.filter(email=guest_email).first()
+                if guest_record and guest_record.word_count >= 2000:
+                    logger.info('Word Count limit already exceeded')
+                    return JsonResponse({'error': 'Word Count limit already exceeded'}, status=400)
 
             # Call the rephrasely function
             rephrased_text = rephrasely(text_to_rephrase, tone, target_audience, num_words)
 
-            # Encrypt the response content
+            # Calculate word count of rephrased content
+            word_count = len(rephrased_text.split())
+            logger.debug(f'Rephrased content word count: {word_count}')
+
+            # Restrict word count to a maximum of 2000
+            if word_count > 2000:
+                return JsonResponse({'error': 'The rephrased content exceeds the maximum allowed word count of 2000.'}, status=400)
+
+            # Update the word count for the guest email if provided
+            if guest_email:
+                if guest_record:
+                    # Update the word count in the record
+                    new_word_count = guest_record.word_count + word_count
+                    guest_record.word_count = new_word_count
+
+                    guest_record.save()
+                    logger.info(f'Word count for {guest_email} updated successfully. New word count: {new_word_count}')
+                else:
+                    logger.warning('No active session found for the given email.')
+
+            # Encrypt and return the rephrased content in the response
             encrypted_response = encrypt_data({'rephrased_text': rephrased_text})
             logger.info('Rephrased content generated successfully.')
 
@@ -4520,6 +5152,86 @@ def rephrasely_view_guest(request):
     logger.warning('Method not allowed.')
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
+
+# @csrf_exempt
+# def generate_blog_view_guest(request):
+#     try:
+#         # Load and decode the request body
+#         body = request.body.decode('utf-8')
+#         logger.debug(f"Request body received: {body}")
+
+#         # Extract and decrypt the incoming payload
+#         data = json.loads(body)
+#         encrypted_content = data.get('encrypted_content')
+
+#         if not encrypted_content:
+#             logger.warning("No encrypted content found in the request.")
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         logger.debug(f"Encrypted content received: {encrypted_content}")
+#         decrypted_content = decrypt_data(encrypted_content)
+#         logger.debug(f"Decrypted content: {decrypted_content}")
+
+#         data = json.loads(decrypted_content)
+
+#         # Extract the required fields
+#         title = data.get('title')
+#         tone = data.get('tone')
+#         keywords = data.get('keywords', None)  # Optional
+#         guest_email = data.get('email')  # Extract email from the payload
+#         print(guest_email)
+
+#         # Ensure required fields are present
+#         if not title or not tone:
+#             return JsonResponse({"error": "Missing 'title' or 'tone'."}, status=400)
+
+#         # Call the generate_blog function
+#         blog_content = generate_blog(title, tone, keywords)
+
+#         # Calculate word count of generated blog content
+#         word_count = len(blog_content.split())
+#         print(word_count)
+#         logger.debug(f'Generated blog content word count: {word_count}')
+
+#         # Restrict word count to a maximum of 2000
+#         if word_count > 2000:
+#             return JsonResponse({'error': 'The generated blog content exceeds the maximum allowed word count of 2000.'}, status=400)
+
+#         # Update the word count for the guest email if provided
+#         if guest_email:
+#             guest_record = GuestLogin.objects.filter(email=guest_email).first()
+#             if guest_record:
+#                 new_word_count = guest_record.word_count + word_count
+#                 guest_record.word_count = new_word_count
+#                 print(new_word_count)
+
+#                 guest_record.save()
+#                 logger.info(f'Word count for {guest_email} updated successfully. New word count: {new_word_count}')
+#             else:
+#                 logger.warning('No active session found for the given email.')
+#         else:
+#             logger.warning('No email found in the request data.')
+
+#         # Encrypt the response content
+#         encrypted_response_content = encrypt_data({'blog_content': blog_content})
+
+#         # Return the encrypted blog content as a JSON response
+#         return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
+
+#     except json.JSONDecodeError:
+#         logger.error("Invalid JSON format received.")
+#         return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
+#     except ValueError as e:
+#         logger.error(f"ValueError occurred: {str(e)}")
+#         return JsonResponse({"error": str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f"An unexpected error occurred: {str(e)}")
+#         return JsonResponse({"error": str(e)}, status=500)
+
+#     # If not a POST request, return an error
+#     return JsonResponse({"error": "Only POST method is allowed."}, status=405)
+
+
 @csrf_exempt
 def generate_blog_view_guest(request):
     try:
@@ -4530,6 +5242,7 @@ def generate_blog_view_guest(request):
         # Extract and decrypt the incoming payload
         data = json.loads(body)
         encrypted_content = data.get('encrypted_content')
+
         if not encrypted_content:
             logger.warning("No encrypted content found in the request.")
             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
@@ -4544,13 +5257,42 @@ def generate_blog_view_guest(request):
         title = data.get('title')
         tone = data.get('tone')
         keywords = data.get('keywords', None)  # Optional
+        guest_email = data.get('email')  # Extract email from the payload
+        print(guest_email)
 
         # Ensure required fields are present
         if not title or not tone:
             return JsonResponse({"error": "Missing 'title' or 'tone'."}, status=400)
 
+        # Retrieve the guest email and existing word count if it exists
+        if guest_email:
+            guest_record = GuestLogin.objects.filter(email=guest_email).first()
+            if guest_record and guest_record.word_count >= 2000:
+                logger.info('Word count limit already exceeded')
+                return JsonResponse({'error': 'Word Count limit already exceeded'}, status=400)
+
         # Call the generate_blog function
         blog_content = generate_blog(title, tone, keywords)
+
+        # Calculate word count of generated blog content
+        word_count = len(blog_content.split())
+        logger.debug(f'Generated blog content word count: {word_count}')
+
+        # Restrict word count to a maximum of 2000
+        if word_count > 2000:
+            return JsonResponse({'error': 'The generated blog content exceeds the maximum allowed word count of 2000.'}, status=400)
+
+        # Update the word count for the guest email if provided
+        if guest_email:
+            if guest_record:
+                # Update the word count in the record
+                new_word_count = guest_record.word_count + word_count
+                guest_record.word_count = new_word_count
+
+                guest_record.save()
+                logger.info(f'Word count for {guest_email} updated successfully. New word count: {new_word_count}')
+            else:
+                logger.warning('No active session found for the given email.')
 
         # Encrypt the response content
         encrypted_response_content = encrypt_data({'blog_content': blog_content})
@@ -4570,7 +5312,6 @@ def generate_blog_view_guest(request):
 
     # If not a POST request, return an error
     return JsonResponse({"error": "Only POST method is allowed."}, status=405)
-
 
 @csrf_exempt
 def translate_content_guest(request):
@@ -4780,10 +5521,99 @@ def translate_content_guest(request):
 #     else:
 #         return JsonResponse({'error': 'Invalid HTTP method.'}, status=405)
 
+# @csrf_exempt
+# def guest_send_otp(request):
+#     if request.method == 'POST':
+#         try:
+#             # Decrypt incoming request data
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             if not encrypted_content:
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+            
+#             decrypted_content = decrypt_data(encrypted_content)
+#             data = json.loads(decrypted_content)
+
+#             email = data.get('email')  # Use email instead of mobile number
+
+#             if not email:
+#                 return JsonResponse({'error': 'Email is required.'}, status=400)
+
+#             # Generate OTP and set expiry time
+#             otp = guest_generate_otp()
+#             valid_till = guest_otp_expiry_time()
+
+#             # Create or update the GuestLogin entry
+#             guest_login, created = GuestLogin.objects.update_or_create(
+#                 email=email,
+#                 defaults={
+#                     'otp': otp,
+#                     'valid_till': valid_till,
+#                     'is_active': True
+#                 }
+#             )
+
+#             # Prepare the email content
+#             subject = 'Confidential OTP for Guest Login'
+#             plain_message = f"""
+# Dear Sir/Madam,
+
+# We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is {otp} and will remain valid for a period of 10 minutes.
+
+# Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.
+
+# This notification is intended to provide you with the necessary information to complete Guest Login. If you have any concerns or require assistance, please contact our support team through the appropriate channels.
+
+# Thank you for your understanding and cooperation.
+
+# Sincerely,
+# The ProdigiDesk Team
+# """
+#             html_message = f"""
+# <p>Dear Sir/Madam,</p>
+# <p>We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is <strong>{otp}</strong> and will remain valid for a period of 10 minutes.</p>
+# <p>Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.</p>
+# <p>This notification is intended to provide you with the necessary information to complete your Guest Login. If you have any concerns or require assistance, please contact our support team through the appropriate channels.</p>
+# <p>Thank you for your understanding and cooperation.</p>
+# <p>Sincerely,<br>The ProdigiDesk Team</p>
+# """
+
+#             from_email = settings.DEFAULT_FROM_EMAIL
+#             recipient_list = [email]
+
+#             # Send the OTP via email
+#             try:
+#                 send_mail(
+#                     subject, 
+#                     plain_message, 
+#                     from_email, 
+#                     recipient_list, 
+#                     fail_silently=False,
+#                     html_message=html_message  # Send both plain and HTML content
+#                 )
+
+#                 # Encrypt the response
+#                 encrypted_response = encrypt_data({'message': f'OTP sent to {email}.'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+#             except Exception as e:
+#                 return JsonResponse({'error': f'Error sending email: {str(e)}'}, status=500)
+
+#         except json.JSONDecodeError:
+#             return JsonResponse({'error': 'Invalid JSON format.'}, status=400)
+#         except Exception as e:
+#             return JsonResponse({'error': str(e)}, status=500)
+#     else:
+#         return JsonResponse({'error': 'Invalid HTTP method.'}, status=405)
+
+
+
 @csrf_exempt
 def guest_send_otp(request):
     if request.method == 'POST':
         try:
+            # Load untrusted domains from the text file
+            with open('./domains.txt', 'r') as file:
+                untrusted_domains = {line.strip().lower() for line in file}
+
             # Decrypt incoming request data
             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
             if not encrypted_content:
@@ -4796,6 +5626,18 @@ def guest_send_otp(request):
 
             if not email:
                 return JsonResponse({'error': 'Email is required.'}, status=400)
+
+            # Extract domain from the email
+            try:
+                email_domain = email.split('@')[1].lower()
+            except IndexError:
+                return JsonResponse({'error': 'Invalid email format.'}, status=400)
+
+            # Check if the email domain is in the untrusted list
+            if email_domain in untrusted_domains:
+                return JsonResponse({
+                    'error': 'It seems you are using an untrusted email domain service. Please try with another email.'
+                }, status=400)
 
             # Generate OTP and set expiry time
             otp = guest_generate_otp()

@@ -72,8 +72,4 @@ urlpatterns = [
     path('translate_and_download_document/',views.translate_and_download_document,name='translate_and_download_document'),
     path('fetch_filtered_payments/', views.fetch_filtered_payments, name='fetch_filtered_payments'),
     path('get_word_count/', views.get_word_count, name='get_word_count'),
-
-
-
-
 ]

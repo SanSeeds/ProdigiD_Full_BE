@@ -4452,17 +4452,44 @@ def guest_validate_otp(request):
 def get_word_count(request):
     if request.method == 'GET':
         try:
-            email = request.GET.get('email', None)
+            # Get encrypted content from query parameters
+            encrypted_content = request.GET.get('encrypted_content', None)
+            if not encrypted_content:
+                logger.warning('No encrypted content found in the request.')
+                return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+            # Decrypt the received content
+            decrypted_content = decrypt_data(encrypted_content)
+            data = json.loads(decrypted_content)
+            logger.debug(f'Decrypted content: {data}')
+
+            # Retrieve email from decrypted data
+            email = data.get('email')
             if not email:
                 return JsonResponse({'error': 'Email parameter is required.'}, status=400)
+
+            # Fetch word count from GuestLogin model
             guest_login = GuestLogin.objects.filter(email=email).first()
             if guest_login:
-                return JsonResponse({'email': email, 'word_count': guest_login.word_count}, status=200)
+                # Encrypt the response content
+                encrypted_response = encrypt_data({'email': email, 'word_count': guest_login.word_count})
+                return JsonResponse({'encrypted_content': encrypted_response}, status=200)
             else:
                 return JsonResponse({'error': 'No record found for the provided email.'}, status=404)
 
+        except json.JSONDecodeError:
+            logger.error('Invalid JSON format received.')
+            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+        except ValueError as e:
+            logger.error(f'ValueError: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=400)
         except Exception as e:
+            logger.error(f'Exception: {str(e)}')
             return JsonResponse({'error': str(e)}, status=500)
+    else:
+        logger.warning('Method not allowed.')
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
 
 @csrf_exempt
 def create_cart(request):

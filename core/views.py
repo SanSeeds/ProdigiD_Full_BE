@@ -4414,12 +4414,57 @@ The ProdigiDesk Team
 
 
 
+# @csrf_exempt
+# def guest_validate_otp(request):
+#     if request.method == 'POST':
+#         try:
+#             data = json.loads(request.body.decode('utf-8'))
+#             email = data.get('email')  # Changed to email
+#             otp = data.get('otp')
+
+#             if not email or not otp:
+#                 return JsonResponse({'error': 'Email and OTP are required.'}, status=400)
+
+#             # Find the GuestLogin entry
+#             try:
+#                 guest_login = GuestLogin.objects.get(email=email, otp=otp)  # Changed to email
+#             except GuestLogin.DoesNotExist:
+#                 return JsonResponse({'error': 'Invalid OTP.'}, status=400)
+
+#             # Check if OTP is valid and session is active
+#             if not guest_login.is_valid() or not guest_login.is_active:
+#                 guest_login.deactivate_session()  # Deactivate if expired
+#                 return JsonResponse({'error': 'OTP has expired or session is inactive.'}, status=400)
+
+#             # If valid, mark the session as inactive and return success
+#             guest_login.deactivate_session()
+#             return JsonResponse({'message': 'OTP is valid. Session deactivated.'}, status=200)
+
+#         except json.JSONDecodeError:
+#             return JsonResponse({'error': 'Invalid JSON format.'}, status=400)
+#         except Exception as e:
+#             return JsonResponse({'error': str(e)}, status=500)
+#     else:
+#         return JsonResponse({'error': 'Invalid HTTP method.'}, status=405)
+
+
 @csrf_exempt
 def guest_validate_otp(request):
     if request.method == 'POST':
         try:
-            data = json.loads(request.body.decode('utf-8'))
-            email = data.get('email')  # Changed to email
+            # Load and decode the request body
+            body = request.body.decode('utf-8')
+            data = json.loads(body)
+
+            encrypted_content = data.get('encrypted_content')
+            if not encrypted_content:
+                return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+            # Decrypt the incoming payload
+            decrypted_content = decrypt_data(encrypted_content)
+            data = json.loads(decrypted_content)
+
+            email = data.get('email')
             otp = data.get('otp')
 
             if not email or not otp:
@@ -4427,7 +4472,7 @@ def guest_validate_otp(request):
 
             # Find the GuestLogin entry
             try:
-                guest_login = GuestLogin.objects.get(email=email, otp=otp)  # Changed to email
+                guest_login = GuestLogin.objects.get(email=email, otp=otp)
             except GuestLogin.DoesNotExist:
                 return JsonResponse({'error': 'Invalid OTP.'}, status=400)
 
@@ -4438,7 +4483,11 @@ def guest_validate_otp(request):
 
             # If valid, mark the session as inactive and return success
             guest_login.deactivate_session()
-            return JsonResponse({'message': 'OTP is valid. Session deactivated.'}, status=200)
+            # Encrypt the response content
+            response_content = {'message': 'OTP is valid. Redirecting to homepage'}
+            encrypted_response_content = encrypt_data(response_content)
+
+            return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
 
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON format.'}, status=400)

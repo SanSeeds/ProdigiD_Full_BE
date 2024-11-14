@@ -249,7 +249,7 @@ DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
 #         'OPTIONS': {
-#                 'options': '-c search_path=prodigi2'
+#                 'options': '-c search_path=prodigidesk'
 #             },
 #         'NAME': 'ProdigiDesk',
 #         'USER': 'postgres',

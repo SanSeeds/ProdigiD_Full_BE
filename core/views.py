@@ -5738,6 +5738,22 @@ def guest_validate_otp(request):
     else:
         return JsonResponse({'error': 'Invalid HTTP method.'}, status=405)
 
+@csrf_exempt
+def get_word_count(request):
+    if request.method == 'GET':
+        try:
+            email = request.GET.get('email', None)
+            if not email:
+                return JsonResponse({'error': 'Email parameter is required.'}, status=400)
+            guest_login = GuestLogin.objects.filter(email=email).first()
+            if guest_login:
+                return JsonResponse({'email': email, 'word_count': guest_login.word_count}, status=200)
+            else:
+                return JsonResponse({'error': 'No record found for the provided email.'}, status=404)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
 # @csrf_exempt
 # def guest_validate_otp(request):
 #     if request.method == 'POST':

@@ -80,7 +80,6 @@ from reportlab.lib.enums import TA_CENTER
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 # import googletrans 
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -2416,6 +2415,59 @@ def translate(request):
     logger.debug(f'Encrypted response: {encrypted_response}')
 
     return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+
+@csrf_exempt
+def translate_android(request):
+    if request.method != 'POST':
+        logger.warning('Invalid request method')
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+    try:
+        # Parse the incoming JSON payload
+        data = json.loads(request.body.decode('utf-8'))
+        
+        input_text = data.get('input_text', '')
+        from_language = data.get('from_language', '')
+        to_language = data.get('to_language', '')
+
+        if not (input_text and from_language and to_language):
+            logger.warning('Missing input_text, from_language, or to_language.')
+            return JsonResponse({'error': 'Please provide the input text and select both languages.'}, status=400)
+
+        # Function to perform translation
+        def perform_translation():
+            # Perform the translation
+            return bhashini_translate(input_text, to_language, from_language)["translated_content"]
+
+        # Use ThreadPoolExecutor to run the translation in a separate thread
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(perform_translation)
+            translated_text = future.result()
+            print(translated_text)
+        
+        logger.info('Translation successful')
+
+    except json.JSONDecodeError:
+        logger.error('Invalid JSON format received.')
+        return JsonResponse({'error': 'Invalid JSON format received.'}, status=400)
+    except KeyError as e:
+        logger.error(f'Missing key in translation response: {str(e)}')
+        return JsonResponse({'error': f'Missing key in translation response: {str(e)}'}, status=500)
+    except Exception as e:
+        logger.error(f'Error during request handling: {str(e)}')
+        return JsonResponse({'error': f'Error during request handling: {str(e)}'}, status=500)
+
+    # Prepare the plain JSON response
+    response_data = {
+        'translated_text': translated_text,
+        'input_text': input_text,
+        'from_language': from_language,
+        'to_language': to_language
+    }
+    return JsonResponse(response_data, status=200)
+
+
 
 SUPPORTED_LANGUAGES = {
     "English": "en",
@@ -5170,6 +5222,565 @@ def delete_user_account(request):
 
     encrypted_response = encrypt_data({"error": "Invalid request method"})
     return JsonResponse({"encrypted_content": encrypted_response}, status=400)
+
+#Mobile App API's
+@csrf_exempt
+def signin_android(request):
+    if request.method == 'POST':
+        try:
+            # Parse the request body as JSON
+            body = json.loads(request.body.decode('utf-8'))
+            login_input = body.get('login_input', '').lower()
+            password = body.get('password')
+            print(body)
+            logout_from_all = body.get('logout_from_all', False)  # Check if the checkbox is set
+
+            if not login_input or not password:
+                logger.warning('Login input and password are required')
+                return JsonResponse({'error': 'Login input and password are required'}, status=400)
+
+            try:
+                if '@' in login_input:
+                    user = User.objects.get(email=login_input)
+                else:
+                    user = User.objects.get(username=login_input)
+            except User.DoesNotExist:
+                logger.warning('Username or email not found')
+                return JsonResponse({'error': 'Username or email not found'}, status=401)
+
+            # Check if the user has an active session
+            if logout_from_all:
+                # Mark all previous sessions as inactive
+                UserSession.objects.filter(user=user, active=True).update(active=False)
+
+            active_session = UserSession.objects.filter(user=user, active=True).first()
+            if active_session and not logout_from_all:
+                logger.warning('User already logged in with an active session')
+                return JsonResponse({'error': 'User already logged in'}, status=403)
+
+            user = authenticate(request, username=user.username, password=password)
+            if user is not None:
+                login(request, user)
+                refresh = RefreshToken.for_user(user)
+                logger.info(f'User {user.username} authenticated successfully')
+
+                # Create a new session
+                session_id = get_random_string(length=32)
+                UserSession.objects.create(user=user, session_id=session_id, email=user.email, active=True)  # Include email here
+
+                logger.debug(f'Session created with ID: {session_id}')
+
+                response_data = {
+                    'success': 'User authenticated',
+                    'access': str(refresh.access_token),
+                    'refresh': str(refresh),
+                    'user_id': user.id,
+                    'session_id': session_id  # Include session_id in the response
+                }
+                print(response_data)
+                return JsonResponse(response_data, status=200)
+            else:
+                logger.warning('Password not correct')
+                return JsonResponse({'error': 'Password not correct'}, status=401)
+        except json.JSONDecodeError:
+            logger.error('Invalid JSON format in request')
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            logger.error(f'Internal server error: {str(e)}')
+            return JsonResponse({'error': 'Internal server error'}, status=500)
+    else:
+        logger.error('Invalid request method')
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+def add_user_android(request):
+    if request.method == 'POST':
+        try:
+            # Load untrusted domains from the text file
+            with open('./domains.txt', 'r') as file:
+                untrusted_domains = {line.strip().lower() for line in file}
+
+            # Load and decode the request body
+            body = request.body.decode('utf-8')
+            logger.debug(f"Request body received: {body}")
+
+            # Parse the JSON request body
+            data = json.loads(body)
+            encrypted_content = data.get('encrypted_content')
+            if not encrypted_content:
+                logger.warning("No encrypted content found in the request.")
+                return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+            logger.debug(f"Encrypted content received: {encrypted_content}")
+            # No decryption logic here anymore, directly use the content
+            content = encrypted_content  # Assuming encrypted_content is the actual content in plain JSON format
+
+            if not content:
+                logger.warning('No content found in the request.')
+                return JsonResponse({'error': 'No content found in the request.'}, status=400)
+
+            # Extract required fields
+            first_name = content.get('first_name')
+            last_name = content.get('last_name')
+            username = content.get('username')
+            email = content.get('email')
+            password = content.get('password')
+            confirm_password = content.get('confirm_password')
+
+            # Check if username and email are provided
+            if not username:
+                return JsonResponse({'error': 'Username is required.'}, status=400)
+            if not email:
+                return JsonResponse({'error': 'Email is required.'}, status=400)
+
+            # Normalize username and email to lowercase
+            username = username.lower()
+            email = email.lower()
+
+            # Extract domain from the email
+            try:
+                email_domain = email.split('@')[1].lower()
+            except IndexError:
+                return JsonResponse({'error': 'Invalid email format.'}, status=400)
+
+            # Check if the email domain is in the untrusted list
+            if email_domain in untrusted_domains:
+                return JsonResponse({
+                    'error': 'It seems you are using an untrusted email domain service. Please try with another email.'}, 
+                    status=400)
+
+            # Check if passwords match
+            if password != confirm_password:
+                return JsonResponse({'error': 'Passwords do not match.'}, status=400)
+
+            # Check if username already exists
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({'error': 'Username already exists.'}, status=400)
+
+            # Validate email
+            try:
+                validate_email(email)
+            except ValidationError:
+                return JsonResponse({'error': 'Invalid email address.'}, status=400)
+
+            # Check if email already exists
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({'error': 'Email already exists.'}, status=400)
+
+            # Create user
+            user = User.objects.create(
+                first_name=first_name,
+                last_name=last_name,
+                username=username,
+                email=email,
+                password=make_password(password)  # Hash the password
+            )
+            user.save()
+
+            # Prepare the response data
+            response_data = {
+                'message': 'User created successfully',
+                'user_id': user.id,
+                'email': email
+            }
+
+            # Return the response directly without encryption
+            return JsonResponse(response_data, status=201)
+
+        except json.JSONDecodeError:
+            logger.error("Invalid JSON format in request")
+            return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+        except Exception as e:
+            logger.error(f"Unexpected error: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        logger.error("Invalid request method")
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+@csrf_exempt
+def logout_view_android(request):
+    try:
+        if not request.user.is_authenticated:
+            # If the user is not authenticated, return an error message
+            print("Attempted logout by an unauthenticated user.")
+            return JsonResponse({'error': 'User is not authenticated'}, status=401)
+
+        # Fetch the active session for the logged-in user
+        user_session = UserSession.objects.filter(user=request.user, active=True).first()
+
+        if user_session:
+            # Set the active field to False
+            user_session.active = False
+            user_session.save()
+            print(f"Session for user {request.user.username} marked as inactive.")
+        else:
+            print(f"No active session found for user {request.user.username}.")
+
+        # Perform Django logout operation
+        logout(request)
+        print(f"User {request.user.username} logged out successfully.")
+        logger.info(f"User {request.user.username} logged out successfully.")
+        return JsonResponse({'success': 'Logged out successfully'}, status=200)
+    except Exception as e:
+        print(f"Error during logout: {str(e)}")
+        logger.error(f"Error during logout: {str(e)}")
+        return JsonResponse({'error': 'An error occurred during logout.'}, status=500)
+
+
+@csrf_exempt
+def send_email_verification_otp_android(request):
+    if request.method == 'POST':
+        try:
+            # Load untrusted domains from the text file
+            with open('./domains.txt', 'r') as file:
+                untrusted_domains = {line.strip().lower() for line in file}
+
+            # Load and decode the request body
+            body = request.body.decode('utf-8')
+            logger.debug(f"Request body received: {body}")
+
+            data = json.loads(body)
+
+            # Extract email from the payload
+            email = data.get('email')
+            if not email:
+                return JsonResponse({'error': 'Email is required'}, status=400)
+
+            # Extract domain from the email
+            try:
+                email_domain = email.split('@')[1].lower()
+            except IndexError:
+                return JsonResponse({'error': 'Invalid email format.'}, status=400)
+
+            # Check if the email domain is in the untrusted list
+            if email_domain in untrusted_domains:
+                return JsonResponse({
+                    'error': 'It seems you are using an untrusted email domain service. Please try with another email.'},
+                    status=400)
+
+            # Check if the email is already registered
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({'error': 'Email is already registered'}, status=400)
+
+            # Generate OTP and set expiry time
+            otp = generate_otp()
+            expiry_time = timezone.now() + timedelta(minutes=10)
+
+            # Save OTP and its expiry in the database
+            TemporaryEmailVerificationOTP.objects.update_or_create(
+                email=email,
+                defaults={
+                    'otp': otp,
+                    'expiry_time': expiry_time
+                }
+            )
+
+            # Send OTP via email
+            subject = 'Welcome to ProdigiDesk'
+            plain_message = f"""
+Dear Sir/Madam,
+
+We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is {otp} and will remain valid for a period of 10 minutes.
+
+Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.
+
+This notification is intended to provide you with the necessary information to complete your Email Verification. If you have any concerns or require assistance, please contact our support team through the appropriate channels.
+
+Thank you for your understanding and cooperation.
+
+Sincerely,
+The ProdigiDesk Team
+"""
+            html_message = f"""
+<p>Dear Sir/Madam,</p>
+<p>We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is <strong>{otp}</strong> and will remain valid for a period of 10 minutes.</p>
+<p>Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.</p>
+<p>This notification is intended to provide you with the necessary information to complete your Email Verification. If you have any concerns or require assistance, please contact our support team through the appropriate channels.</p>
+<p>Thank you for your understanding and cooperation.</p>
+<p>Sincerely,<br>The ProdigiDesk Team</p>
+"""
+
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient_list = [email]
+
+            try:
+                send_mail(
+                    subject, 
+                    plain_message, 
+                    from_email, 
+                    recipient_list, 
+                    fail_silently=False,
+                    html_message=html_message  # Add HTML content here
+                )
+            except Exception as e:
+                return JsonResponse({'error': f'Error sending email: {str(e)}'}, status=500)
+
+            # Return success response
+            return JsonResponse({'success': 'OTP sent successfully'}, status=200)
+
+        except json.JSONDecodeError:
+            logger.error("Invalid JSON format received.")
+            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+        except Exception as e:
+            logger.error(f"An unexpected error occurred: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+def otp_verify_android(request):
+    if request.method == 'POST':
+        try:
+            # Load and decode the request body
+            body = request.body.decode('utf-8')
+            data = json.loads(body)
+
+            # Extract OTP and email from the request payload
+            otp = data.get('otp')
+            email = data.get('email')
+
+            if not otp or not email:
+                return JsonResponse({'error': 'OTP and email are required'}, status=400)
+
+            # Fetch the OTP entry from the database
+            try:
+                otp_entry = TemporaryEmailVerificationOTP.objects.get(email=email)
+            except TemporaryEmailVerificationOTP.DoesNotExist:
+                return JsonResponse({'error': 'Incorrect OTP'}, status=400)
+
+            # Check if the OTP is correct and not expired
+            if otp_entry.otp != otp:
+                return JsonResponse({'error': 'Incorrect OTP'}, status=400)
+
+            if otp_entry.expiry_time < timezone.now():
+                return JsonResponse({'error': 'OTP Expired'}, status=400)
+
+            # OTP is correct and not expired
+            return JsonResponse({'success': 'OTP verified successfully'}, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+def check_session_status_android(request):
+    if request.method == 'POST':
+        try:
+            # Parse incoming payload
+            data = json.loads(request.body.decode('utf-8'))
+            logger.debug(f'Request payload: {data}')
+
+            # Extract session ID from the request payload
+            session_id = data.get('session_id')
+            print(session_id)
+            if not session_id:
+                logger.warning('Session ID not provided')
+                return JsonResponse({'error': 'Session ID not provided'}, status=400)
+
+            session = UserSession.objects.filter(session_id=session_id).first()
+
+            if not session:
+                logger.warning('Session not found')
+                return JsonResponse({'error': 'Session not found'}, status=404)
+
+            # Log the session status
+            logger.info(f'Session {session_id} status is {session.active}')
+
+            # Return the session status
+            return JsonResponse({
+                'session_id': session_id,
+                'active': session.active
+            }, status=200)
+
+        except json.JSONDecodeError:
+            logger.error('Invalid JSON format in request')
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+        except Exception as e:
+            logger.error(f'Internal server error: {str(e)}')
+            return JsonResponse({'error': 'Internal server error'}, status=500)
+
+    else:
+        logger.error('Invalid request method')
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+@csrf_exempt
+def email_generator_android(request):
+    if request.method == 'POST':
+        try:
+            # Extract incoming payload
+            content = json.loads(request.body.decode('utf-8'))
+            logger.debug(f'Received content: {content}')
+
+            if not content:
+                logger.warning('No content found in the request.')
+                return JsonResponse({'error': 'No content found in the request.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Extract data from the request content
+            purpose = content.get('purpose')
+            if purpose == 'Other':
+                purpose = content.get('otherPurpose')
+            num_words = content.get('num_words')
+            subject = content.get('subject')
+            rephrase = content.get('rephraseSubject', False)
+            to = content.get('to')
+            tone = content.get('tone')
+            keywords = content.get('keywords', [])
+            contextual_background = content.get('contextualBackground')
+            call_to_action = content.get('callToAction')
+            if call_to_action == 'Other':
+                call_to_action = content.get('otherCallToAction')
+            additional_details = content.get('additionalDetails')
+            priority_level = content.get('priorityLevel')
+            closing_remarks = content.get('closingRemarks')
+
+            logger.info(f'Generating email with the following data: {content}')
+
+            # Generate email content
+            generated_content = generate_email(
+                purpose, num_words, subject, rephrase, to, tone, keywords,
+                contextual_background, call_to_action, additional_details,
+                priority_level, closing_remarks
+            )
+
+            if generated_content:
+                logger.info('Email content generated successfully.')
+                return JsonResponse({'generated_content': generated_content})
+            else:
+                logger.error('Failed to generate email content.')
+                return JsonResponse({'error': 'Failed to generate email content.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            logger.error(f'Error processing request: {e}')
+            return JsonResponse({'error': 'An error occurred while processing the request.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@csrf_exempt
+def sales_script_generator_android(request):
+    try:
+        # Load and decode the request body
+        body = request.body.decode('utf-8')
+        logger.debug(f"Request body received: {body}")
+
+        # Extract the incoming payload
+        data = json.loads(body)
+        
+        # Extract fields from the JSON data
+        num_words = data.get('num_words')
+        company_details = data.get('company_details')
+        product_descriptions = data.get('product_descriptions')
+        features_benefits = data.get('features_benefits')
+        pricing_info = data.get('pricing_info')
+        promotions = data.get('promotions')
+        target_audience = data.get('target_audience')
+        sales_objectives = data.get('sales_objectives')
+        competitive_advantage = data.get('competitive_advantage')
+        compliance = data.get('compliance')
+
+        logger.debug(f"Data extracted for sales script generation: num_words={num_words}, company_details={company_details}")
+
+        # Generate the sales script
+        logger.info("Generating sales script...")
+        sales_script = generate_sales_script(
+            company_details,
+            num_words,
+            product_descriptions,
+            features_benefits,
+            pricing_info,
+            promotions,
+            target_audience,
+            sales_objectives,
+            competitive_advantage,
+            compliance,
+        )
+
+        if sales_script:
+            logger.info("Sales script generated successfully.")
+            return JsonResponse({'generated_content': sales_script}, status=200)
+
+        logger.error("Failed to generate sales script.")
+        return JsonResponse({'error': 'Failed to generate sales script. Please try again.'}, status=500)
+
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON format received.")
+        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+    except ValueError as e:
+        logger.error(f"ValueError occurred: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+    logger.error("Method not allowed.")
+    return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+@csrf_exempt
+def get_user_services_android(request, email):
+    if request.method == "GET":
+        try:
+            user = get_object_or_404(User, email=email)
+            user_services = get_object_or_404(UserService, user=user)
+
+            services = {
+                "email_service": {
+                    "id": 1,
+                    "is_active": user_services.email_service and (user_services.email_end_date >= date.today()),
+                    "end_date": user_services.email_end_date.isoformat() if user_services.email_end_date else None,
+                },
+                "offer_letter_service": {
+                    "id": 2,
+                    "is_active": user_services.offer_letter_service and (user_services.offer_letter_end_date >= date.today()),
+                    "end_date": user_services.offer_letter_end_date.isoformat() if user_services.offer_letter_end_date else None,
+                },
+                "business_proposal_service": {
+                    "id": 3,
+                    "is_active": user_services.business_proposal_service and (user_services.business_proposal_end_date >= date.today()),
+                    "end_date": user_services.business_proposal_end_date.isoformat() if user_services.business_proposal_end_date else None,
+                },
+                "sales_script_service": {
+                    "id": 4,
+                    "is_active": user_services.sales_script_service and (user_services.sales_script_end_date >= date.today()),
+                    "end_date": user_services.sales_script_end_date.isoformat() if user_services.sales_script_end_date else None,
+                },
+                "content_generation_service": {
+                    "id": 5,
+                    "is_active": user_services.content_generation_service and (user_services.content_generation_end_date >= date.today()),
+                    "end_date": user_services.content_generation_end_date.isoformat() if user_services.content_generation_end_date else None,
+                },
+                "summarize_service": {
+                    "id": 6,
+                    "is_active": user_services.summarize_service and (user_services.summarize_end_date >= date.today()),
+                    "end_date": user_services.summarize_end_date.isoformat() if user_services.summarize_end_date else None,
+                },
+                "ppt_generation_service": {
+                    "id": 7,
+                    "is_active": user_services.ppt_generation_service and (user_services.ppt_generation_end_date >= date.today()),
+                    "end_date": user_services.ppt_generation_end_date.isoformat() if user_services.ppt_generation_end_date else None,
+                },
+                "blog_generation_service": {
+                    "id": 9,
+                    "is_active": user_services.blog_generation_service and (user_services.blog_generation_end_date >= date.today()),
+                    "end_date": user_services.blog_generation_end_date.isoformat() if user_services.blog_generation_end_date else None,
+                },
+                "rephrasely_service": {
+                    "id": 10,
+                    "is_active": user_services.rephrasely_service and (user_services.rephrasely_end_date >= date.today()),
+                    "end_date": user_services.rephrasely_end_date.isoformat() if user_services.rephrasely_end_date else None,
+                },
+            }
+
+            return JsonResponse({"user_id": user.id, "services": services}, status=200)
+
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
+        except UserService.DoesNotExist:
+            return JsonResponse({"error": "User services not found"}, status=404)
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
 
 
 import zipfile

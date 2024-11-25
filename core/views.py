@@ -940,7 +940,7 @@ def add_user(request):
     if request.method == 'POST':
         try:
             # Load untrusted domains from the text file
-            with open('./domains.txt', 'r') as file:
+            with open('./unique_domains.csv', 'r') as file:
                 untrusted_domains = {line.strip().lower() for line in file}
 
             # Load and decode the request body
@@ -984,7 +984,7 @@ def add_user(request):
 
             # Extract domain from the email
             try:
-                email_domain = email.split('@')[1].lower()
+                email_domain = email.split('@')[1].split('.')[0].lower()
             except IndexError:
                 return JsonResponse({'error': 'Invalid email format.'}, status=400)
 
@@ -1051,7 +1051,7 @@ def send_email_verification_otp(request):
     if request.method == 'POST':
         try:
             # Load untrusted domains from the text file
-            with open('./domains.txt', 'r') as file:
+            with open('./unique_domains.csv', 'r') as file:
                 untrusted_domains = {line.strip().lower() for line in file}
 
             # Load and decode the request body
@@ -1078,9 +1078,10 @@ def send_email_verification_otp(request):
 
             # Extract domain from the email
             try:
-                email_domain = email.split('@')[1].lower()
+                email_domain = email.split('@')[1].split('.')[0].lower()
             except IndexError:
                 return JsonResponse({'error': 'Invalid email format.'}, status=400)
+
 
             # Check if the email domain is in the untrusted list
             if email_domain in untrusted_domains:
@@ -4247,102 +4248,102 @@ def translate_content_guest(request):
 
 # @csrf_exempt
 # def guest_send_otp(request):
-    if request.method == 'POST':
-        try:
-            # Load untrusted domains from the text file
-            with open('./domains.txt', 'r') as file:
-                untrusted_domains = {line.strip().lower() for line in file}
+#     if request.method == 'POST':
+#         try:
+#             # Load untrusted domains from the text file
+#             with open('./unique_domains.csv', 'r') as file:
+#                 untrusted_domains = {line.strip().lower() for line in file}
 
-            # Decrypt incoming request data
-            encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-            if not encrypted_content:
-                return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+#             # Decrypt incoming request data
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             if not encrypted_content:
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
             
-            decrypted_content = decrypt_data(encrypted_content)
-            data = json.loads(decrypted_content)
+#             decrypted_content = decrypt_data(encrypted_content)
+#             data = json.loads(decrypted_content)
 
-            email = data.get('email')  # Use email instead of mobile number
+#             email = data.get('email')  # Use email instead of mobile number
 
-            if not email:
-                return JsonResponse({'error': 'Email is required.'}, status=400)
+#             if not email:
+#                 return JsonResponse({'error': 'Email is required.'}, status=400)
 
-            # Extract domain from the email
-            try:
-                email_domain = email.split('@')[1].lower()
-            except IndexError:
-                return JsonResponse({'error': 'Invalid email format.'}, status=400)
+#             # Extract domain from the email
+#             try:
+#                 email_domain = email.split('@')[1].split('.')[0].lower()
+#             except IndexError:
+#                 return JsonResponse({'error': 'Invalid email format.'}, status=400)
 
-            # Check if the email domain is in the untrusted list
-            if email_domain in untrusted_domains:
-                return JsonResponse({
-                    'error': 'It seems you are using an untrusted email domain service. Please try with another email.'
-                }, status=400)
+#             # Check if the email domain is in the untrusted list
+#             if email_domain in untrusted_domains:
+#                 return JsonResponse({
+#                     'error': 'It seems you are using an untrusddddddddted email domain service. Please try with another email.'
+#                 }, status=400)
 
-            # Generate OTP and set expiry time
-            otp = guest_generate_otp()
-            valid_till = guest_otp_expiry_time()
+#             # Generate OTP and set expiry time
+#             otp = guest_generate_otp()
+#             valid_till = guest_otp_expiry_time()
 
-            # Create or update the GuestLogin entry
-            guest_login, created = GuestLogin.objects.update_or_create(
-                email=email,
-                defaults={
-                    'otp': otp,
-                    'valid_till': valid_till,
-                    'is_active': True
-                }
-            )
+#             # Create or update the GuestLogin entry
+#             guest_login, created = GuestLogin.objects.update_or_create(
+#                 email=email,
+#                 defaults={
+#                     'otp': otp,
+#                     'valid_till': valid_till,
+#                     'is_active': True
+#                 }
+#             )
 
-            # Prepare the email content
-            subject = 'Confidential OTP for Guest Login'
-            plain_message = f"""
-Dear Sir/Madam,
+#             # Prepare the email content
+#             subject = 'Confidential OTP for Guest Login'
+#             plain_message = f"""
+# Dear Sir/Madam,
 
-We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is {otp} and will remain valid for a period of 10 minutes.
+# We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is {otp} and will remain valid for a period of 10 minutes.
 
-Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.
+# Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.
 
-This notification is intended to provide you with the necessary information to complete Guest Login. If you have any concerns or require assistance, please contact our support team through the appropriate channels.
+# This notification is intended to provide you with the necessary information to complete Guest Login. If you have any concerns or require assistance, please contact our support team through the appropriate channels.
 
-Thank you for your understanding and cooperation.
+# Thank you for your understanding and cooperation.
 
-Sincerely,
-The ProdigiDesk Team
-"""
-            html_message = f"""
-<p>Dear Sir/Madam,</p>
-<p>We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is <strong>{otp}</strong> and will remain valid for a period of 10 minutes.</p>
-<p>Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.</p>
-<p>This notification is intended to provide you with the necessary information to complete your Guest Login. If you have any concerns or require assistance, please contact our support team through the appropriate channels.</p>
-<p>Thank you for your understanding and cooperation.</p>
-<p>Sincerely,<br>The ProdigiDesk Team</p>
-"""
+# Sincerely,
+# The ProdigiDesk Team
+# """
+#             html_message = f"""
+# <p>Dear Sir/Madam,</p>
+# <p>We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is <strong>{otp}</strong> and will remain valid for a period of 10 minutes.</p>
+# <p>Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.</p>
+# <p>This notification is intended to provide you with the necessary information to complete your Guest Login. If you have any concerns or require assistance, please contact our support team through the appropriate channels.</p>
+# <p>Thank you for your understanding and cooperation.</p>
+# <p>Sincerely,<br>The ProdigiDesk Team</p>
+# """
 
-            from_email = settings.DEFAULT_FROM_EMAIL
-            recipient_list = [email]
+#             from_email = settings.DEFAULT_FROM_EMAIL
+#             recipient_list = [email]
 
-            # Send the OTP via email
-            try:
-                send_mail(
-                    subject, 
-                    plain_message, 
-                    from_email, 
-                    recipient_list, 
-                    fail_silently=False,
-                    html_message=html_message  # Send both plain and HTML content
-                )
+#             # Send the OTP via email
+#             try:
+#                 send_mail(
+#                     subject, 
+#                     plain_message, 
+#                     from_email, 
+#                     recipient_list, 
+#                     fail_silently=False,
+#                     html_message=html_message  # Send both plain and HTML content
+#                 )
 
-                # Encrypt the response
-                encrypted_response = encrypt_data({'message': f'OTP sent to {email}.'})
-                return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-            except Exception as e:
-                return JsonResponse({'error': f'Error sending email: {str(e)}'}, status=500)
+#                 # Encrypt the response
+#                 encrypted_response = encrypt_data({'message': f'OTP sent to {email}.'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+#             except Exception as e:
+#                 return JsonResponse({'error': f'Error sending email: {str(e)}'}, status=500)
 
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON format.'}, status=400)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    else:
-        return JsonResponse({'error': 'Invalid HTTP method.'}, status=405)
+#         except json.JSONDecodeError:
+#             return JsonResponse({'error': 'Invalid JSON format.'}, status=400)
+#         except Exception as e:
+#             return JsonResponse({'error': str(e)}, status=500)
+#     else:
+#         return JsonResponse({'error': 'Invalid HTTP method.'}, status=405)
 
 
 @csrf_exempt
@@ -4350,7 +4351,7 @@ def guest_send_otp(request):
     if request.method == 'POST':
         try:
             # Load untrusted domains from the text file
-            with open('./domains.txt', 'r') as file:
+            with open('./unique_domains.csv', 'r') as file:
                 untrusted_domains = {line.strip().lower() for line in file}
 
             # Decrypt incoming request data
@@ -4368,9 +4369,10 @@ def guest_send_otp(request):
 
             # Extract domain from the email
             try:
-                email_domain = email.split('@')[1].lower()
+                email_domain = email.split('@')[1].split('.')[0].lower()
             except IndexError:
                 return JsonResponse({'error': 'Invalid email format.'}, status=400)
+
 
             # Check if the email domain is in the untrusted list
             if email_domain in untrusted_domains:
@@ -5292,12 +5294,319 @@ def signin_android(request):
         logger.error('Invalid request method')
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+
+@csrf_exempt
+def create_razorpay_order_android(request):
+    if request.method == "POST":
+        try:
+            # Load the request body
+            data = json.loads(request.body.decode('utf-8'))
+
+            # Extract amount and email
+            amount = data.get('amount', 0)  # Get the amount in rupees
+            email = data.get('email')  # Extract email from the request
+            
+            if not email:
+                return JsonResponse({"error": "Email is required"}, status=400)
+
+            # Convert amount to paise
+            amount_in_paise = int(amount * 100)
+
+            # Create Razorpay order
+            razorpay_order = razorpay_client.order.create({
+                "amount": amount_in_paise,  # Use amount in paise
+                "currency": "INR",
+                "payment_capture": "1"
+            })
+
+            print(razorpay_order)
+
+            # Save order details to the Payment table including the email
+            Payment.objects.create(
+                order_id=razorpay_order['id'],
+                amount=amount,  # Store amount in rupees in the database
+                currency="INR",
+                payment_capture=True,
+                email=email  # Store the email
+            )
+
+            # Prepare the response data
+            response_data = {
+                "order_id": razorpay_order['id'],
+                "amount": amount,  # Return amount in rupees for response
+                "currency": "INR",
+                "razorpay_key_id": settings.RAZORPAY_KEY_ID
+            }
+            
+            return JsonResponse(response_data, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format."}, status=400)
+        except ValueError as e:
+            return JsonResponse({"error": str(e)}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
+
+@csrf_exempt
+def verify_payment_android(request):
+    try:
+        # Load the request body
+        data = json.loads(request.body.decode('utf-8'))
+
+        razorpay_order_id = data.get('razorpay_order_id')
+        razorpay_payment_id = data.get('razorpay_payment_id')
+        razorpay_signature = data.get('razorpay_signature')
+        selected_services = data.get('selected_services')
+        email = data.get('email')
+
+        if not razorpay_order_id or not razorpay_payment_id or not razorpay_signature:
+            return JsonResponse({'error': 'Missing required payment data'}, status=400)
+
+        logger.info(f"Received payment verification request with order_id: {razorpay_order_id}, payment_id: {razorpay_payment_id}, signature: {razorpay_signature}")
+
+        # Verify payment signature
+        params_dict = {
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature
+        }
+
+        try:
+            # Verify the payment signature
+            razorpay_client.utility.verify_payment_signature(params_dict)
+            logger.info("Payment signature verification successful")
+
+            # Fetch and update the payment record
+            payment = Payment.objects.get(order_id=razorpay_order_id)
+            payment.payment_id = razorpay_payment_id
+            payment.signature = razorpay_signature
+            payment.email = email
+            payment.verified = True
+
+            # Process selected services
+            if not selected_services or not email:
+                return JsonResponse({'error': 'No services or email found in the request.'}, status=400)
+
+            user = get_object_or_404(User, email=email)
+            user_services, created = UserService.objects.get_or_create(user=user)
+            subscribed_services = []
+
+            # Check if "Introductory Offer" is selected
+            if selected_services.get("introductory_offer_service", False):
+                user_services.email_service = user_services.offer_letter_service = 1
+                user_services.business_proposal_service = user_services.sales_script_service = 1
+                user_services.content_generation_service = user_services.summarize_service = 1
+                user_services.ppt_generation_service = user_services.blog_generation_service = 1
+                user_services.rephrasely_service = 1
+                subscribed_services = [
+                    "Email Service", "Offer Letter Service", "Business Proposal Service",
+                    "Sales Script Service", "Content Generation Service", "Summarize Service",
+                    "PPT Generation Service", "Blog Generation Service", "Rephrasely Service"
+                ]
+            else:
+                # Update services based on data
+                for service_key, service_attr in [
+                    ("email_service", "Email Service"), ("offer_letter_service", "Offer Letter Service"),
+                    ("business_proposal_service", "Business Proposal Service"), ("sales_script_service", "Sales Script Service"),
+                    ("content_generation_service", "Content Generation Service"), ("summarize_service", "Summarize Service"),
+                    ("ppt_generation_service", "PPT Generation Service"), ("blog_generation_service", "Blog Generation Service"),
+                    ("rephrasely_service", "Rephrasely Service")
+                ]:
+                    if selected_services.get(service_key, 0) > 0:
+                        setattr(user_services, service_key, 1)
+                        subscribed_services.append(service_attr)
+
+            # Save the updated services
+            user_services.save()
+            payment.order_datetime = datetime.now()
+            payment.subscribed_services = selected_services
+            payment.service = user_services
+            payment.subscription_duration = 'monthly'
+            payment.save()
+
+            # Send subscription confirmation email
+            subject = 'Subscription Confirmation - ProdigiDesk Services'
+            services_list = ''.join(f"<li>{service}</li>" for service in subscribed_services)
+            message = f"""
+            <html><body>
+            <p>Dear {user.get_full_name()},</p>
+            <p>We are pleased to inform you that your purchase has been successfully processed. Below is a summary of the services activated for you:</p>
+            <p><strong>Activated Services for a month:</strong></p>
+            <ul>{services_list}</ul>
+            <p><strong>Order Details:</strong></p>
+            <ul>
+                <li><strong>Order Number:</strong> {razorpay_order_id}</li>
+                <li><strong>Order Date and Time:</strong> {payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S")}</li>
+                <li><strong>Payment Amount:</strong> {payment.amount} {payment.currency}</li>
+                <li><strong>Registered Email:</strong> {email}</li>
+            </ul>
+            <p>Should you have any queries or require assistance, feel free to contact us at contact@espritanalytique.com. We look forward to serving you!</p>
+            <p>Thank you for choosing ProdigiDesk.</p>
+            <br>Best regards
+            <br>The ProdigiDesk Team
+            <br><a href="http://www.prodigidesk.ai/">http://www.prodigidesk.ai/</a>   
+            </body></html>
+            """
+
+            email_message = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+            email_message.content_subtype = 'html'
+            email_message.send(fail_silently=False)
+
+            # Return success response
+            response_data = {'message': 'Payment and service save successful'}
+            return JsonResponse(response_data, status=200)
+
+        except razorpay.errors.SignatureVerificationError:
+            logger.error("Payment signature verification failed")
+            return JsonResponse({'error': 'Payment verification failed'}, status=400)
+
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON format")
+        return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+    except Exception as e:
+        logger.error(f"Exception occurred: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+@csrf_exempt
+def verify_payment_yearly_android(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            logger.debug(f'Content received: {data}')
+
+            # Extract payment details
+            razorpay_order_id = data.get('razorpay_order_id')
+            razorpay_payment_id = data.get('razorpay_payment_id')
+            razorpay_signature = data.get('razorpay_signature')
+            selected_services = data.get('selected_services')
+            email = data.get('email')
+
+            logger.info(f"Received yearly payment verification request with order_id: {razorpay_order_id}")
+
+            # Verify payment signature
+            params_dict = {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_signature': razorpay_signature
+            }
+
+            try:
+                razorpay_client.utility.verify_payment_signature(params_dict)
+                logger.info("Payment signature verification successful for yearly subscription")
+
+                # Update payment and user service details
+                payment = Payment.objects.get(order_id=razorpay_order_id)
+                payment.payment_id = razorpay_payment_id
+                payment.signature = razorpay_signature
+                payment.email = email
+                payment.verified = True
+
+                if not selected_services or not email:
+                    return JsonResponse({'error': 'No services or email found in the request.'}, status=400)
+
+                user = get_object_or_404(User, email=email)
+                user_services, created = UserService.objects.get_or_create(user=user)
+                subscribed_services = []
+                expiration_date = timezone.now().date() + relativedelta(years=1)  # Default expiration date set to 1 year
+
+                # Check if the introductory offer is selected
+                if selected_services.get("introductory_offer_service", False):
+                    # Activate multiple services as part of the introductory offer
+                    services = [
+                        "email_service", "offer_letter_service", "business_proposal_service",
+                        "sales_script_service", "content_generation_service", "summarize_service",
+                        "ppt_generation_service", "blog_generation_service", "rephrasely_service"
+                    ]
+                    for service in services:
+                        setattr(user_services, service, 1)
+                        setattr(user_services, f"{service.replace('_service', '')}_end_date", expiration_date)
+                    subscribed_services = [service.replace("_service", "").replace("_", " ").title() for service in services]
+                else:
+                    # Activate individual services based on selection
+                    for service, end_date_field in [
+                        ("email_service", "email_end_date"),
+                        ("offer_letter_service", "offer_letter_end_date"),
+                        ("business_proposal_service", "business_proposal_end_date"),
+                        ("sales_script_service", "sales_script_end_date"),
+                        ("content_generation_service", "content_generation_end_date"),
+                        ("summarize_service", "summarize_end_date"),
+                        ("ppt_generation_service", "ppt_generation_end_date"),
+                        ("blog_generation_service", "blog_generation_end_date"),
+                        ("rephrasely_service", "rephrasely_end_date"),
+                    ]:
+                        if selected_services.get(service, 0) > 0:
+                            setattr(user_services, service, 1)
+                            setattr(user_services, end_date_field, expiration_date)
+                            subscribed_services.append(service.replace("_service", "").replace("_", " ").title())
+
+                user_services.save()
+                payment.order_datetime = datetime.now()
+                payment.subscribed_services = selected_services
+                payment.subscription_duration = 'yearly'  # Set subscription_duration as yearly
+                payment.service = user_services
+                payment.save()
+
+                # Send subscription confirmation email
+                subject = 'Subscription Confirmation - ProdigiDesk Services'
+                services_list = ''.join(f"<li>{service}</li>" for service in subscribed_services)
+                message = f"""
+                <html><body>
+                <p>Dear {user.get_full_name()},</p>
+                <p>We are pleased to inform you that your subscription has been successfully processed. Below is a summary of the services activated for you:</p>
+                <p><strong>Activated Services for a year:</strong></p>
+                <ul>{services_list}</ul>
+                <p><strong>Order Details:</strong></p>
+                <ul>
+                    <li><strong>Order Number:</strong> {razorpay_order_id}</li>
+                    <li><strong>Order Date and Time:</strong> {payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S")}</li>
+                    <li><strong>Payment Amount:</strong> {payment.amount} {payment.currency}</li>
+                    <li><strong>Registered Email:</strong> {email}</li>
+                </ul>
+                <p>Should you have any queries or require assistance, feel free to contact us at contact@espritanalytique.com. We look forward to serving you!</p>
+                <p>Thank you for choosing ProdigiDesk.</p>
+                <br>
+                <br>Best regards
+                <br>The ProdigiDesk Team
+                <br><a href="http://www.prodigidesk.ai/">http://www.prodigidesk.ai/</a>   
+                
+                </body></html>
+                """
+
+                email_message = EmailMessage(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+                email_message.content_subtype = 'html'
+                email_message.send(fail_silently=False)
+
+                # Return success response
+                return JsonResponse({
+                    'message': 'Yearly payment and service save successful',
+                    'subscribed_services': subscribed_services,
+                    'subscription_duration': 'yearly'
+                }, status=200)
+
+            except razorpay.errors.SignatureVerificationError:
+                logger.error("Yearly payment signature verification failed")
+                return JsonResponse({"status": "Payment verification failed"}, status=400)
+
+        except json.JSONDecodeError:
+            logger.error("Invalid JSON format")
+            return JsonResponse({"error": "Invalid JSON format"}, status=400)
+        except Exception as e:
+            logger.error(f"Exception occurred: {str(e)}")
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
 @csrf_exempt
 def add_user_android(request):
     if request.method == 'POST':
         try:
             # Load untrusted domains from the text file
-            with open('./domains.txt', 'r') as file:
+            with open('./unique_domains.csv', 'r') as file:
                 untrusted_domains = {line.strip().lower() for line in file}
 
             # Load and decode the request body
@@ -5306,26 +5615,14 @@ def add_user_android(request):
 
             # Parse the JSON request body
             data = json.loads(body)
-            encrypted_content = data.get('encrypted_content')
-            if not encrypted_content:
-                logger.warning("No encrypted content found in the request.")
-                return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-            logger.debug(f"Encrypted content received: {encrypted_content}")
-            # No decryption logic here anymore, directly use the content
-            content = encrypted_content  # Assuming encrypted_content is the actual content in plain JSON format
-
-            if not content:
-                logger.warning('No content found in the request.')
-                return JsonResponse({'error': 'No content found in the request.'}, status=400)
-
+            
             # Extract required fields
-            first_name = content.get('first_name')
-            last_name = content.get('last_name')
-            username = content.get('username')
-            email = content.get('email')
-            password = content.get('password')
-            confirm_password = content.get('confirm_password')
+            first_name = data.get('first_name')
+            last_name = data.get('last_name')
+            username = data.get('username')
+            email = data.get('email')
+            password = data.get('password')
+            confirm_password = data.get('confirm_password')
 
             # Check if username and email are provided
             if not username:
@@ -5384,7 +5681,6 @@ def add_user_android(request):
                 'email': email
             }
 
-            # Return the response directly without encryption
             return JsonResponse(response_data, status=201)
 
         except json.JSONDecodeError:
@@ -5433,7 +5729,7 @@ def send_email_verification_otp_android(request):
     if request.method == 'POST':
         try:
             # Load untrusted domains from the text file
-            with open('./domains.txt', 'r') as file:
+            with open('./unique_domains.csv', 'r') as file:
                 untrusted_domains = {line.strip().lower() for line in file}
 
             # Load and decode the request body
@@ -5449,7 +5745,7 @@ def send_email_verification_otp_android(request):
 
             # Extract domain from the email
             try:
-                email_domain = email.split('@')[1].lower()
+                email_domain = email.split('@')[1].split('.')[0].lower()
             except IndexError:
                 return JsonResponse({'error': 'Invalid email format.'}, status=400)
 
@@ -5607,6 +5903,169 @@ def check_session_status_android(request):
     else:
         logger.error('Invalid request method')
         return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@api_view(['GET', 'POST'])
+@permission_classes([])
+def profile_android(request):
+    user = request.user
+    profile = Profile.objects.get(user=user)
+    errors = []
+
+    if request.method == 'POST':
+        try:
+            # Parse the incoming JSON payload
+            data = json.loads(request.body.decode('utf-8'))
+            logger.debug(f'Received content: {data}')
+
+            print(data)
+            # Update user and profile data based on received JSON
+            user.first_name = data.get('first_name', user.first_name)
+            user.last_name = data.get('last_name', user.last_name)
+            user.email = data.get('email', user.email)
+            profile.bio = data.get('bio', profile.bio)
+            profile.location = data.get('location', profile.location)
+            profile.user_gst = data.get('user_gst', profile.user_gst)
+
+            birth_date = data.get('birth_date')
+            if birth_date:
+                parsed_date = parse_date(birth_date)
+                if parsed_date:
+                    profile.birth_date = parsed_date
+                else:
+                    errors.append("Invalid date format for birth date.")
+                    profile.birth_date = None
+
+            if not user.first_name:
+                errors.append("First name is required.")
+            if not user.last_name:
+                errors.append("Last name is required.")
+            if not user.email:
+                errors.append("Email is required.")
+
+            if not errors:
+                user.save()
+                profile.save()
+                response_data = {'message': 'Profile updated successfully.'}
+            else:
+                response_data = {'errors': errors}
+
+            logger.info('Profile updated successfully.')
+
+            # Return the response in plain format (no encryption)
+            return JsonResponse(response_data, status=200)
+
+        except json.JSONDecodeError:
+            logger.error('Invalid JSON format received.')
+            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+        except ValueError as e:
+            logger.error(f'ValueError: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            logger.error(f'Exception: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=500)
+
+    # Handle GET request
+    response_data = {
+        'user': {
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email
+        },
+        'profile': {
+            'bio': profile.bio,
+            'location': profile.location,
+            'birth_date': profile.birth_date.isoformat() if profile.birth_date else None,
+            'user_gst': profile.user_gst
+        }
+    }
+
+    logger.info('Profile data retrieved successfully.')
+
+    # Return the response in plain format (no encryption)
+    return JsonResponse(response_data)
+
+@api_view(['GET'])
+@permission_classes([])
+def profile_info_android(request):
+    try:
+        # Get the email from the query parameters
+        email = request.GET.get('email')
+        if not email:
+            return JsonResponse({'error': 'Email parameter is required.'}, status=400)
+
+        # Fetch the user based on the provided email
+        user = User.objects.get(email=email)
+
+        # Get the user's subscribed services
+        user_service = UserService.objects.get(user=user)
+
+        # Get all payments made by the user
+        payments = Payment.objects.filter(email=user.email)
+
+        # Prepare the payment details
+        payment_info = []
+        for payment in payments:
+            payment_info.append({
+                'order_id': payment.order_id,
+                'payment_id': payment.payment_id,
+                'amount': str(payment.amount),
+                'currency': payment.currency,
+                'created_at': payment.created_at.isoformat(),  # Convert to ISO string
+                'verified': payment.verified,
+            })
+
+        # Prepare the response data with date fields converted to ISO format
+        response_data = {
+            'user_info': {
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'last_login': user.last_login.isoformat() if user.last_login else None,
+                'username': user.username,
+                'date_joined': user.date_joined.isoformat(),
+            },
+            'services': {
+                'email_service': user_service.email_service,
+                'offer_letter_service': user_service.offer_letter_service,
+                'business_proposal_service': user_service.business_proposal_service,
+                'sales_script_service': user_service.sales_script_service,
+                'content_generation_service': user_service.content_generation_service,
+                'summarize_service': user_service.summarize_service,
+                'ppt_generation_service': user_service.ppt_generation_service,
+                'blog_generation_service': user_service.blog_generation_service,
+                'rephrasely_service': user_service.rephrasely_service,
+                'service_start_dates': {
+                    'email_service_start': user_service.email_end_date.isoformat() if user_service.email_end_date else None,
+                    'offer_letter_service_start': user_service.offer_letter_end_date.isoformat() if user_service.offer_letter_end_date else None,
+                    'business_proposal_service_start': user_service.business_proposal_end_date.isoformat() if user_service.business_proposal_end_date else None,
+                    'sales_script_service_start': user_service.sales_script_end_date.isoformat() if user_service.sales_script_end_date else None,
+                    'content_generation_service_start': user_service.content_generation_end_date.isoformat() if user_service.content_generation_end_date else None,
+                    'summarize_service_start': user_service.summarize_end_date.isoformat() if user_service.summarize_end_date else None,
+                    'ppt_generation_service_start': user_service.ppt_generation_end_date.isoformat() if user_service.ppt_generation_end_date else None,
+                    'blog_generation_service_start': user_service.blog_generation_end_date.isoformat() if user_service.blog_generation_end_date else None,
+                    'rephrasely_service_start': user_service.rephrasely_end_date.isoformat() if user_service.rephrasely_end_date else None,
+                },
+                'service_end_dates': {
+                    'email_service_end': user_service.email_end_date.isoformat() if user_service.email_end_date else None,
+                    'offer_letter_service_end': user_service.offer_letter_end_date.isoformat() if user_service.offer_letter_end_date else None,
+                    'business_proposal_service_end': user_service.business_proposal_end_date.isoformat() if user_service.business_proposal_end_date else None,
+                    'sales_script_service_end': user_service.sales_script_end_date.isoformat() if user_service.sales_script_end_date else None,
+                    'content_generation_service_end': user_service.content_generation_end_date.isoformat() if user_service.content_generation_end_date else None,
+                    'summarize_service_end': user_service.summarize_end_date.isoformat() if user_service.summarize_end_date else None,
+                    'ppt_generation_service_end': user_service.ppt_generation_end_date.isoformat() if user_service.ppt_generation_end_date else None,
+                    'blog_generation_service_end': user_service.blog_generation_end_date.isoformat() if user_service.blog_generation_end_date else None,
+                    'rephrasely_service_end': user_service.rephrasely_end_date.isoformat() if user_service.rephrasely_end_date else None,
+                },
+            },
+            'payments': payment_info,
+        }
+
+        return JsonResponse(response_data, status=200)
+
+    except ObjectDoesNotExist:
+        return JsonResponse({'error': 'User or user services not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 @csrf_exempt

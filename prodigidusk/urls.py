@@ -90,6 +90,7 @@ urlpatterns = [
     path('logout_view_android/', views.logout_view_android, name='logout_view_android'),
     path('profile_android/', views.profile_android, name='profile_android'),
     path('profile_info_android/', views.profile_info_android, name='profile_info_android'),
+    path('speech_api_android/', views.speech_api_android, name='speech_api_android'),
 
 
 

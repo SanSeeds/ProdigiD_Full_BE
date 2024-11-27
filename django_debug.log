@@ -1,210 +1,24 @@
-ERROR 2024-09-23 14:04:54,914 log Internal Server Error: /translate_json/
-ERROR 2024-09-23 14:04:54,915 basehttp "POST /translate_json/ HTTP/1.1" 500 50
-ERROR 2024-09-23 14:04:54,915 basehttp "POST /translate_json/ HTTP/1.1" 500 50
-ERROR 2024-09-23 17:09:03,176 log Internal Server Error: /create_presentation/
-ERROR 2024-09-23 17:09:03,180 basehttp "POST /create_presentation/ HTTP/1.1" 500 379
-ERROR 2024-09-23 17:09:03,180 basehttp "POST /create_presentation/ HTTP/1.1" 500 379
-ERROR 2024-09-23 17:12:52,364 log Internal Server Error: /create_presentation/
-ERROR 2024-09-23 17:12:52,365 basehttp "POST /create_presentation/ HTTP/1.1" 500 1303
-ERROR 2024-09-23 17:12:52,365 basehttp "POST /create_presentation/ HTTP/1.1" 500 1303
-ERROR 2024-09-23 17:14:24,473 log Internal Server Error: /create_presentation/
-ERROR 2024-09-23 17:14:24,475 basehttp "POST /create_presentation/ HTTP/1.1" 500 362
-ERROR 2024-09-23 17:14:24,475 basehttp "POST /create_presentation/ HTTP/1.1" 500 362
-ERROR 2024-09-23 17:17:55,430 log Internal Server Error: /create_presentation/
-ERROR 2024-09-23 17:17:55,430 basehttp "POST /create_presentation/ HTTP/1.1" 500 3103
-ERROR 2024-09-23 17:17:55,430 basehttp "POST /create_presentation/ HTTP/1.1" 500 3103
-ERROR 2024-09-23 17:20:44,809 log Internal Server Error: /create_presentation/
-ERROR 2024-09-23 17:20:44,810 basehttp "POST /create_presentation/ HTTP/1.1" 500 10819
-ERROR 2024-09-23 17:20:44,810 basehttp "POST /create_presentation/ HTTP/1.1" 500 10819
-ERROR 2024-09-23 17:22:19,421 log Internal Server Error: /create_presentation/
-ERROR 2024-09-23 17:22:19,422 basehttp "POST /create_presentation/ HTTP/1.1" 500 439
-ERROR 2024-09-23 17:22:19,422 basehttp "POST /create_presentation/ HTTP/1.1" 500 439
-ERROR 2024-09-23 17:24:48,829 log Internal Server Error: /create_presentation/
-ERROR 2024-09-23 17:24:48,830 basehttp "POST /create_presentation/ HTTP/1.1" 500 458
-ERROR 2024-09-23 17:24:48,830 basehttp "POST /create_presentation/ HTTP/1.1" 500 458
-ERROR 2024-09-23 18:04:22,126 log Internal Server Error: /create_presentation/
-ERROR 2024-09-23 18:04:22,128 basehttp "POST /create_presentation/ HTTP/1.1" 500 362
-ERROR 2024-09-23 18:04:22,128 basehttp "POST /create_presentation/ HTTP/1.1" 500 362
-ERROR 2024-09-23 18:04:52,868 log Internal Server Error: /create_presentation/
-ERROR 2024-09-23 18:04:52,870 basehttp "POST /create_presentation/ HTTP/1.1" 500 362
-ERROR 2024-09-23 18:04:52,870 basehttp "POST /create_presentation/ HTTP/1.1" 500 362
-ERROR 2024-09-24 10:20:50,433 views Error: Could not extract content. Details: Unsupported file type
-ERROR 2024-09-24 10:20:50,458 log Internal Server Error: /summarize_document/
-ERROR 2024-09-24 10:20:50,458 basehttp "POST /summarize_document/ HTTP/1.1" 500 77
-ERROR 2024-09-24 10:20:50,458 basehttp "POST /summarize_document/ HTTP/1.1" 500 77
-ERROR 2024-09-24 10:21:02,254 views Error: Could not extract content. Details: Unsupported file type
-ERROR 2024-09-24 10:21:02,254 log Internal Server Error: /summarize_document/
-ERROR 2024-09-24 10:21:02,262 basehttp "POST /summarize_document/ HTTP/1.1" 500 77
-ERROR 2024-09-24 10:21:02,262 basehttp "POST /summarize_document/ HTTP/1.1" 500 77
-ERROR 2024-09-24 10:30:43,402 views Exception: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.1-70b-versatile` in organization `org_01j1vg75cjfsc9dmn0c8z7xhpf` on tokens per minute (TPM): Limit 20000, Used 86024, Requested 1568. Please try again in 3m22.776s. Visit https://console.groq.com/docs/rate-limits for more information.', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
-ERROR 2024-09-24 10:30:43,402 log Internal Server Error: /summarize_document/
-ERROR 2024-09-24 10:30:43,402 basehttp "POST /summarize_document/ HTTP/1.1" 500 379
-ERROR 2024-09-24 10:30:43,402 basehttp "POST /summarize_document/ HTTP/1.1" 500 379
-ERROR 2024-09-24 10:31:00,798 views Exception: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.1-70b-versatile` in organization `org_01j1vg75cjfsc9dmn0c8z7xhpf` on tokens per minute (TPM): Limit 20000, Used 80254, Requested 1568. Please try again in 3m5.466s. Visit https://console.groq.com/docs/rate-limits for more information.', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
-ERROR 2024-09-24 10:31:00,798 log Internal Server Error: /summarize_document/
-ERROR 2024-09-24 10:31:00,798 basehttp "POST /summarize_document/ HTTP/1.1" 500 378
-ERROR 2024-09-24 10:31:00,798 basehttp "POST /summarize_document/ HTTP/1.1" 500 378
-ERROR 2024-09-24 10:58:41,343 log Internal Server Error: /create_presentation/
-ERROR 2024-09-24 10:58:41,343 basehttp "POST /create_presentation/ HTTP/1.1" 500 102
-ERROR 2024-09-24 10:58:41,343 basehttp "POST /create_presentation/ HTTP/1.1" 500 102
-ERROR 2024-09-24 10:58:57,060 log Internal Server Error: /create_presentation/
-ERROR 2024-09-24 10:58:57,060 basehttp "POST /create_presentation/ HTTP/1.1" 500 102
-ERROR 2024-09-24 10:58:57,060 basehttp "POST /create_presentation/ HTTP/1.1" 500 102
-ERROR 2024-09-24 11:04:28,667 log Internal Server Error: /create_presentation/
-ERROR 2024-09-24 11:04:28,667 basehttp "POST /create_presentation/ HTTP/1.1" 500 2182
-ERROR 2024-09-24 11:04:28,667 basehttp "POST /create_presentation/ HTTP/1.1" 500 2182
-ERROR 2024-10-15 16:11:08,727 log Internal Server Error: /send_email_verification_otp/
-ERROR 2024-10-15 16:11:08,735 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 112
-ERROR 2024-10-15 16:11:08,735 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 112
-ERROR 2024-10-16 10:55:22,952 log Internal Server Error: /guest_send_otp/
-ERROR 2024-10-16 10:55:22,962 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
-ERROR 2024-10-16 10:55:22,962 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
-ERROR 2024-10-16 11:13:10,395 log Internal Server Error: /guest_send_otp/
-ERROR 2024-10-16 11:13:10,398 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
-ERROR 2024-10-16 11:13:10,398 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
-ERROR 2024-10-16 12:45:36,133 views Unexpected error: [WinError 10054] An existing connection was forcibly closed by the remote host
-ERROR 2024-10-16 12:45:36,144 log Internal Server Error: /send_feedback/
-ERROR 2024-10-16 12:45:36,145 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
-ERROR 2024-10-16 12:45:36,145 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
-ERROR 2024-10-16 14:27:31,429 views Unexpected error: [WinError 10054] An existing connection was forcibly closed by the remote host
-ERROR 2024-10-16 14:27:31,444 log Internal Server Error: /send_feedback/
-ERROR 2024-10-16 14:27:31,447 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
-ERROR 2024-10-16 14:27:31,447 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
-ERROR 2024-10-16 15:29:55,741 views Unexpected error: [WinError 10054] An existing connection was forcibly closed by the remote host
-ERROR 2024-10-16 15:29:55,749 log Internal Server Error: /send_feedback/
-ERROR 2024-10-16 15:29:55,751 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
-ERROR 2024-10-16 15:29:55,751 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
-ERROR 2024-10-16 15:36:34,227 views Translation failed with status code: 504
-ERROR 2024-10-16 15:36:34,229 log Internal Server Error: /translate_content/
-ERROR 2024-10-16 16:06:20,212 views Translation error: Translation failed with status code: 504
-ERROR 2024-10-16 16:06:21,081 log Internal Server Error: /translate_content/
-ERROR 2024-10-16 16:06:21,082 basehttp "POST /translate_content/ HTTP/1.1" 500 32
-ERROR 2024-10-16 16:06:21,082 basehttp "POST /translate_content/ HTTP/1.1" 500 32
-ERROR 2024-10-16 16:09:11,514 views Translation error: Translation failed with status code: 504
-ERROR 2024-10-16 16:09:11,808 log Internal Server Error: /translate_content/
-ERROR 2024-10-16 16:09:11,809 basehttp "POST /translate_content/ HTTP/1.1" 500 32
-ERROR 2024-10-16 16:09:11,809 basehttp "POST /translate_content/ HTTP/1.1" 500 32
-ERROR 2024-10-16 17:28:04,003 views Translation failed with status code: 504
-ERROR 2024-10-16 17:28:04,005 log Internal Server Error: /translate_content/
-ERROR 2024-10-16 17:28:04,006 basehttp "POST /translate_content/ HTTP/1.1" 500 32
-ERROR 2024-10-16 17:28:04,006 basehttp "POST /translate_content/ HTTP/1.1" 500 32
-ERROR 2024-10-16 17:34:24,886 log Internal Server Error: /translate_content/
-Traceback (most recent call last):
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-               ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\rest_framework\views.py", line 511, in dispatch
-    self.response = self.finalize_response(request, response, *args, **kwargs)
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\rest_framework\views.py", line 423, in finalize_response
-    assert isinstance(response, HttpResponseBase), (
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: Expected a `Response`, `HttpResponse` or `StreamingHttpResponse` to be returned from the view, but received a `<class 'coroutine'>`
-ERROR 2024-10-16 17:34:24,894 basehttp "POST /translate_content/ HTTP/1.1" 500 92567
-ERROR 2024-10-16 17:34:24,894 basehttp "POST /translate_content/ HTTP/1.1" 500 92567
-ERROR 2024-10-16 17:39:05,338 log Internal Server Error: /translate_content/
-Traceback (most recent call last):
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-               ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\rest_framework\views.py", line 511, in dispatch
-    self.response = self.finalize_response(request, response, *args, **kwargs)
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\rest_framework\views.py", line 423, in finalize_response
-    assert isinstance(response, HttpResponseBase), (
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: Expected a `Response`, `HttpResponse` or `StreamingHttpResponse` to be returned from the view, but received a `<class 'coroutine'>`
-ERROR 2024-10-16 17:39:05,343 basehttp "POST /translate_content/ HTTP/1.1" 500 92567
-ERROR 2024-10-16 17:39:05,343 basehttp "POST /translate_content/ HTTP/1.1" 500 92567
-ERROR 2024-10-16 17:46:22,482 log Internal Server Error: /translate_content/
-Traceback (most recent call last):
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
-    response = get_response(request)
-               ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\django\views\generic\base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\rest_framework\views.py", line 511, in dispatch
-    self.response = self.finalize_response(request, response, *args, **kwargs)
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\abhin\OneDrive\Desktop\dev22\ProdigiD_Full_BE\env\Lib\site-packages\rest_framework\views.py", line 423, in finalize_response
-    assert isinstance(response, HttpResponseBase), (
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: Expected a `Response`, `HttpResponse` or `StreamingHttpResponse` to be returned from the view, but received a `<class 'coroutine'>`
-ERROR 2024-10-16 17:46:22,489 basehttp "POST /translate_content/ HTTP/1.1" 500 92567
-ERROR 2024-10-16 17:46:22,489 basehttp "POST /translate_content/ HTTP/1.1" 500 92567
-ERROR 2024-10-16 18:06:00,807 views Unexpected error: [WinError 10054] An existing connection was forcibly closed by the remote host
-ERROR 2024-10-16 18:06:00,821 log Internal Server Error: /send_feedback/
-ERROR 2024-10-16 18:06:00,823 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
-ERROR 2024-10-16 18:06:00,823 basehttp "POST /send_feedback/ HTTP/1.1" 500 91
-ERROR 2024-10-17 00:05:57,795 log Internal Server Error: /guest_send_otp/
-ERROR 2024-10-17 00:05:57,800 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
-ERROR 2024-10-17 00:05:57,800 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 112
-ERROR 2024-10-17 14:19:58,924 views Translation failed with status code: 504
-ERROR 2024-10-17 14:19:58,934 log Internal Server Error: /translate_content/
-ERROR 2024-10-17 18:12:33,197 views Error processing request: name 'purpose' is not defined
-ERROR 2024-10-17 18:12:33,203 log Internal Server Error: /email_generator_guest/
-ERROR 2024-10-17 18:12:33,203 basehttp "POST /email_generator_guest/ HTTP/1.1" 500 60
-ERROR 2024-10-17 18:12:33,203 basehttp "POST /email_generator_guest/ HTTP/1.1" 500 60
-ERROR 2024-10-17 18:34:03,323 views Exception occurred: relativedelta.__init__() got an unexpected keyword argument 'mont'
-ERROR 2024-10-17 18:34:03,328 log Internal Server Error: /verify_payment/
-ERROR 2024-10-17 18:34:03,328 basehttp "POST /verify_payment/ HTTP/1.1" 500 79
-ERROR 2024-10-17 18:34:03,328 basehttp "POST /verify_payment/ HTTP/1.1" 500 79
-ERROR 2024-10-17 20:22:03,221 log Internal Server Error: /create_presentation/
-ERROR 2024-10-17 20:22:03,229 basehttp "POST /create_presentation/ HTTP/1.1" 500 396
-ERROR 2024-10-17 20:22:03,229 basehttp "POST /create_presentation/ HTTP/1.1" 500 396
-ERROR 2024-10-17 21:23:22,447 log Internal Server Error: /translate_json_files/
-ERROR 2024-10-17 21:23:22,448 basehttp "POST /translate_json_files/ HTTP/1.1" 500 79
-ERROR 2024-10-17 21:23:22,448 basehttp "POST /translate_json_files/ HTTP/1.1" 500 79
-ERROR 2024-10-17 23:07:26,697 log Internal Server Error: /translate_json_files/
-ERROR 2024-10-17 23:07:26,709 basehttp "POST /translate_json_files/ HTTP/1.1" 500 93
-ERROR 2024-10-17 23:07:26,709 basehttp "POST /translate_json_files/ HTTP/1.1" 500 93
-ERROR 2024-10-18 17:36:31,018 log Internal Server Error: /translate_json_files/
-ERROR 2024-10-19 15:35:52,249 views Translation failed with status code: 500
-ERROR 2024-10-19 15:35:52,254 log Internal Server Error: /translate_content/
-ERROR 2024-10-19 15:35:52,254 basehttp "POST /translate_content/ HTTP/1.1" 500 32
-ERROR 2024-10-19 15:35:52,254 basehttp "POST /translate_content/ HTTP/1.1" 500 32
-ERROR 2024-11-13 09:18:51,724 log Internal Server Error: /remove_service_yearly/
-ERROR 2024-11-13 09:18:51,725 basehttp "POST /remove_service_yearly/ HTTP/1.1" 500 51
-ERROR 2024-11-13 09:18:51,725 basehttp "POST /remove_service_yearly/ HTTP/1.1" 500 51
-ERROR 2024-11-13 10:43:04,844 log Internal Server Error: /translate_and_download_document/
-ERROR 2024-11-13 15:44:50,277 views Payment signature verification failed
-ERROR 2024-11-13 16:05:32,256 log Internal Server Error: /remove_service_yearly/
-ERROR 2024-11-13 16:05:32,257 basehttp "POST /remove_service_yearly/ HTTP/1.1" 500 51
-ERROR 2024-11-13 16:05:32,257 basehttp "POST /remove_service_yearly/ HTTP/1.1" 500 51
-ERROR 2024-11-13 18:12:33,519 views Unexpected error: 'Chinese'
-ERROR 2024-11-13 18:12:33,520 log Internal Server Error: /translate_content/
-ERROR 2024-11-13 18:12:33,521 basehttp "POST /translate_content/ HTTP/1.1" 500 22
-ERROR 2024-11-13 18:12:33,521 basehttp "POST /translate_content/ HTTP/1.1" 500 22
-ERROR 2024-11-14 07:20:17,709 views Error: Could not extract content. Details: document closed or encrypted
-ERROR 2024-11-14 07:20:17,709 log Internal Server Error: /summarize_document_guest/
-ERROR 2024-11-14 07:20:17,709 basehttp "POST /summarize_document_guest/ HTTP/1.1" 500 84
-ERROR 2024-11-14 07:20:17,709 basehttp "POST /summarize_document_guest/ HTTP/1.1" 500 84
-ERROR 2024-11-14 07:26:13,124 views Exception: Error code: 413 - {'error': {'message': 'Request too large for model `llama-3.1-70b-versatile` in organization `org_01hy2cvf10envtwa1h9tmgrsav` on tokens per minute (TPM): Limit 6000, Requested 9304, please reduce your message size and try again. Visit https://console.groq.com/docs/rate-limits for more information.', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
-ERROR 2024-11-14 07:26:13,127 log Internal Server Error: /summarize_document_guest/
-ERROR 2024-11-14 07:26:13,128 basehttp "POST /summarize_document_guest/ HTTP/1.1" 500 381
-ERROR 2024-11-14 07:26:13,128 basehttp "POST /summarize_document_guest/ HTTP/1.1" 500 381
+ERROR 2024-11-20 11:37:56,213 views Error during logout: Field 'id' expected a number but got <SimpleLazyObject: <django.contrib.auth.models.AnonymousUser object at 0x14c8c5510>>.
+ERROR 2024-11-20 11:37:56,227 log Internal Server Error: /logout_view_android/
+ERROR 2024-11-20 11:37:56,228 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
+ERROR 2024-11-20 11:37:56,228 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
+ERROR 2024-11-20 11:38:18,731 views Error during logout: Field 'id' expected a number but got <SimpleLazyObject: <django.contrib.auth.models.AnonymousUser object at 0x14c75e7d0>>.
+ERROR 2024-11-20 11:38:18,732 log Internal Server Error: /logout_view_android/
+ERROR 2024-11-20 11:38:18,732 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
+ERROR 2024-11-20 11:38:18,732 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
+ERROR 2024-11-20 11:39:29,851 views Error during logout: Field 'id' expected a number but got <SimpleLazyObject: <django.contrib.auth.models.AnonymousUser object at 0x14c72ba60>>.
+ERROR 2024-11-20 11:39:29,853 log Internal Server Error: /logout_view_android/
+ERROR 2024-11-20 11:39:29,854 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
+ERROR 2024-11-20 11:39:29,854 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
+ERROR 2024-11-20 11:40:44,062 views Error during logout: Field 'id' expected a number but got <SimpleLazyObject: <django.contrib.auth.models.AnonymousUser object at 0x14c75e800>>.
+ERROR 2024-11-20 11:40:44,076 log Internal Server Error: /logout_view_android/
+ERROR 2024-11-20 11:40:44,077 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
+ERROR 2024-11-20 11:40:44,077 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
+ERROR 2024-11-20 11:45:19,022 views Error during logout: Field 'id' expected a number but got <SimpleLazyObject: <django.contrib.auth.models.AnonymousUser object at 0x16c72b6d0>>.
+ERROR 2024-11-20 11:45:19,023 log Internal Server Error: /logout_view_android/
+ERROR 2024-11-20 11:45:19,023 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
+ERROR 2024-11-20 11:45:19,023 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
+ERROR 2024-11-20 11:46:40,237 views Error during logout: Field 'id' expected a number but got <SimpleLazyObject: <django.contrib.auth.models.AnonymousUser object at 0x164e4cca0>>.
+ERROR 2024-11-20 11:46:40,240 log Internal Server Error: /logout_view_android/
+ERROR 2024-11-20 11:46:40,241 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
+ERROR 2024-11-20 11:46:40,241 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45

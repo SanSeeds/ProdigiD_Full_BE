@@ -220,6 +220,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'prodigidusk.wsgi.application'
 
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+SECURE_HSTS_SECONDS = 31536000  
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -231,33 +236,35 @@ WSGI_APPLICATION = 'prodigidusk.wsgi.application'
 # }
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'OPTIONS': {
-#                 'options': '-c search_path=prodigi'
-#             },
-#         'NAME': 'prodigidesk_db',
-#         'USER': 'postgres',
-#         'PASSWORD': 'tf4g]hL03av(',
-#         'HOST': '13.235.176.62',
-#         'PORT': '5432',
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'OPTIONS': {
                 'options': '-c search_path=prodigi'
             },
-        'NAME': 'ProdigiDesk',
+        'NAME': 'prodigidesk_db',
         'USER': 'postgres',
         'PASSWORD': 'rish123',
         'HOST': 'localhost',
+        'PASSWORD': 'tf4g]hL03av(',
+        'HOST': '13.235.176.62',
         'PORT': '5432',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'OPTIONS': {
+#                 'options': '-c search_path=prodigidesk'
+#             },
+#         'NAME': 'ProdigiDesk',
+#         'USER': 'postgres',
+#         'PASSWORD': '1766',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
 
 REST_FRAMEWORK = {
@@ -268,6 +275,14 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
         'rest_framework_api_key.permissions.HasAPIKey',
     ),
+    # 'DEFAULT_THROTTLE_CLASSES': [
+    #     'rest_framework.throttling.AnonRateThrottle',  # For unauthenticated users
+    #     'rest_framework.throttling.UserRateThrottle',  # For authenticated users
+    # ],
+    # 'DEFAULT_THROTTLE_RATES': {
+    #     'anon': '100/hour',  # Allow 100 requests per hour for unauthenticated users
+    #     'user': '10000/hour',  # Allow 1000 requests per hour for authenticated users
+    # },
 }
 
 SIMPLE_JWT = {

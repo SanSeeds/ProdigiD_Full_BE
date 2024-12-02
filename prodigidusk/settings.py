@@ -135,7 +135,7 @@ LOGGING = {
     },
 }
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '10.0.2.2', '192.168.1.100', '192.168.134.240', '192.168.241.240']
 
 DEFAULT_BACKGROUND_IMAGE_PATH = './core/static/ppt_bg.jpg'
 # SECURE_SSL_REDIRECT = True
@@ -178,11 +178,21 @@ DRF_API_LOGGER_DATABASE = True  # Default to False
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173", "https://prodigidesk.ai","http://localhost:3000"
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://192.168.134.240:8000",
+    "http://192.168.241.240:8000",  # Your current IP
+    "http://10.0.2.2:8000",
+    "http://localhost:8000",
+    "https://prodigidesk.ai",
 ]
 
+
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173","https://prodigidesk.ai" 
+    "http://localhost:5173",
+    "http://localhost:8000",
+    "http://192.168.241.240:8000",
+    "https://prodigidesk.ai",
 ]
 
 

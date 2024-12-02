@@ -940,7 +940,7 @@ def add_user(request):
     if request.method == 'POST':
         try:
             # Load untrusted domains from the text file
-            with open('./unique_domains.csv', 'r') as file:
+            with open('./domains.txt', 'r') as file:
                 untrusted_domains = {line.strip().lower() for line in file}
 
             # Load and decode the request body
@@ -984,7 +984,7 @@ def add_user(request):
 
             # Extract domain from the email
             try:
-                email_domain = email.split('@')[1].split('.')[0].lower()
+                email_domain = email.split('@')[1].lower()
             except IndexError:
                 return JsonResponse({'error': 'Invalid email format.'}, status=400)
 
@@ -1045,13 +1045,12 @@ def add_user(request):
         logger.error("Invalid request method")
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-
 @csrf_exempt
 def send_email_verification_otp(request):
     if request.method == 'POST':
         try:
             # Load untrusted domains from the text file
-            with open('./unique_domains.csv', 'r') as file:
+            with open('./domains.txt', 'r') as file:
                 untrusted_domains = {line.strip().lower() for line in file}
 
             # Load and decode the request body
@@ -1078,10 +1077,9 @@ def send_email_verification_otp(request):
 
             # Extract domain from the email
             try:
-                email_domain = email.split('@')[1].split('.')[0].lower()
+                email_domain = email.split('@')[1].lower()
             except IndexError:
                 return JsonResponse({'error': 'Invalid email format.'}, status=400)
-
 
             # Check if the email domain is in the untrusted list
             if email_domain in untrusted_domains:
@@ -1160,7 +1158,6 @@ The ProdigiDesk Team
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
-
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -4351,7 +4348,7 @@ def guest_send_otp(request):
     if request.method == 'POST':
         try:
             # Load untrusted domains from the text file
-            with open('./unique_domains.csv', 'r') as file:
+            with open('./domains.txt', 'r') as file:
                 untrusted_domains = {line.strip().lower() for line in file}
 
             # Decrypt incoming request data
@@ -4369,7 +4366,7 @@ def guest_send_otp(request):
 
             # Extract domain from the email
             try:
-                email_domain = email.split('@')[1].split('.')[0].lower()
+                email_domain = email.split('@')[1].lower()
             except IndexError:
                 return JsonResponse({'error': 'Invalid email format.'}, status=400)
 
@@ -5606,7 +5603,7 @@ def add_user_android(request):
     if request.method == 'POST':
         try:
             # Load untrusted domains from the text file
-            with open('./unique_domains.csv', 'r') as file:
+            with open('./domains.txt', 'r') as file:
                 untrusted_domains = {line.strip().lower() for line in file}
 
             # Load and decode the request body
@@ -5704,7 +5701,7 @@ def logout_view_android(request):
 
         # Fetch the active session for the logged-in user
         user_session = UserSession.objects.filter(user=request.user, active=True).first()
-
+        print(user_session)
         if user_session:
             # Set the active field to False
             user_session.active = False
@@ -5729,7 +5726,7 @@ def send_email_verification_otp_android(request):
     if request.method == 'POST':
         try:
             # Load untrusted domains from the text file
-            with open('./unique_domains.csv', 'r') as file:
+            with open('./domains.txt', 'r') as file:
                 untrusted_domains = {line.strip().lower() for line in file}
 
             # Load and decode the request body
@@ -5904,6 +5901,38 @@ def check_session_status_android(request):
         logger.error('Invalid request method')
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+@api_view(['POST'])
+@permission_classes([])
+def speech_api_android(request):
+    if request.method == 'POST':
+        try:
+            # Parse the JSON data from the request body
+            data = json.loads(request.body)
+            text = data.get('text', 'No text provided')
+            
+            # Generate speech from text using gTTS
+            tts = gTTS(text=text, lang='en', slow=False)
+ 
+            # In-memory file object for the audio
+            mp3_fp = io.BytesIO()
+            tts.write_to_fp(mp3_fp)
+ 
+            mp3_fp.seek(0)  # Reset the pointer to the beginning of the file
+ 
+            # Prepare the HTTP response with the audio file
+            response = HttpResponse(mp3_fp, content_type='audio/mpeg')
+            response['Content-Disposition'] = 'attachment; filename="speech.mp3"'
+ 
+            return response
+       
+        except Exception as e:
+            # Handle any exception and return error message
+            return JsonResponse({'status': 'error', 'message': str(e)})
+   
+    else:
+        # Handle non-POST requests
+        return JsonResponse({'status': 'error', 'message': 'Only POST requests are allowed.'})
+    
 @api_view(['GET', 'POST'])
 @permission_classes([])
 def profile_android(request):
@@ -6175,6 +6204,54 @@ def sales_script_generator_android(request):
         return JsonResponse({'error': str(e)}, status=500)
 
     logger.error("Method not allowed.")
+    return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+def business_proposal_generator_android(request):
+    if request.method == 'POST':
+        try:
+            # Extract the incoming payload (no decryption now)
+            data = json.loads(request.body.decode('utf-8'))
+            logger.debug(f'Incoming data: {data}')
+
+            business_intro = data.get('businessIntroduction')
+            proposal_objective = data.get('proposalObjective')
+            # Handle otherObjective if proposalObjective is 'Others'
+            other_objective = data.get('otherObjective')
+            if proposal_objective == 'Others' and other_objective:
+                proposal_objective = other_objective
+
+            num_words = data.get('numberOfWords')
+            scope_of_work = data.get('scopeOfWork')
+            project_phases = data.get('projectPhases')
+            expected_outcomes = data.get('expectedOutcomes')
+            tech_innovations = data.get('technologiesAndInnovations')  # Combined field
+            target_audience = data.get('targetAudience')
+            budget_info = data.get('budgetInformation')
+            timeline = data.get('timeline')
+            benefits = data.get('benefitsToRecipient')
+            closing_remarks = data.get('closingRemarks')
+
+            logger.info('Generating business proposal content.')
+            proposal_content = generate_bus_pro(
+                business_intro, proposal_objective, num_words, scope_of_work,
+                project_phases, expected_outcomes, tech_innovations, target_audience,
+                budget_info, timeline, benefits, closing_remarks
+            )
+
+            # Return the generated content directly (no encryption)
+            return JsonResponse({'generated_content': proposal_content}, status=200)
+
+        except json.JSONDecodeError:
+            logger.error('Invalid JSON format received.')
+            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+        except ValueError as e:
+            logger.error(f'ValueError: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            logger.error(f'Exception: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=500)
+
+    logger.warning('Method not allowed.')
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 @csrf_exempt

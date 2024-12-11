@@ -40,6 +40,88 @@ def contains_inappropriate_language(text: str) -> bool:
 def sanitize_input(input_str):
     return profanity.censor(input_str)
 
+
+
+MAX_SENTENCES_PER_CHUNK = 30  # Number of sentences to process in a single chunk
+MAX_WORKERS = 50  # Number of threads for concurrent processing
+RETRY_LIMIT = 1000  # Maximum retries for translation API
+
+# Function to translate a single sentence
+def bhashini_translate_formatted(sentence, to_code, from_code="English"):
+    lang_dict = {
+        "English": "en",
+        "Hindi": "hi",
+        "Tamil": "ta",
+        "Telugu": "te",
+        "Marathi": "mr",
+        "Kannada": "kn",
+        "Bengali": "bn",
+        "Odia": "or",
+        "Assamese": "as",
+        "Punjabi": "pa",
+        "Malayalam": "ml",
+        "Gujarati": "gu",
+        "Urdu": "ur",
+        "Sanskrit": "sa",
+        "Nepali": "ne",
+        "Bodo": "brx",
+        "Maithili": "mai",
+        "Sindhi": "sd",
+        "Kashmiri": "ks",
+        "Konkani": "kok",
+        "Dogri": "doi",
+        "Goan Konkani": "gom",
+        "Santali": "sat",
+    }
+
+    from_code = lang_dict[from_code]
+    to_code = lang_dict[to_code]
+
+    url = 'https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline'
+    headers = {
+        "Content-Type": "application/json",
+        "userID": BHASHINI_USER_ID,
+        "ulcaApiKey": BHASHINI_API_KEY
+    }
+    payload = {
+        "pipelineTasks": [{"taskType": "translation", "config": {"language": {"sourceLanguage": from_code, "targetLanguage": to_code}}}],
+        "pipelineRequestConfig": {"pipelineId": "64392f96daac500b55c543cd"}
+    }
+
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=10)  # 10s timeout
+        response.raise_for_status()  # Raise exception for non-200 status codes
+        response_data = response.json()
+
+        # Prepare translation request
+        service_id = response_data["pipelineResponseConfig"][0]["config"][0]["serviceId"]
+        callback_url = response_data["pipelineInferenceAPIEndPoint"]["callbackUrl"]
+        headers2 = {
+            "Content-Type": "application/json",
+            response_data["pipelineInferenceAPIEndPoint"]["inferenceApiKey"]["name"]: response_data["pipelineInferenceAPIEndPoint"]["inferenceApiKey"]["value"]
+        }
+        compute_payload = {
+            "pipelineTasks": [{"taskType": "translation", "config": {"language": {"sourceLanguage": from_code, "targetLanguage": to_code}, "serviceId": service_id}}],
+            "inputData": {"input": [{"source": sentence}], "audio": [{"audioContent": None}]}
+        }
+
+        compute_response = requests.post(callback_url, json=compute_payload, headers=headers2, timeout=10)  # 10s timeout
+        compute_response.raise_for_status()
+        compute_response_data = compute_response.json()
+        return compute_response_data["pipelineResponse"][0]["output"][0]["target"]
+    except requests.RequestException as e:
+        logger.error(f"Translation API error: {str(e)}")
+        return None
+
+# Function to handle retries for translation
+def translate_with_retry(sentence, to_code, retries=RETRY_LIMIT):
+    for attempt in range(retries):
+        result = bhashini_translate_formatted(sentence, to_code)
+        if result:
+            return result
+    raise ValueError(f"Failed to translate sentence after {retries} attempts: {sentence}")
+
+
 def generate_email(purpose='Request Information', num_words=100, subject=None, rephrase=False, to=None, tone='Formal', keywords=None, contextual_background=None, call_to_action=None, additional_details=None, priority_level='Low', closing_remarks=None):
     # Ensure all fields are checked for inappropriate language
     fields_to_check = [purpose, subject, keywords, contextual_background, call_to_action, additional_details, closing_remarks]
@@ -62,7 +144,7 @@ def generate_email(purpose='Request Information', num_words=100, subject=None, r
     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
-        model="llama3-70b-8192",
+        model="llama-3.3-70b-versatile",
     )
     
     return chat_completion.choices[0].message.content
@@ -108,7 +190,7 @@ def generate_bus_pro(business_intro, proposal_objective, num_words, scope_of_wor
     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
-        model="llama3-70b-8192",
+        model="llama-3.3-70b-versatile",
 
     )
 
@@ -180,7 +262,7 @@ def generate_offer_letter(company_details, candidate_name, position_title, depar
                 "content": prompt,
             }
         ],
-        model="llama3-70b-8192",
+        model="llama-3.3-70b-versatile",
 
     )
 
@@ -262,7 +344,7 @@ def generate_summary(document_context, main_subject, summary_purpose, length_det
                 "content": prompt,
             }
         ],
-        model="llama-3.1-70b-versatile",
+        model="llama-3.3-70b-versatile",
     )
 
     return chat_completion.choices[0].message.content
@@ -340,7 +422,7 @@ def generate_content(company_info, content_purpose, desired_action, topic_detail
                 "content": prompt,
             }
         ],
-        model="llama3-70b-8192",
+        model="llama-3.3-70b-versatile",
 
     )
 
@@ -400,7 +482,7 @@ def generate_sales_script(company_details, num_words, product_descriptions, feat
                 "content": prompt,
             }
         ],
-        model="llama3-70b-8192",
+        model="llama-3.3-70b-versatile",
 
     )
 
@@ -514,7 +596,7 @@ def generate_slide_titles(document_content, num_slides, special_instructions, ti
     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
-        model="llama-3.1-70b-versatile",
+        model="llama-3.3-70b-versatile",
     )
     title_list = chat_completion.choices[0].message.content
     return title_list
@@ -543,7 +625,7 @@ def generate_slide_content(document_content, title, special_instructions):
     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
-        model="llama-3.1-70b-versatile",
+        model="llama-3.3-70b-versatile",
     )
     slide_content = chat_completion.choices[0].message.content
     return slide_content
@@ -645,7 +727,7 @@ def generate_blog(title, tone, keywords=None):
     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
-        model="llama3-70b-8192",
+        model="llama-3.3-70b-versatile",
     )
 
     # Return the generated blog content
@@ -674,15 +756,12 @@ def rephrasely(text_to_rephrase, tone, target_audience, num_words="default"):
     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
-        model="llama-3.1-70b-versatile"
+        model="llama-3.3-70b-versatile"
     )
 
     # Extract and return the rephrased content
     return  chat_completion.choices[0].message.content
     
-
-
-
 
 def ask_question_chatbot(question):
 
@@ -721,9 +800,6 @@ Your key features include:Comprehensive Query Handling: You can handle a wide ra
     result = chain.invoke(question)
 
     return result
-
-
-
 
 
 

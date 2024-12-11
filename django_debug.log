@@ -1,188 +1,302 @@
-ERROR 2024-11-24 14:40:24,811 log Internal Server Error: /profile_android/
-Traceback (most recent call last):
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2117, in get_prep_value
-    return int(value)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/contrib/auth/models.py", line 437, in __int__
-    raise TypeError(
-TypeError: Cannot cast AnonymousUser to int. Are you trying to use it in place of User?
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
-    response = get_response(request)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
-    response = self.handle_exception(exc)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
-    self.raise_uncaught_exception(exc)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
-    raise exc
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
-    response = handler(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/decorators.py", line 50, in handler
-    return func(*args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/core/views.py", line 5909, in profile_android
-    profile = Profile.objects.get(user=user)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/manager.py", line 87, in manager_method
-    return getattr(self.get_queryset(), name)(*args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/query.py", line 635, in get
-    clone = self._chain() if self.query.combinator else self.filter(*args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/query.py", line 1476, in filter
-    return self._filter_or_exclude(False, args, kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/query.py", line 1494, in _filter_or_exclude
-    clone._filter_or_exclude_inplace(negate, args, kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/query.py", line 1501, in _filter_or_exclude_inplace
-    self._query.add_q(Q(*args, **kwargs))
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1613, in add_q
-    clause, _ = self._add_q(q_object, self.used_aliases)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1645, in _add_q
-    child_clause, needed_inner = self.build_filter(
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1559, in build_filter
-    condition = self.build_lookup(lookups, col, value)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1389, in build_lookup
-    lookup = lookup_class(lhs, rhs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/lookups.py", line 30, in __init__
-    self.rhs = self.get_prep_lookup()
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/fields/related_lookups.py", line 156, in get_prep_lookup
-    self.rhs = target_field.get_prep_value(self.rhs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2119, in get_prep_value
-    raise e.__class__(
-TypeError: Field 'id' expected a number but got <django.contrib.auth.models.AnonymousUser object at 0x1301239a0>.
-ERROR 2024-11-24 14:40:24,814 basehttp "GET /profile_android/ HTTP/1.1" 500 166548
-ERROR 2024-11-24 14:40:24,814 basehttp "GET /profile_android/ HTTP/1.1" 500 166548
-ERROR 2024-11-25 05:58:58,899 views Unexpected error: [Errno 2] No such file or directory: './unique_domains.csv'
-ERROR 2024-11-25 05:58:58,901 log Internal Server Error: /add_user/
-ERROR 2024-11-25 05:58:58,901 basehttp "POST /add_user/ HTTP/1.1" 500 72
-ERROR 2024-11-25 05:58:58,901 basehttp "POST /add_user/ HTTP/1.1" 500 72
-ERROR 2024-11-25 06:34:25,580 log Internal Server Error: /guest_send_otp/
-ERROR 2024-11-25 06:34:25,581 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 65
-ERROR 2024-11-25 06:34:25,581 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 65
-ERROR 2024-11-25 06:37:44,770 log Internal Server Error: /guest_send_otp/
-ERROR 2024-11-25 06:37:44,771 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 72
-ERROR 2024-11-25 06:37:44,771 basehttp "POST /guest_send_otp/ HTTP/1.1" 500 72
-ERROR 2024-11-25 10:47:42,295 log Internal Server Error: /profile_android/
-Traceback (most recent call last):
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2117, in get_prep_value
-    return int(value)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/contrib/auth/models.py", line 437, in __int__
-    raise TypeError(
-TypeError: Cannot cast AnonymousUser to int. Are you trying to use it in place of User?
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
-    response = get_response(request)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
-    response = self.handle_exception(exc)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
-    self.raise_uncaught_exception(exc)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
-    raise exc
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
-    response = handler(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/decorators.py", line 50, in handler
-    return func(*args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/core/views.py", line 5911, in profile_android
-    profile = Profile.objects.get(user=user)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/manager.py", line 87, in manager_method
-    return getattr(self.get_queryset(), name)(*args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/query.py", line 635, in get
-    clone = self._chain() if self.query.combinator else self.filter(*args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/query.py", line 1476, in filter
-    return self._filter_or_exclude(False, args, kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/query.py", line 1494, in _filter_or_exclude
-    clone._filter_or_exclude_inplace(negate, args, kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/query.py", line 1501, in _filter_or_exclude_inplace
-    self._query.add_q(Q(*args, **kwargs))
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1613, in add_q
-    clause, _ = self._add_q(q_object, self.used_aliases)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1645, in _add_q
-    child_clause, needed_inner = self.build_filter(
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1559, in build_filter
-    condition = self.build_lookup(lookups, col, value)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1389, in build_lookup
-    lookup = lookup_class(lhs, rhs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/lookups.py", line 30, in __init__
-    self.rhs = self.get_prep_lookup()
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/fields/related_lookups.py", line 156, in get_prep_lookup
-    self.rhs = target_field.get_prep_value(self.rhs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2119, in get_prep_value
-    raise e.__class__(
-TypeError: Field 'id' expected a number but got <django.contrib.auth.models.AnonymousUser object at 0x1509723e0>.
-ERROR 2024-11-25 10:47:42,298 basehttp "GET /profile_android/ HTTP/1.1" 500 166548
-ERROR 2024-11-25 10:47:42,298 basehttp "GET /profile_android/ HTTP/1.1" 500 166548
-ERROR 2024-11-25 11:05:11,823 log Internal Server Error: /profile_android/
-Traceback (most recent call last):
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2117, in get_prep_value
-    return int(value)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/contrib/auth/models.py", line 437, in __int__
-    raise TypeError(
-TypeError: Cannot cast AnonymousUser to int. Are you trying to use it in place of User?
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
-    response = get_response(request)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
-    response = self.handle_exception(exc)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
-    self.raise_uncaught_exception(exc)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
-    raise exc
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
-    response = handler(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/decorators.py", line 50, in handler
-    return func(*args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/core/views.py", line 5911, in profile_android
-    profile = Profile.objects.get(user=user)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/manager.py", line 87, in manager_method
-    return getattr(self.get_queryset(), name)(*args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/query.py", line 635, in get
-    clone = self._chain() if self.query.combinator else self.filter(*args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/query.py", line 1476, in filter
-    return self._filter_or_exclude(False, args, kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/query.py", line 1494, in _filter_or_exclude
-    clone._filter_or_exclude_inplace(negate, args, kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/query.py", line 1501, in _filter_or_exclude_inplace
-    self._query.add_q(Q(*args, **kwargs))
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1613, in add_q
-    clause, _ = self._add_q(q_object, self.used_aliases)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1645, in _add_q
-    child_clause, needed_inner = self.build_filter(
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1559, in build_filter
-    condition = self.build_lookup(lookups, col, value)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/sql/query.py", line 1389, in build_lookup
-    lookup = lookup_class(lhs, rhs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/lookups.py", line 30, in __init__
-    self.rhs = self.get_prep_lookup()
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/fields/related_lookups.py", line 156, in get_prep_lookup
-    self.rhs = target_field.get_prep_value(self.rhs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/db/models/fields/__init__.py", line 2119, in get_prep_value
-    raise e.__class__(
-TypeError: Field 'id' expected a number but got <django.contrib.auth.models.AnonymousUser object at 0x150b35750>.
-ERROR 2024-11-25 11:05:11,825 basehttp "GET /profile_android/ HTTP/1.1" 500 166548
-ERROR 2024-11-25 11:05:11,825 basehttp "GET /profile_android/ HTTP/1.1" 500 166548
-ERROR 2024-11-25 11:29:42,313 views Error during logout: Field 'id' expected a number but got <SimpleLazyObject: <django.contrib.auth.models.AnonymousUser object at 0x12f751840>>.
-ERROR 2024-11-25 11:29:42,314 log Internal Server Error: /logout_view_android/
-ERROR 2024-11-25 11:29:42,315 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
-ERROR 2024-11-25 11:29:42,315 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
+ERROR 2024-12-09 07:32:58,148 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:33:02,371 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:33:09,539 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:33:17,828 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:33:25,815 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:33:28,383 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:33:29,409 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:33:30,687 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:33:31,529 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:33:32,667 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:34:16,701 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:34:30,439 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:35:25,072 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:35:25,341 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:35:28,397 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:36:30,346 views Translation failed for sentence: "Good luck!". Status code: 504
+ERROR 2024-12-09 07:36:30,348 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:44:04,518 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:44:08,897 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:44:17,699 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:44:19,855 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:44:24,263 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:44:40,029 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:44:46,879 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:44:49,136 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:44:58,972 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:45:01,756 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:45:22,109 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:45:23,439 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:45:29,791 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:45:40,134 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:46:03,991 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:47:29,148 views Error during translation: sequence item 0: expected str instance, list found
+ERROR 2024-12-09 07:51:48,383 log Internal Server Error: /translate_content_formatted/
+ERROR 2024-12-09 07:51:48,384 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 2453
+ERROR 2024-12-09 07:51:48,384 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 2453
+ERROR 2024-12-09 07:52:17,378 log Internal Server Error: /translate_content_formatted/
+ERROR 2024-12-09 07:52:17,378 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 2453
+ERROR 2024-12-09 07:52:17,378 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 2453
+ERROR 2024-12-09 08:54:42,650 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:54:46,823 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:54:47,068 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:54:48,603 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:54:49,970 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:54:58,952 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:55:05,389 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:55:06,038 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:55:08,326 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:55:59,874 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:56:00,989 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:56:02,408 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:56:06,750 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:56:12,780 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:56:17,058 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:56:22,505 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 08:56:27,665 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 09:00:07,813 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 09:00:08,858 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 09:00:12,691 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 09:00:15,196 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 09:00:26,824 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 09:00:27,806 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 09:00:43,015 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-09 09:56:30,089 log Internal Server Error: /send_email_verification_otp/
+ERROR 2024-12-09 09:56:30,091 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 69
+ERROR 2024-12-09 09:56:30,091 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 69
+ERROR 2024-12-09 10:45:33,356 views Exception occurred: [Errno 54] Connection reset by peer
+ERROR 2024-12-09 10:45:33,360 log Internal Server Error: /verify_payment_yearly/
+ERROR 2024-12-09 10:45:33,360 basehttp "POST /verify_payment_yearly/ HTTP/1.1" 500 48
+ERROR 2024-12-09 10:45:33,360 basehttp "POST /verify_payment_yearly/ HTTP/1.1" 500 48
+ERROR 2024-12-09 11:10:59,058 log Internal Server Error: /send_email_verification_otp/
+ERROR 2024-12-09 11:10:59,059 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 69
+ERROR 2024-12-09 11:10:59,059 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 69
+ERROR 2024-12-09 11:23:40,836 views Exception: Error code: 413 - {'error': {'message': 'Request too large for model `llama-3.1-70b-versatile` in organization `org_01hy2cvf10envtwa1h9tmgrsav` on tokens per minute (TPM): Limit 6000, Requested 24233, please reduce your message size and try again. Visit https://console.groq.com/docs/rate-limits for more information.', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+ERROR 2024-12-09 11:23:40,841 log Internal Server Error: /summarize_document/
+ERROR 2024-12-09 11:23:40,841 basehttp "POST /summarize_document/ HTTP/1.1" 500 382
+ERROR 2024-12-09 11:23:40,841 basehttp "POST /summarize_document/ HTTP/1.1" 500 382
+ERROR 2024-12-09 11:23:49,459 views Exception: Error code: 413 - {'error': {'message': 'Request too large for model `llama-3.1-70b-versatile` in organization `org_01hy2cvf10envtwa1h9tmgrsav` on tokens per minute (TPM): Limit 6000, Requested 24233, please reduce your message size and try again. Visit https://console.groq.com/docs/rate-limits for more information.', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+ERROR 2024-12-09 11:23:49,461 log Internal Server Error: /summarize_document/
+ERROR 2024-12-09 11:23:49,462 basehttp "POST /summarize_document/ HTTP/1.1" 500 382
+ERROR 2024-12-09 11:23:49,462 basehttp "POST /summarize_document/ HTTP/1.1" 500 382
+ERROR 2024-12-09 11:41:07,750 views Exception: Error code: 413 - {'error': {'message': 'Request too large for model `llama-3.1-70b-versatile` in organization `org_01hy2cvf10envtwa1h9tmgrsav` on tokens per minute (TPM): Limit 6000, Requested 24233, please reduce your message size and try again. Visit https://console.groq.com/docs/rate-limits for more information.', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+ERROR 2024-12-09 11:41:07,753 log Internal Server Error: /summarize_document/
+ERROR 2024-12-09 11:41:07,753 basehttp "POST /summarize_document/ HTTP/1.1" 500 382
+ERROR 2024-12-09 11:41:07,753 basehttp "POST /summarize_document/ HTTP/1.1" 500 382
+ERROR 2024-12-09 11:43:37,194 views Exception: Error code: 413 - {'error': {'message': 'Request too large for model `llama-3.1-70b-versatile` in organization `org_01hy2cvf10envtwa1h9tmgrsav` on tokens per minute (TPM): Limit 6000, Requested 24233, please reduce your message size and try again. Visit https://console.groq.com/docs/rate-limits for more information.', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+ERROR 2024-12-09 11:43:37,197 log Internal Server Error: /summarize_document/
+ERROR 2024-12-09 11:43:37,198 basehttp "POST /summarize_document/ HTTP/1.1" 500 382
+ERROR 2024-12-09 11:43:37,198 basehttp "POST /summarize_document/ HTTP/1.1" 500 382
+ERROR 2024-12-09 11:43:52,611 views Exception: Error code: 413 - {'error': {'message': 'Request too large for model `llama-3.1-70b-versatile` in organization `org_01hy2cvf10envtwa1h9tmgrsav` on tokens per minute (TPM): Limit 6000, Requested 24233, please reduce your message size and try again. Visit https://console.groq.com/docs/rate-limits for more information.', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+ERROR 2024-12-09 11:43:52,613 log Internal Server Error: /summarize_document/
+ERROR 2024-12-09 11:43:52,615 basehttp "POST /summarize_document/ HTTP/1.1" 500 382
+ERROR 2024-12-09 11:43:52,615 basehttp "POST /summarize_document/ HTTP/1.1" 500 382
+ERROR 2024-12-10 05:49:10,854 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:10,970 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:11,169 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:19,038 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:21,259 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:22,527 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:28,928 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:28,938 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:29,418 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:31,657 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:32,866 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:39,290 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:39,294 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:39,801 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:43,228 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:49,568 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:49:59,903 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:00,703 log Internal Server Error: /translate_content_formatted/
+ERROR 2024-12-10 05:50:00,704 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 82
+ERROR 2024-12-10 05:50:00,704 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 82
+ERROR 2024-12-10 05:50:15,412 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:15,427 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:16,408 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:19,385 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:23,418 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:25,771 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:26,751 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:26,751 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:36,127 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:37,081 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:37,125 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:38,678 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:39,653 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:47,872 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:49,037 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:49,998 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:50:58,257 log Internal Server Error: /translate_content_formatted/
+ERROR 2024-12-10 05:50:58,258 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 198
+ERROR 2024-12-10 05:50:58,258 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 198
+ERROR 2024-12-10 05:51:11,722 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:51:11,746 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:51:11,768 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:51:19,263 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:51:22,091 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:51:22,182 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:51:23,403 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:51:29,658 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:51:32,563 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:51:33,758 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:51:42,735 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:51:44,094 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:51:45,478 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:51:54,259 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:52:04,652 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 05:52:04,654 log Internal Server Error: /translate_content_formatted/
+ERROR 2024-12-10 06:39:20,646 views Exception: Error code: 413 - {'error': {'message': 'Request too large for model `llama-3.3-70b-versatile` in organization `org_01j443yq5xe9mbgbb84efte7y2` on tokens per minute (TPM): Limit 30000, Requested 191906, please reduce your message size and try again. Visit https://console.groq.com/docs/rate-limits for more information.', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+ERROR 2024-12-10 06:39:20,650 log Internal Server Error: /summarize_document/
+ERROR 2024-12-10 06:39:20,651 basehttp "POST /summarize_document/ HTTP/1.1" 500 384
+ERROR 2024-12-10 06:39:20,651 basehttp "POST /summarize_document/ HTTP/1.1" 500 384
+ERROR 2024-12-10 06:42:13,721 log Internal Server Error: /create_presentation/
+ERROR 2024-12-10 06:42:13,723 basehttp "POST /create_presentation/ HTTP/1.1" 500 384
+ERROR 2024-12-10 06:42:13,723 basehttp "POST /create_presentation/ HTTP/1.1" 500 384
+ERROR 2024-12-10 08:09:36,523 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:09:48,849 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:09:59,289 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:10:10,776 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:10:10,779 log Internal Server Error: /translate_content_formatted/
+ERROR 2024-12-10 08:10:10,779 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 142
+ERROR 2024-12-10 08:10:10,779 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 142
+ERROR 2024-12-10 08:11:02,938 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:11:37,647 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:11:37,648 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:11:44,925 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:11:47,145 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:11:48,249 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:11:51,747 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:11:58,183 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:11:58,764 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:12:05,163 log Internal Server Error: /translate_content_formatted/
+ERROR 2024-12-10 08:12:05,164 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 210
+ERROR 2024-12-10 08:12:05,164 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 210
+ERROR 2024-12-10 08:12:58,240 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:12:58,244 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:12:58,257 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:13:05,123 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:13:09,302 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:13:09,714 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:01,462 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:01,463 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:02,971 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:07,234 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:12,319 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:15,734 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:16,082 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:17,666 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:24,612 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:26,378 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:28,067 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:35,111 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:36,597 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:45,491 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:47,131 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:14:55,075 log Internal Server Error: /translate_content_formatted/
+ERROR 2024-12-10 08:14:55,076 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 227
+ERROR 2024-12-10 08:14:55,076 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 227
+ERROR 2024-12-10 08:16:59,203 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:16:59,407 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:17:16,734 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:17:30,186 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:17:51,390 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:18:12,903 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:18:13,112 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:18:13,151 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:18:13,156 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:18:13,197 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:18:13,240 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:18:23,699 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:18:34,059 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:18:45,561 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:19:02,000 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:19:16,689 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:19:27,085 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:19:56,173 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:20:00,579 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:20:11,017 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:26:19,164 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:26:24,161 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:26:26,673 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:26:29,685 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:39:56,816 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:39:56,876 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:40:07,371 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:40:14,294 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:40:17,718 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:40:17,736 log Internal Server Error: /translate_content_formatted/
+ERROR 2024-12-10 08:40:17,737 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 191
+ERROR 2024-12-10 08:40:17,737 basehttp "POST /translate_content_formatted/ HTTP/1.1" 500 191
+ERROR 2024-12-10 08:41:55,871 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 08:57:46,952 views ValueError: 'utf-8' codec can't decode byte 0x88 in position 633: invalid start byte
+ERROR 2024-12-10 08:59:42,139 views ValueError: 'utf-8' codec can't decode byte 0x88 in position 633: invalid start byte
+ERROR 2024-12-10 09:02:01,194 views Exception: Error code: 503 - {'error': {'message': 'Service Unavailable', 'type': 'internal_server_error'}}
+ERROR 2024-12-10 09:02:01,198 log Internal Server Error: /summarize_document/
+ERROR 2024-12-10 09:02:01,199 basehttp "POST /summarize_document/ HTTP/1.1" 500 109
+ERROR 2024-12-10 09:02:01,199 basehttp "POST /summarize_document/ HTTP/1.1" 500 109
+ERROR 2024-12-10 09:02:07,360 views Exception: Error code: 503 - {'error': {'message': 'Service Unavailable', 'type': 'internal_server_error'}}
+ERROR 2024-12-10 09:02:07,363 log Internal Server Error: /summarize_document/
+ERROR 2024-12-10 09:02:07,364 basehttp "POST /summarize_document/ HTTP/1.1" 500 109
+ERROR 2024-12-10 09:02:07,364 basehttp "POST /summarize_document/ HTTP/1.1" 500 109
+ERROR 2024-12-10 09:03:20,133 views Exception: Error code: 413 - {'error': {'message': 'Request too large for model `llama-3.3-70b-versatile` in organization `org_01j443yq5xe9mbgbb84efte7y2` on tokens per minute (TPM): Limit 30000, Requested 191901, please reduce your message size and try again. Visit https://console.groq.com/docs/rate-limits for more information.', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+ERROR 2024-12-10 09:03:20,136 log Internal Server Error: /summarize_document/
+ERROR 2024-12-10 09:03:20,137 basehttp "POST /summarize_document/ HTTP/1.1" 500 384
+ERROR 2024-12-10 09:03:20,137 basehttp "POST /summarize_document/ HTTP/1.1" 500 384
+ERROR 2024-12-10 09:04:18,549 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 10:31:09,064 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 10:31:33,040 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 10:31:44,602 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-10 11:38:36,222 basehttp You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2024-12-10 11:38:36,222 basehttp You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2024-12-11 04:48:50,064 basehttp You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2024-12-11 04:48:50,064 basehttp You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2024-12-11 04:49:09,846 basehttp You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2024-12-11 04:49:09,846 basehttp You're accessing the development server over HTTPS, but it only supports HTTP.
+ERROR 2024-12-11 06:15:56,768 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:15:59,357 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:15:59,387 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:16:01,513 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:16:01,517 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:16:07,135 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:16:09,705 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:16:09,721 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:16:11,878 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:16:16,103 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:16:20,123 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:16:22,265 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:16:25,864 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:16:36,215 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:16:46,563 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:16:56,937 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:17:07,351 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:33:56,510 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:33:57,499 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:34:07,866 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:34:18,211 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:47:19,065 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:47:19,066 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:47:21,841 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:47:24,439 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:47:28,804 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:47:29,431 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:47:29,452 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:47:39,166 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:47:41,786 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:47:52,999 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 06:48:03,383 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 08:12:41,357 log Internal Server Error: /send_email_verification_otp/
+ERROR 2024-12-11 08:12:41,359 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 69
+ERROR 2024-12-11 08:12:41,359 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 69
+ERROR 2024-12-11 08:13:22,173 views Unexpected error: User() got unexpected keyword arguments: 'state'
+ERROR 2024-12-11 08:13:22,179 log Internal Server Error: /add_user/
+ERROR 2024-12-11 08:13:22,179 basehttp "POST /add_user/ HTTP/1.1" 500 61
+ERROR 2024-12-11 08:13:22,179 basehttp "POST /add_user/ HTTP/1.1" 500 61
+ERROR 2024-12-11 08:14:43,918 views Unexpected error: User() got unexpected keyword arguments: 'state'
+ERROR 2024-12-11 08:14:43,929 log Internal Server Error: /add_user/
+ERROR 2024-12-11 08:14:43,929 basehttp "POST /add_user/ HTTP/1.1" 500 61
+ERROR 2024-12-11 08:14:43,929 basehttp "POST /add_user/ HTTP/1.1" 500 61
+ERROR 2024-12-11 08:16:54,934 views Unexpected error: User() got unexpected keyword arguments: 'state'
+ERROR 2024-12-11 08:16:54,940 log Internal Server Error: /add_user/
+ERROR 2024-12-11 08:16:54,941 basehttp "POST /add_user/ HTTP/1.1" 500 61
+ERROR 2024-12-11 08:16:54,941 basehttp "POST /add_user/ HTTP/1.1" 500 61

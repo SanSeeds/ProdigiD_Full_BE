@@ -10,7 +10,7 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.http import FileResponse, HttpResponse, JsonResponse
 from gtts import gTTS
-from .email_llama3 import BHASHINI_API_KEY, BHASHINI_USER_ID, add_slide, ask_question_chatbot, generate_blog, generate_slide_titles, extract_document_content, generate_email, bhashini_translate,generate_bus_pro, generate_offer_letter, generate_slide_content, generate_slide_titles, generate_summary, generate_content, generate_sales_script, rephrasely, translate_multiple_texts  
+from .email_llama3 import BHASHINI_API_KEY, BHASHINI_USER_ID, add_slide, ask_question_chatbot, generate_blog, generate_slide_titles, extract_document_content, generate_email, bhashini_translate,generate_bus_pro, generate_offer_letter, generate_slide_content, generate_slide_titles, generate_summary, generate_content, generate_sales_script, rephrasely, translate_multiple_texts, translate_with_retry  
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from django.utils import timezone
@@ -935,6 +935,116 @@ def decrypt_data(encrypted_data):
         raise ValueError(f"Decryption error: {e}")
 
 
+# @csrf_exempt
+# def add_user(request):
+#     if request.method == 'POST':
+#         try:
+#             # Load untrusted domains from the text file
+#             with open('./domains.txt', 'r') as file:
+#                 untrusted_domains = {line.strip().lower() for line in file}
+
+#             # Load and decode the request body
+#             body = request.body.decode('utf-8')
+#             logger.debug(f"Request body received: {body}")
+
+#             # Extract and decrypt the incoming payload
+#             data = json.loads(body)
+#             encrypted_content = data.get('encrypted_content')
+#             if not encrypted_content:
+#                 logger.warning("No encrypted content found in the request.")
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#             logger.debug(f"Encrypted content received: {encrypted_content}")
+#             decrypted_content = decrypt_data(encrypted_content)  # Decrypt the content using your custom decrypt_data function
+#             logger.debug(f"Decrypted content: {decrypted_content}")
+
+#             content = json.loads(decrypted_content)
+
+#             if not content:
+#                 logger.warning('No content found in the request.')
+#                 return JsonResponse({'error': 'No content found in the request.'}, status=400)
+
+#             # Extract required fields
+#             first_name = content.get('first_name')
+#             last_name = content.get('last_name')
+#             username = content.get('username')
+#             email = content.get('email')
+#             password = content.get('password')
+#             confirm_password = content.get('confirm_password')
+
+#             # Check if username and email are provided
+#             if not username:
+#                 return JsonResponse({'error': 'Username is required.'}, status=400)
+#             if not email:
+#                 return JsonResponse({'error': 'Email is required.'}, status=400)
+
+#             # Normalize username and email to lowercase
+#             username = username.lower()
+#             email = email.lower()
+
+#             # Extract domain from the email
+#             try:
+#                 email_domain = email.split('@')[1].lower()
+#             except IndexError:
+#                 return JsonResponse({'error': 'Invalid email format.'}, status=400)
+
+#             # Check if the email domain is in the untrusted list
+#             if email_domain in untrusted_domains:
+#                 return JsonResponse({
+#                     'error': 'It seems you are using an untrusted email domain service. Please try with another email.'}, 
+#                     status=400)
+
+#             # Check if passwords match
+#             if password != confirm_password:
+#                 return JsonResponse({'error': 'Passwords do not match.'}, status=400)
+
+#             # Check if username already exists
+#             if User.objects.filter(username=username).exists():
+#                 return JsonResponse({'error': 'Username already exists.'}, status=400)
+
+#             # Validate email
+#             try:
+#                 validate_email(email)
+#             except ValidationError:
+#                 return JsonResponse({'error': 'Invalid email address.'}, status=400)
+
+#             # Check if email already exists
+#             if User.objects.filter(email=email).exists():
+#                 return JsonResponse({'error': 'Email already exists.'}, status=400)
+
+#             # Create user
+#             user = User.objects.create(
+#                 first_name=first_name,
+#                 last_name=last_name,
+#                 username=username,
+#                 email=email,
+#                 password=make_password(password)  # Hash the password
+#             )
+#             user.save()
+
+#             # Prepare the response
+#             response_data = {
+#                 'message': 'User created successfully',
+#                 'user_id': user.id,
+#                 'email': email
+#             }
+
+#             # Encrypt the response content
+#             encrypted_response_content = encrypt_data(response_data)  # Encrypt the response using your custom encrypt_data function
+
+#             # Return the encrypted response
+#             return JsonResponse({'encrypted_content': encrypted_response_content}, status=201)
+
+#         except json.JSONDecodeError:
+#             logger.error("Invalid JSON format in request")
+#             return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+#         except Exception as e:
+#             logger.error(f"Unexpected error: {str(e)}")
+#             return JsonResponse({'error': str(e)}, status=500)
+#     else:
+#         logger.error("Invalid request method")
+#         return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 @csrf_exempt
 def add_user(request):
     if request.method == 'POST':
@@ -971,6 +1081,7 @@ def add_user(request):
             email = content.get('email')
             password = content.get('password')
             confirm_password = content.get('confirm_password')
+            state = content.get('state')  # Extract the state field
 
             # Check if username and email are provided
             if not username:
@@ -1012,15 +1123,21 @@ def add_user(request):
             if User.objects.filter(email=email).exists():
                 return JsonResponse({'error': 'Email already exists.'}, status=400)
 
+            # Check if state is provided
+            if not state:
+                return JsonResponse({'error': 'State is required.'}, status=400)
+
             # Create user
             user = User.objects.create(
                 first_name=first_name,
                 last_name=last_name,
                 username=username,
                 email=email,
-                password=make_password(password)  # Hash the password
+                password=make_password(password),  # Hash the password
+                state = state
             )
             user.save()
+
 
             # Prepare the response
             response_data = {
@@ -1044,6 +1161,8 @@ def add_user(request):
     else:
         logger.error("Invalid request method")
         return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
 
 @csrf_exempt
 def send_email_verification_otp(request):
@@ -2353,6 +2472,91 @@ def translate_content_google(request):
 #     except Exception as e:
 #         return JsonResponse({'error': str(e)}, status=500)
 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def translate_content_formatted(request):
+#     if request.method != 'POST':
+#         return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+#     try:
+#         # Extract and decrypt the incoming payload
+#         encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#         if not encrypted_content:
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         decrypted_content = decrypt_data(encrypted_content)
+#         data = json.loads(decrypted_content)
+        
+#         generated_content = data.get('generated_content')
+#         language = data.get('language')
+
+#         if not generated_content or not language:
+#             return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
+
+#         # Initialize the translated content list
+#         translated_paragraphs = []
+
+#         # Break content into paragraphs or smaller chunks
+#         paragraphs = generated_content.split('\n\n')  # Paragraphs
+
+#         for paragraph in paragraphs:
+#             # Split each paragraph into sentences for finer granularity
+#             sentences = paragraph.split('. ')  # Split by sentence
+#             translated_sentences = []
+
+#             for sentence in sentences:
+#                 if sentence.strip():  # Skip empty sentences
+#                     response = bhashini_translate(sentence, language)
+#                     if response["status_code"] == 200:
+#                         translated_sentences.append(response["translated_content"])
+#                     else:
+#                         return JsonResponse(
+#                             {'error': f'Translation failed for sentence: "{sentence}". Status code: {response["status_code"]}'},
+#                             status=500
+#                         )
+            
+#             # Combine the translated sentences back into a paragraph
+#             translated_paragraph = '. '.join(translated_sentences).strip()
+#             translated_paragraphs.append(translated_paragraph)
+
+#         # Combine the translated paragraphs back into the full content
+#         translated_content = '\n\n'.join(translated_paragraphs)
+
+#         # Log the translated content for debugging
+#         logger.info(f'Translated content: {translated_content}')  # Log the translated content
+
+#         # Ensure translated content is properly encoded
+#         translated_content = translated_content.encode('utf-8').decode('utf-8')
+
+#         # Encrypt the response content
+#         encrypted_response = encrypt_data({
+#             'generated_content': generated_content,
+#             'translated_content': translated_content,
+#             'selected_language': language
+#         })
+
+#         return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
+
+import json
+import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from django.http import JsonResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+
+MAX_WORKERS = 50  # Number of threads for concurrent processing
+RETRY_LIMIT = 1000  # Maximum retries for translation API
+MAX_SENTENCES_PER_CHUNK = 30  # Number of sentences to process in a single chunk
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def translate_content_formatted(request):
@@ -2367,7 +2571,7 @@ def translate_content_formatted(request):
 
         decrypted_content = decrypt_data(encrypted_content)
         data = json.loads(decrypted_content)
-        
+
         generated_content = data.get('generated_content')
         language = data.get('language')
 
@@ -2378,36 +2582,37 @@ def translate_content_formatted(request):
         translated_paragraphs = []
 
         # Break content into paragraphs or smaller chunks
-        paragraphs = generated_content.split('\n\n')  # Paragraphs
+        paragraphs = generated_content.split('\n\n')  # Split by paragraphs
 
-        for paragraph in paragraphs:
-            # Split each paragraph into sentences for finer granularity
-            sentences = paragraph.split('. ')  # Split by sentence
-            translated_sentences = []
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            futures = []
+            for paragraph in paragraphs:
+                sentences = paragraph.split('. ')  # Split paragraph into sentences
+                chunked_sentences = [
+                    sentences[i:i + MAX_SENTENCES_PER_CHUNK]
+                    for i in range(0, len(sentences), MAX_SENTENCES_PER_CHUNK)
+                ]
 
-            for sentence in sentences:
-                if sentence.strip():  # Skip empty sentences
-                    response = bhashini_translate(sentence, language)
-                    if response["status_code"] == 200:
-                        translated_sentences.append(response["translated_content"])
-                    else:
-                        return JsonResponse(
-                            {'error': f'Translation failed for sentence: "{sentence}". Status code: {response["status_code"]}'},
-                            status=500
+                for chunk in chunked_sentences:
+                    futures.append(
+                        executor.submit(
+                            lambda c: '. '.join([translate_with_retry(s, language) for s in c]),
+                            chunk
                         )
-            
-            # Combine the translated sentences back into a paragraph
-            translated_paragraph = '. '.join(translated_sentences).strip()
-            translated_paragraphs.append(translated_paragraph)
+                    )
+
+            # Process completed translations
+            for future in as_completed(futures):
+                try:
+                    translated_paragraphs.append(future.result())
+                except ValueError as e:
+                    return JsonResponse({'error': str(e)}, status=500)
 
         # Combine the translated paragraphs back into the full content
         translated_content = '\n\n'.join(translated_paragraphs)
 
-        # Log the translated content for debugging
-        logger.info(f'Translated content: {translated_content}')  # Log the translated content
-
-        # Ensure translated content is properly encoded
-        translated_content = translated_content.encode('utf-8').decode('utf-8')
+        # Log the translated content
+        logger.info(f'Translated content: {translated_content}')
 
         # Encrypt the response content
         encrypted_response = encrypt_data({
@@ -2423,8 +2628,8 @@ def translate_content_formatted(request):
     except ValueError as e:
         return JsonResponse({'error': str(e)}, status=400)
     except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
-
 
 
 
@@ -3083,40 +3288,98 @@ def change_password(request):
 
 
 #Encrypted API For summarize Service
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated, HasAPIKey])
+# def summarize_document(request):
+#     try:
+#         # Extract form data
+#         document_context = request.data.get('documentContext')
+#         main_subject = request.data.get('mainSubject')
+#         summary_purpose = request.data.get('summaryPurpose')
+#         length_detail = request.data.get('lengthDetail')
+#         important_elements = request.data.get('importantElements')
+#         audience = request.data.get('audience')
+#         tone = request.data.get('tone')
+#         format_ = request.data.get('format')
+#         additional_instructions = request.data.get('additionalInstructions')
+#         document_file = request.FILES.get('documentFile')
+
+#         if not document_file:
+#             return JsonResponse({'error': 'No document file provided.'}, status=400)
+
+#         # Generate summary
+#         summary = generate_summary(
+#             document_context, main_subject, summary_purpose, length_detail,
+#             important_elements, audience, tone, format_, additional_instructions, document_file
+#         )
+#         # print(document_context)
+#         # print(main_subject)
+
+
+#         if summary.startswith("Error:"):
+#             logger.error(summary)
+#             return JsonResponse({'error': summary}, status=500)
+
+#         return JsonResponse({'summary': summary}, status=200)
+
+#     except Exception as e:
+#         logger.error(f'Exception: {str(e)}')
+#         return JsonResponse({'error': str(e)}, status=500)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def summarize_document(request):
     try:
-        # Extract form data
-        document_context = request.data.get('documentContext')
-        main_subject = request.data.get('mainSubject')
-        summary_purpose = request.data.get('summaryPurpose')
-        length_detail = request.data.get('lengthDetail')
-        important_elements = request.data.get('importantElements')
-        audience = request.data.get('audience')
-        tone = request.data.get('tone')
-        format_ = request.data.get('format')
-        additional_instructions = request.data.get('additionalInstructions')
-        document_file = request.FILES.get('documentFile')
+        # Extract encrypted content from request.POST
+        encrypted_content = request.POST.get('encrypted_content')
+        if not encrypted_content:
+            logger.warning('No encrypted content found in the request.')
+            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
 
+        # Decrypt the JSON payload
+        decrypted_content = decrypt_data(encrypted_content)
+        data = json.loads(decrypted_content)
+        logger.debug(f'Decrypted content: {data}')
+
+        # Extract form fields from decrypted data
+        document_context = data.get('documentContext')
+        main_subject = data.get('mainSubject')
+        summary_purpose = data.get('summaryPurpose')
+        length_detail = data.get('lengthDetail')
+        important_elements = data.get('importantElements')
+        audience = data.get('audience')
+        tone = data.get('tone')
+        format_ = data.get('format')
+        additional_instructions = data.get('additionalInstructions')
+
+        # Extract the uploaded file from request.FILES
+        document_file = request.FILES.get('documentFile')
         if not document_file:
+            logger.warning('No document file provided.')
             return JsonResponse({'error': 'No document file provided.'}, status=400)
 
-        # Generate summary
+        # Generate summary using provided data and the uploaded document
         summary = generate_summary(
             document_context, main_subject, summary_purpose, length_detail,
             important_elements, audience, tone, format_, additional_instructions, document_file
         )
-        # print(document_context)
-        # print(main_subject)
-
 
         if summary.startswith("Error:"):
             logger.error(summary)
             return JsonResponse({'error': summary}, status=500)
 
-        return JsonResponse({'summary': summary}, status=200)
+        # Encrypt the response content
+        encrypted_response = encrypt_data({'summary': summary})
+        logger.info('Summary generated and encrypted successfully.')
 
+        return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+    except json.JSONDecodeError:
+        logger.error('Invalid JSON format received.')
+        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+    except ValueError as e:
+        logger.error(f'ValueError: {str(e)}')
+        return JsonResponse({'error': str(e)}, status=400)
     except Exception as e:
         logger.error(f'Exception: {str(e)}')
         return JsonResponse({'error': str(e)}, status=500)
@@ -4318,105 +4581,6 @@ def translate_content_guest(request):
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 
-# @csrf_exempt
-# def guest_send_otp(request):
-#     if request.method == 'POST':
-#         try:
-#             # Load untrusted domains from the text file
-#             with open('./unique_domains.csv', 'r') as file:
-#                 untrusted_domains = {line.strip().lower() for line in file}
-
-#             # Decrypt incoming request data
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             if not encrypted_content:
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-            
-#             decrypted_content = decrypt_data(encrypted_content)
-#             data = json.loads(decrypted_content)
-
-#             email = data.get('email')  # Use email instead of mobile number
-
-#             if not email:
-#                 return JsonResponse({'error': 'Email is required.'}, status=400)
-
-#             # Extract domain from the email
-#             try:
-#                 email_domain = email.split('@')[1].split('.')[0].lower()
-#             except IndexError:
-#                 return JsonResponse({'error': 'Invalid email format.'}, status=400)
-
-#             # Check if the email domain is in the untrusted list
-#             if email_domain in untrusted_domains:
-#                 return JsonResponse({
-#                     'error': 'It seems you are using an untrusddddddddted email domain service. Please try with another email.'
-#                 }, status=400)
-
-#             # Generate OTP and set expiry time
-#             otp = guest_generate_otp()
-#             valid_till = guest_otp_expiry_time()
-
-#             # Create or update the GuestLogin entry
-#             guest_login, created = GuestLogin.objects.update_or_create(
-#                 email=email,
-#                 defaults={
-#                     'otp': otp,
-#                     'valid_till': valid_till,
-#                     'is_active': True
-#                 }
-#             )
-
-#             # Prepare the email content
-#             subject = 'Confidential OTP for Guest Login'
-#             plain_message = f"""
-# Dear Sir/Madam,
-
-# We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is {otp} and will remain valid for a period of 10 minutes.
-
-# Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.
-
-# This notification is intended to provide you with the necessary information to complete Guest Login. If you have any concerns or require assistance, please contact our support team through the appropriate channels.
-
-# Thank you for your understanding and cooperation.
-
-# Sincerely,
-# The ProdigiDesk Team
-# """
-#             html_message = f"""
-# <p>Dear Sir/Madam,</p>
-# <p>We are writing to inform you that a confidential One-Time Password (OTP) has been generated by our system. The OTP is <strong>{otp}</strong> and will remain valid for a period of 10 minutes.</p>
-# <p>Please be advised that this email has been generated automatically by our system and does not require a response. We kindly request that you refrain from replying to this email.</p>
-# <p>This notification is intended to provide you with the necessary information to complete your Guest Login. If you have any concerns or require assistance, please contact our support team through the appropriate channels.</p>
-# <p>Thank you for your understanding and cooperation.</p>
-# <p>Sincerely,<br>The ProdigiDesk Team</p>
-# """
-
-#             from_email = settings.DEFAULT_FROM_EMAIL
-#             recipient_list = [email]
-
-#             # Send the OTP via email
-#             try:
-#                 send_mail(
-#                     subject, 
-#                     plain_message, 
-#                     from_email, 
-#                     recipient_list, 
-#                     fail_silently=False,
-#                     html_message=html_message  # Send both plain and HTML content
-#                 )
-
-#                 # Encrypt the response
-#                 encrypted_response = encrypt_data({'message': f'OTP sent to {email}.'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-#             except Exception as e:
-#                 return JsonResponse({'error': f'Error sending email: {str(e)}'}, status=500)
-
-#         except json.JSONDecodeError:
-#             return JsonResponse({'error': 'Invalid JSON format.'}, status=400)
-#         except Exception as e:
-#             return JsonResponse({'error': str(e)}, status=500)
-#     else:
-#         return JsonResponse({'error': 'Invalid HTTP method.'}, status=405)
-
 
 @csrf_exempt
 def guest_send_otp(request):
@@ -4523,41 +4687,6 @@ The ProdigiDesk Team
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid HTTP method.'}, status=405)
-
-
-
-# @csrf_exempt
-# def guest_validate_otp(request):
-#     if request.method == 'POST':
-#         try:
-#             data = json.loads(request.body.decode('utf-8'))
-#             email = data.get('email')  # Changed to email
-#             otp = data.get('otp')
-
-#             if not email or not otp:
-#                 return JsonResponse({'error': 'Email and OTP are required.'}, status=400)
-
-#             # Find the GuestLogin entry
-#             try:
-#                 guest_login = GuestLogin.objects.get(email=email, otp=otp)  # Changed to email
-#             except GuestLogin.DoesNotExist:
-#                 return JsonResponse({'error': 'Invalid OTP.'}, status=400)
-
-#             # Check if OTP is valid and session is active
-#             if not guest_login.is_valid() or not guest_login.is_active:
-#                 guest_login.deactivate_session()  # Deactivate if expired
-#                 return JsonResponse({'error': 'OTP has expired or session is inactive.'}, status=400)
-
-#             # If valid, mark the session as inactive and return success
-#             guest_login.deactivate_session()
-#             return JsonResponse({'message': 'OTP is valid. Session deactivated.'}, status=200)
-
-#         except json.JSONDecodeError:
-#             return JsonResponse({'error': 'Invalid JSON format.'}, status=400)
-#         except Exception as e:
-#             return JsonResponse({'error': str(e)}, status=500)
-#     else:
-#         return JsonResponse({'error': 'Invalid HTTP method.'}, status=405)
 
 
 @csrf_exempt
@@ -5247,6 +5376,56 @@ def empty_cart_yearly(request):
         return JsonResponse({"encrypted_content": encrypted_response}, status=500)
 
 
+# @csrf_exempt
+# def delete_user_account(request):
+#     if request.method == "DELETE":
+#         try:
+#             # Get the encrypted content from the request
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             if not encrypted_content:
+#                 return JsonResponse({"error": "No encrypted content found in the request."}, status=400)
+
+#             # Decrypt the request data
+#             decrypted_content = decrypt_data(encrypted_content)
+#             data = json.loads(decrypted_content)
+#             email = data.get('email')
+
+#             if not email:
+#                 return JsonResponse({"error": "Email is required"}, status=400)
+
+#             # Find the user based on the email
+#             try:
+#                 user = User.objects.get(email=email)
+#             except User.DoesNotExist:
+#                 encrypted_response = encrypt_data({"error": "User not found"})
+#                 return JsonResponse({"encrypted_content": encrypted_response}, status=404)
+
+#             # Delete associated records
+#             UserService.objects.filter(user=user).delete()  # Delete user services
+#             Profile.objects.filter(user=user).delete()      # Delete user profile
+#             Payment.objects.filter(email=email).delete()    # Delete payments associated with the user
+#             UserSession.objects.filter(user=user).delete()  # Delete user sessions
+#             EmailVerificationOTP.objects.filter(user=user).delete()  # Delete email verification OTPs
+#             TemporaryEmailVerificationOTP.objects.filter(email=email).delete()  # Delete temp email verifications
+#             Cart.objects.filter(email=email).delete()  # Delete the cart
+
+#             # Finally, delete the user
+#             user.delete()
+
+#             # Encrypt the success message
+#             encrypted_response = encrypt_data({"message": "User account and associated data deleted successfully"})
+#             return JsonResponse({"encrypted_content": encrypted_response}, status=200)
+
+#         except json.JSONDecodeError:
+#             encrypted_response = encrypt_data({"error": "Invalid JSON format. Please provide valid JSON data."})
+#             return JsonResponse({"encrypted_content": encrypted_response}, status=400)
+#         except Exception as e:
+#             encrypted_response = encrypt_data({"error": str(e)})
+#             return JsonResponse({"encrypted_content": encrypted_response}, status=500)
+
+#     encrypted_response = encrypt_data({"error": "Invalid request method"})
+#     return JsonResponse({"encrypted_content": encrypted_response}, status=400)
+
 @csrf_exempt
 def delete_user_account(request):
     if request.method == "DELETE":
@@ -5283,6 +5462,33 @@ def delete_user_account(request):
             # Finally, delete the user
             user.delete()
 
+            # Send account deletion email
+            subject = "Account Deletion Confirmation"
+            message = f"""
+Dear {email},
+
+We regret to inform you that your account with us has been deleted successfully as per your request. 
+
+All your associated data, including services, profiles, and payment records, have been removed from our system. Please note that this action is irreversible.
+
+If you believe this was a mistake or have any questions, feel free to contact our support team for assistance.
+
+Thank you for using our services.
+
+Sincerely,
+The ProdigiDesk Team
+"""
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient_list = [email]
+
+            try:
+                send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+                logger.info(f"Account deletion email sent to {email}")
+            except Exception as e:
+                logger.error(f"Error sending account deletion email: {str(e)}")
+                encrypted_response = encrypt_data({"error": f"Error sending email: {str(e)}"})
+                return JsonResponse({"encrypted_content": encrypted_response}, status=500)
+
             # Encrypt the success message
             encrypted_response = encrypt_data({"message": "User account and associated data deleted successfully"})
             return JsonResponse({"encrypted_content": encrypted_response}, status=200)
@@ -5296,6 +5502,8 @@ def delete_user_account(request):
 
     encrypted_response = encrypt_data({"error": "Invalid request method"})
     return JsonResponse({"encrypted_content": encrypted_response}, status=400)
+
+
 
 #Mobile App API's
 @csrf_exempt
@@ -6281,53 +6489,66 @@ def sales_script_generator_android(request):
     logger.error("Method not allowed.")
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
-def business_proposal_generator_android(request):
-    if request.method == 'POST':
-        try:
-            # Extract the incoming payload (no decryption now)
-            data = json.loads(request.body.decode('utf-8'))
-            logger.debug(f'Incoming data: {data}')
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, HasAPIKey])
+def content_generator_android(request):
+    try:
+        # Load and decode the request body
+        body = request.body.decode('utf-8')
+        logger.debug(f"Request body received: {body}")
 
-            business_intro = data.get('businessIntroduction')
-            proposal_objective = data.get('proposalObjective')
-            # Handle otherObjective if proposalObjective is 'Others'
-            other_objective = data.get('otherObjective')
-            if proposal_objective == 'Others' and other_objective:
-                proposal_objective = other_objective
+        # Parse the incoming JSON payload
+        data = json.loads(body)
 
-            num_words = data.get('numberOfWords')
-            scope_of_work = data.get('scopeOfWork')
-            project_phases = data.get('projectPhases')
-            expected_outcomes = data.get('expectedOutcomes')
-            tech_innovations = data.get('technologiesAndInnovations')  # Combined field
-            target_audience = data.get('targetAudience')
-            budget_info = data.get('budgetInformation')
-            timeline = data.get('timeline')
-            benefits = data.get('benefitsToRecipient')
-            closing_remarks = data.get('closingRemarks')
+        # Extract fields from the JSON data
+        company_info = data.get('company_info')
+        content_purpose = data.get('content_purpose')
+        desired_action = data.get('desired_action')
+        topic_details = data.get('topic_details')
+        keywords = data.get('keywords')
+        audience_profile = data.get('audience_profile')
+        format_structure = data.get('format_structure')
+        num_words = data.get('num_words')
+        seo_keywords = data.get('seo_keywords')
+        references = data.get('references')
 
-            logger.info('Generating business proposal content.')
-            proposal_content = generate_bus_pro(
-                business_intro, proposal_objective, num_words, scope_of_work,
-                project_phases, expected_outcomes, tech_innovations, target_audience,
-                budget_info, timeline, benefits, closing_remarks
-            )
+        logger.debug(f"Data extracted for content generation: company_info={company_info}, content_purpose={content_purpose}, desired_action={desired_action}")
 
-            # Return the generated content directly (no encryption)
-            return JsonResponse({'generated_content': proposal_content}, status=200)
+        # Generate the content
+        logger.info("Generating content...")
+        content = generate_content(
+            company_info,
+            content_purpose,
+            desired_action,
+            topic_details,
+            keywords,
+            audience_profile,
+            format_structure,
+            num_words,
+            seo_keywords,
+            references
+        )
 
-        except json.JSONDecodeError:
-            logger.error('Invalid JSON format received.')
-            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-        except ValueError as e:
-            logger.error(f'ValueError: {str(e)}')
-            return JsonResponse({'error': str(e)}, status=400)
-        except Exception as e:
-            logger.error(f'Exception: {str(e)}')
-            return JsonResponse({'error': str(e)}, status=500)
+        if content:
+            logger.info("Content generated successfully.")
+            return JsonResponse({'generated_content': content}, status=200)
 
-    logger.warning('Method not allowed.')
+        logger.error("Failed to generate content.")
+        return JsonResponse({'error': 'Failed to generate content. Please try again.'}, status=500)
+
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON format received.")
+        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+    except ValueError as e:
+        logger.error(f"ValueError occurred: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+    logger.error("Method not allowed.")
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
 
 @csrf_exempt
 def get_user_services_android(request, email):
@@ -6393,82 +6614,7 @@ def get_user_services_android(request, email):
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
-def generate_blog_view_android(request):
-    try:
-        # Load and decode the request body
-        body = request.body.decode('utf-8')
-        logger.debug(f"Request body received: {body}")
 
-        # Extract the incoming payload
-        data = json.loads(body)
-
-        # Extract the required fields
-        title = data.get('title')
-        tone = data.get('tone')
-        keywords = data.get('keywords', None)  # Optional
-
-        # Ensure required fields are present
-        if not title or not tone:
-            return JsonResponse({"error": "Missing 'title' or 'tone'."}, status=400)
-
-        # Call the generate_blog function
-        blog_content = generate_blog(title, tone, keywords)
-
-        # Return the blog content as a JSON response
-        return JsonResponse({'blog_content': blog_content}, status=200)
-
-    except json.JSONDecodeError:
-        logger.error("Invalid JSON format received.")
-        return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
-    except ValueError as e:
-        logger.error(f"ValueError occurred: {str(e)}")
-        return JsonResponse({"error": str(e)}, status=400)
-    except Exception as e:
-        logger.error(f"An unexpected error occurred: {str(e)}")
-        return JsonResponse({"error": str(e)}, status=500)
-
-    # If not a POST request, return an error
-    return JsonResponse({"error": "Only POST method is allowed."}, status=405)
-
-@csrf_exempt
-def rephrasely_view_android(request):
-    if request.method == 'POST':
-        try:
-            # Extract the incoming payload
-            data = json.loads(request.body.decode('utf-8'))
-            print(data);
-            logger.debug(f'Incoming content: {data}')
-
-            # Extract required fields
-            text_to_rephrase = data.get('text_to_rephrase')
-            tone = data.get('tone')
-            target_audience = data.get('target_audience')
-            num_words = data.get('num_words', "default")  # Optional, default is "default"
-
-            if not text_to_rephrase:
-                logger.warning('Text to rephrase is missing.')
-                return JsonResponse({'error': 'Text to rephrase is required.'}, status=400)
-
-            # Call the rephrasely function
-            rephrased_text = rephrasely(text_to_rephrase, tone, target_audience, num_words)
-
-            logger.info('Rephrased content generated successfully.')
-
-            # Return the response
-            return JsonResponse({'rephrased_text': rephrased_text}, status=200)
-
-        except json.JSONDecodeError:
-            logger.error('Invalid JSON format received.')
-            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-        except ValueError as e:
-            logger.error(f'ValueError: {str(e)}')
-            return JsonResponse({'error': str(e)}, status=400)
-        except Exception as e:
-            logger.error(f'Exception: {str(e)}')
-            return JsonResponse({'error': str(e)}, status=500)
-
-    logger.warning('Method not allowed.')
-    return JsonResponse({'error': 'Method not allowed.'}, status=405)
 import zipfile
 from io import BytesIO
 from django.http import JsonResponse, HttpResponse

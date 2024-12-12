@@ -74,9 +74,6 @@ urlpatterns = [
     path('get_word_count/', views.get_word_count, name='get_word_count'),
     path('translate_content_google/', views.translate_content_google, name='translate_content_google'),
     path('translate_international/', views.translate_international, name='translate_international'),
-    
-
-    #for flutter App - NO Enc/Dec APIS
     path('translate_android/', views.translate_android, name='translate_android'),
     path('email_generator_android/', views.email_generator_android, name='email_generator_android'),
     path('sales_script_generator_android/', views.sales_script_generator_android, name='sales_script_generator_android'),
@@ -86,16 +83,20 @@ urlpatterns = [
     path('otp_verify_android/', views.otp_verify_android, name='otp_verify_android'),
     path('check_session_status_android/', views.check_session_status_android, name='check_session_status_android'),
     path('verify_payment_android/', views.verify_payment_android, name='verify_payment_android'),
+    path('content_generator_android/', views.content_generator_android, name='content_generator_android'),
+
     path('create_razorpay_order_android/', views.create_razorpay_order_android, name='create_razorpay_order_android'),
     path('verify_payment_yearly_android/', views.verify_payment_yearly_android, name='verify_payment_yearly_android'),
+
     path('logout_view_android/', views.logout_view_android, name='logout_view_android'),
     path('profile_android/', views.profile_android, name='profile_android'),
     path('profile_info_android/', views.profile_info_android, name='profile_info_android'),
     path('speech_api_android/', views.speech_api_android, name='speech_api_android'),
 
+
+
+
     path('get_user_services_android/<str:email>/', views.get_user_services_android, name='get_user_services_android'),
-    path('blog_generator_android/',views.generate_blog_view_android,name='blog_generator_android'),
-    path('rephrase_text_android/',views.rephrasely_view_android, name='rephrase_text_android'),
 
 
 
@@ -114,4 +115,3 @@ urlpatterns = [
 
 
 ]
-

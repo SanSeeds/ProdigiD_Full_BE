@@ -186,11 +186,3 @@ ERROR 2024-11-25 11:29:42,313 views Error during logout: Field 'id' expected a n
 ERROR 2024-11-25 11:29:42,314 log Internal Server Error: /logout_view_android/
 ERROR 2024-11-25 11:29:42,315 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
 ERROR 2024-11-25 11:29:42,315 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
-ERROR 2024-11-27 15:11:59,926 basehttp You're accessing the development server over HTTPS, but it only supports HTTP.
-ERROR 2024-11-27 15:11:59,926 basehttp You're accessing the development server over HTTPS, but it only supports HTTP.
-ERROR 2024-11-27 15:12:00,192 basehttp You're accessing the development server over HTTPS, but it only supports HTTP.
-ERROR 2024-11-27 15:12:00,192 basehttp You're accessing the development server over HTTPS, but it only supports HTTP.
-ERROR 2024-11-27 15:12:00,238 basehttp You're accessing the development server over HTTPS, but it only supports HTTP.
-ERROR 2024-11-27 15:12:00,238 basehttp You're accessing the development server over HTTPS, but it only supports HTTP.
-ERROR 2024-11-27 15:12:00,504 basehttp You're accessing the development server over HTTPS, but it only supports HTTP.
-ERROR 2024-11-27 15:12:00,504 basehttp You're accessing the development server over HTTPS, but it only supports HTTP.

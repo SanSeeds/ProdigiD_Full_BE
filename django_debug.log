@@ -300,3 +300,284 @@ ERROR 2024-12-11 08:16:54,934 views Unexpected error: User() got unexpected keyw
 ERROR 2024-12-11 08:16:54,940 log Internal Server Error: /add_user/
 ERROR 2024-12-11 08:16:54,941 basehttp "POST /add_user/ HTTP/1.1" 500 61
 ERROR 2024-12-11 08:16:54,941 basehttp "POST /add_user/ HTTP/1.1" 500 61
+ERROR 2024-12-11 12:53:37,120 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:53:37,618 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:53:37,723 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:53:37,893 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:53:38,404 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:53:38,657 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:53:54,064 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:54:16,824 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:54:34,093 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:54:47,888 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:55:06,749 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:55:19,583 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:55:30,920 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:55:55,179 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:56:08,398 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:56:18,832 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:56:46,977 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:57:22,242 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:57:42,733 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:58:23,569 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:58:34,080 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:58:48,921 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:59:04,891 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 12:59:55,110 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:00:05,840 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:00:19,095 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:00:50,208 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:01:01,732 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:02:24,887 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:02:35,833 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:03:03,163 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:03:14,422 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:04:51,076 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:04:51,255 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:04:53,266 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:04:53,928 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:04:55,423 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:04:56,192 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:04:56,905 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:05:00,583 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:05:04,257 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:05:04,445 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:05:04,637 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:05:15,150 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:05:16,768 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:05:17,867 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:05:21,620 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:05:22,212 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:05:43,462 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:05:44,551 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:05:48,872 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:05:50,901 email_llama3 Translation API error: 400 Client Error:  for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:05:51,217 email_llama3 Translation API error: 400 Client Error:  for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:05:56,395 email_llama3 Translation API error: 400 Client Error:  for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:06:14,235 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:06:16,866 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:06:18,580 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:06:19,816 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:06:20,616 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:06:21,380 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:06:23,436 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:06:24,238 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:06:25,158 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:06:35,637 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:06:36,415 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:06:40,115 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:06:50,595 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:06:54,853 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:07:08,061 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:07:08,790 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:07:11,137 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:07:12,708 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:07:12,941 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:07:14,096 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:07:15,380 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:07:29,835 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:07:40,246 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:07:42,169 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:07:46,798 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:07:48,931 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:07:52,341 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:07:52,541 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:07:53,705 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:07:55,383 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:04,685 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:07,052 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:08,830 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:09,028 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:11,636 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:13,827 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:15,748 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:26,842 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:35,147 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:36,049 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:39,758 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:46,938 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:47,123 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:48,778 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:49,733 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:08:51,349 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:09:05,355 email_llama3 Translation API error: 502 Server Error: Bad Gateway for url: https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline
+ERROR 2024-12-11 13:09:24,808 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:09:34,937 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:09:53,880 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:10:04,006 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:10:14,651 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:10:31,124 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:10:47,150 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:10:57,267 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:11:08,260 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:11:22,796 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:11:35,131 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:11:45,282 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:11:56,804 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:12:06,936 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:12:21,701 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:12:31,841 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:12:42,794 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:12:52,917 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:13:03,051 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:13:13,182 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:13:24,531 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:13:38,547 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:13:57,944 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:14:14,929 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:14:25,621 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:14:43,392 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:14:54,128 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:15:15,614 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:15:28,348 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:15:38,481 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:15:58,477 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:16:08,596 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:16:19,662 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:16:29,788 email_llama3 Translation API error: HTTPSConnectionPool(host='meity-auth.ulcacontrib.org', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:16:45,838 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:17:02,937 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:17:18,032 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:17:35,805 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:17:46,172 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:17:59,054 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:18:10,015 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:18:27,955 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:18:38,344 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:18:48,871 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:19:00,138 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:19:12,381 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:19:23,022 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:19:33,566 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:19:44,966 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:19:55,845 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:20:06,224 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:20:17,495 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:20:29,880 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:20:41,763 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:20:52,316 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:21:02,828 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:21:19,687 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:21:30,613 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:21:40,998 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:21:52,639 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:22:03,021 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:22:17,373 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:22:27,770 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:22:46,892 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:22:57,392 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:23:08,084 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:23:18,857 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:23:29,298 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:23:40,045 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:23:56,014 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:24:06,413 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:24:17,939 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:24:29,060 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:24:49,622 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:25:00,114 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:25:10,665 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:25:44,863 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:26:10,886 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:26:21,359 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:26:43,868 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:26:54,398 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:27:07,895 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:27:18,877 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:27:38,113 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:27:49,254 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:28:12,547 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:28:24,041 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:28:37,525 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:28:48,070 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:29:05,736 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:29:17,691 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:29:28,924 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:29:51,348 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:30:01,712 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:30:12,295 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:30:22,757 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:30:41,126 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:30:52,056 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:31:02,598 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:31:18,967 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:31:30,107 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:31:40,809 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:31:51,674 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:32:02,691 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:32:14,600 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:32:27,611 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:32:42,098 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:32:52,615 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:33:03,680 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:33:41,917 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:33:52,313 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:34:06,966 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:34:18,348 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:34:29,348 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:34:46,062 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:34:56,651 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:35:11,205 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:35:21,694 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:35:32,050 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:35:42,687 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:35:59,114 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:36:10,100 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:36:20,537 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:36:31,687 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:36:42,057 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:36:52,854 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:37:03,582 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:37:14,055 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:37:24,546 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:37:35,140 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:37:45,551 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:37:56,011 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:38:06,538 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:38:16,986 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:38:28,270 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:38:38,780 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:38:49,149 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:39:00,010 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:39:10,378 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:39:20,771 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:39:31,865 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:39:42,806 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:39:54,733 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:40:05,210 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:40:16,197 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:40:46,839 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:40:57,237 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:41:08,093 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:41:19,832 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:41:30,241 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:41:40,633 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:41:51,009 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:42:08,845 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:42:20,737 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:42:35,235 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:42:46,163 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:42:57,589 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:43:07,962 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:43:18,417 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:43:28,916 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:43:39,546 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:43:49,996 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:44:00,498 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:44:16,531 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:44:27,044 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:44:39,859 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:44:50,228 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:45:10,341 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:45:20,791 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:45:31,235 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:45:56,965 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:46:17,012 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:46:27,548 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:46:55,523 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:47:07,499 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:47:45,794 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:47:56,580 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:48:07,017 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)
+ERROR 2024-12-11 13:48:12,786 log Internal Server Error: /translate_content_formatted/
+ERROR 2024-12-12 04:49:16,571 email_llama3 Translation API error: HTTPSConnectionPool(host='dhruva-api.bhashini.gov.in', port=443): Read timed out. (read timeout=10)

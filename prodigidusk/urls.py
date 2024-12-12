@@ -94,6 +94,8 @@ urlpatterns = [
     path('speech_api_android/', views.speech_api_android, name='speech_api_android'),
 
     path('get_user_services_android/<str:email>/', views.get_user_services_android, name='get_user_services_android'),
+    path('blog_generator_android/',views.generate_blog_view_android,name='blog_generator_android'),
+    path('rephrase_text_android/',views.rephrasely_view_android, name='rephrase_text_android'),
 
 
 

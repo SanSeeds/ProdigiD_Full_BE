@@ -2295,6 +2295,64 @@ def translate_content_google(request):
 #     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def translate_content_formatted(request):
+#     if request.method != 'POST':
+#         return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+#     try:
+#         # Extract and decrypt the incoming payload
+#         encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#         if not encrypted_content:
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         decrypted_content = decrypt_data(encrypted_content)
+#         data = json.loads(decrypted_content)
+        
+#         generated_content = data.get('generated_content')
+#         language = data.get('language')
+
+#         if not generated_content or not language:
+#             return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
+
+#         # Split content into paragraphs or lines
+#         paragraphs = generated_content.split('\n\n')
+#         translated_paragraphs = []
+
+#         # Translate each paragraph synchronously
+#         for paragraph in paragraphs:
+#             response = bhashini_translate(paragraph, language)
+#             if response["status_code"] == 200:
+#                 translated_paragraphs.append(response["translated_content"])
+#             else:
+#                 return JsonResponse({'error': 'Translation failed with status code: {}'.format(response["status_code"])}, status=500)
+
+#         # Join translated paragraphs back
+#         translated_content = '\n\n'.join(translated_paragraphs)
+
+#         # Log the translated content for debugging
+#         logger.info(f'Translated content: {translated_content}')  # Log the translated content
+
+#         # Ensure translated content is properly encoded
+#         translated_content = translated_content.encode('utf-8').decode('utf-8')
+
+#         # Encrypt the response content
+#         encrypted_response = encrypt_data({
+#             'generated_content': generated_content,
+#             'translated_content': translated_content,
+#             'selected_language': language
+#         })
+
+#         return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def translate_content_formatted(request):
@@ -2316,19 +2374,33 @@ def translate_content_formatted(request):
         if not generated_content or not language:
             return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
 
-        # Split content into paragraphs or lines
-        paragraphs = generated_content.split('\n\n')
+        # Initialize the translated content list
         translated_paragraphs = []
 
-        # Translate each paragraph synchronously
-        for paragraph in paragraphs:
-            response = bhashini_translate(paragraph, language)
-            if response["status_code"] == 200:
-                translated_paragraphs.append(response["translated_content"])
-            else:
-                return JsonResponse({'error': 'Translation failed with status code: {}'.format(response["status_code"])}, status=500)
+        # Break content into paragraphs or smaller chunks
+        paragraphs = generated_content.split('\n\n')  # Paragraphs
 
-        # Join translated paragraphs back
+        for paragraph in paragraphs:
+            # Split each paragraph into sentences for finer granularity
+            sentences = paragraph.split('. ')  # Split by sentence
+            translated_sentences = []
+
+            for sentence in sentences:
+                if sentence.strip():  # Skip empty sentences
+                    response = bhashini_translate(sentence, language)
+                    if response["status_code"] == 200:
+                        translated_sentences.append(response["translated_content"])
+                    else:
+                        return JsonResponse(
+                            {'error': f'Translation failed for sentence: "{sentence}". Status code: {response["status_code"]}'},
+                            status=500
+                        )
+            
+            # Combine the translated sentences back into a paragraph
+            translated_paragraph = '. '.join(translated_sentences).strip()
+            translated_paragraphs.append(translated_paragraph)
+
+        # Combine the translated paragraphs back into the full content
         translated_content = '\n\n'.join(translated_paragraphs)
 
         # Log the translated content for debugging
@@ -2352,6 +2424,9 @@ def translate_content_formatted(request):
         return JsonResponse({'error': str(e)}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+
 
 import concurrent.futures
 
@@ -6318,7 +6393,82 @@ def get_user_services_android(request, email):
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
+def generate_blog_view_android(request):
+    try:
+        # Load and decode the request body
+        body = request.body.decode('utf-8')
+        logger.debug(f"Request body received: {body}")
 
+        # Extract the incoming payload
+        data = json.loads(body)
+
+        # Extract the required fields
+        title = data.get('title')
+        tone = data.get('tone')
+        keywords = data.get('keywords', None)  # Optional
+
+        # Ensure required fields are present
+        if not title or not tone:
+            return JsonResponse({"error": "Missing 'title' or 'tone'."}, status=400)
+
+        # Call the generate_blog function
+        blog_content = generate_blog(title, tone, keywords)
+
+        # Return the blog content as a JSON response
+        return JsonResponse({'blog_content': blog_content}, status=200)
+
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON format received.")
+        return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
+    except ValueError as e:
+        logger.error(f"ValueError occurred: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+    # If not a POST request, return an error
+    return JsonResponse({"error": "Only POST method is allowed."}, status=405)
+
+@csrf_exempt
+def rephrasely_view_android(request):
+    if request.method == 'POST':
+        try:
+            # Extract the incoming payload
+            data = json.loads(request.body.decode('utf-8'))
+            print(data);
+            logger.debug(f'Incoming content: {data}')
+
+            # Extract required fields
+            text_to_rephrase = data.get('text_to_rephrase')
+            tone = data.get('tone')
+            target_audience = data.get('target_audience')
+            num_words = data.get('num_words', "default")  # Optional, default is "default"
+
+            if not text_to_rephrase:
+                logger.warning('Text to rephrase is missing.')
+                return JsonResponse({'error': 'Text to rephrase is required.'}, status=400)
+
+            # Call the rephrasely function
+            rephrased_text = rephrasely(text_to_rephrase, tone, target_audience, num_words)
+
+            logger.info('Rephrased content generated successfully.')
+
+            # Return the response
+            return JsonResponse({'rephrased_text': rephrased_text}, status=200)
+
+        except json.JSONDecodeError:
+            logger.error('Invalid JSON format received.')
+            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+        except ValueError as e:
+            logger.error(f'ValueError: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            logger.error(f'Exception: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=500)
+
+    logger.warning('Method not allowed.')
+    return JsonResponse({'error': 'Method not allowed.'}, status=405)
 import zipfile
 from io import BytesIO
 from django.http import JsonResponse, HttpResponse

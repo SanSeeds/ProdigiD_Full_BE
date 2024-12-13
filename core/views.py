@@ -3094,7 +3094,8 @@ def profile(request):
         'user': {
             'first_name': user.first_name,
             'last_name': user.last_name,
-            'email': user.email
+            'email': user.email,
+            'state' : user.state
         },
         'profile': {
             'bio': profile.bio,
@@ -3106,6 +3107,7 @@ def profile(request):
 
     # Encrypt the response content
     encrypted_response = encrypt_data(response_data)
+    print(response_data)
     logger.info('Profile data retrieved successfully.')
 
     # Return the encrypted response
@@ -3173,6 +3175,7 @@ def profile_info(request):
                 'last_login': user.last_login.isoformat() if user.last_login else None,
                 'username': user.username,
                 'date_joined': user.date_joined.isoformat(),
+                'state': user.state
             },
             'services': {
                 'email_service': user_service.email_service,
@@ -3339,6 +3342,7 @@ def summarize_document(request):
 
         # Decrypt the JSON payload
         decrypted_content = decrypt_data(encrypted_content)
+        print(decrypted_content)
         data = json.loads(decrypted_content)
         logger.debug(f'Decrypted content: {data}')
 
@@ -3364,6 +3368,7 @@ def summarize_document(request):
             document_context, main_subject, summary_purpose, length_detail,
             important_elements, audience, tone, format_, additional_instructions, document_file
         )
+
 
         if summary.startswith("Error:"):
             logger.error(summary)
@@ -6764,6 +6769,63 @@ def rephrasely_view_android(request):
     logger.warning('Method not allowed.')
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
+@csrf_exempt
+def summarize_document_android(request):
+    try:
+        # Extract encrypted content from request.POST
+        encrypted_content = request.POST.get('encrypted_content')
+        if not encrypted_content:
+            logger.warning('No encrypted content found in the request.')
+            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+        # Decrypt the JSON payload
+        decrypted_content = decrypt_data(encrypted_content)
+        data = json.loads(decrypted_content)
+        logger.debug(f'Decrypted content: {data}')
+
+        # Extract form fields from decrypted data
+        document_context = data.get('documentContext')
+        main_subject = data.get('mainSubject')
+        summary_purpose = data.get('summaryPurpose')
+        length_detail = data.get('lengthDetail')
+        important_elements = data.get('importantElements')
+        audience = data.get('audience')
+        tone = data.get('tone')
+        format_ = data.get('format')
+        additional_instructions = data.get('additionalInstructions')
+
+        # Extract the uploaded file from request.FILES
+        document_file = request.FILES.get('documentFile')
+        if not document_file:
+            logger.warning('No document file provided.')
+            return JsonResponse({'error': 'No document file provided.'}, status=400)
+
+        # Generate summary using provided data and the uploaded document
+        summary = generate_summary(
+            document_context, main_subject, summary_purpose, length_detail,
+            important_elements, audience, tone, format_, additional_instructions, document_file
+        )
+
+
+        if summary.startswith("Error:"):
+            logger.error(summary)
+            return JsonResponse({'error': summary}, status=500)
+
+        # Encrypt the response content
+        encrypted_response = encrypt_data({'summary': summary})
+        logger.info('Summary generated and encrypted successfully.')
+
+        return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+    except json.JSONDecodeError:
+        logger.error('Invalid JSON format received.')
+        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+    except ValueError as e:
+        logger.error(f'ValueError: {str(e)}')
+        return JsonResponse({'error': str(e)}, status=400)
+    except Exception as e:
+        logger.error(f'Exception: {str(e)}')
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 import zipfile

@@ -1435,7 +1435,7 @@ def send_feedback(request):
                 subject,
                 message,
                 settings.EMAIL_HOST_USER, 
-                ['info@prodigidesk.ai'],  
+                ['prodigidesk@prodigidesk.ai'],  
                 fail_silently=False
             )
             # print(f"Feedback email sent successfully from {user_email}")  # Debug print

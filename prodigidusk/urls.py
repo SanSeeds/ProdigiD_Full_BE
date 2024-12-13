@@ -74,9 +74,15 @@ urlpatterns = [
     path('get_word_count/', views.get_word_count, name='get_word_count'),
     path('translate_content_google/', views.translate_content_google, name='translate_content_google'),
     path('translate_international/', views.translate_international, name='translate_international'),
+
+
+    # for android app
     path('translate_android/', views.translate_android, name='translate_android'),
     path('email_generator_android/', views.email_generator_android, name='email_generator_android'),
     path('sales_script_generator_android/', views.sales_script_generator_android, name='sales_script_generator_android'),
+    path('rephrasely_view_android/', views.rephrasely_view_android, name='rephrasely_view_android'),
+    path('generate_blog_view_android/', views.generate_blog_view_android, name='generate_blog_view_android'),
+    path('create_presentation_android/', views.create_presentation_android, name='create_presentation_android'),
     path('signin_android/', views.signin_android, name='signin_android'),
     path('add_user_android/', views.add_user_android, name='add_user_android'),
     path('send_email_verification_otp_android/', views.send_email_verification_otp_android, name='send_email_verification_otp_android'),
@@ -84,6 +90,7 @@ urlpatterns = [
     path('check_session_status_android/', views.check_session_status_android, name='check_session_status_android'),
     path('verify_payment_android/', views.verify_payment_android, name='verify_payment_android'),
     path('content_generator_android/', views.content_generator_android, name='content_generator_android'),
+    path('offer_letter_generator_android/', views.offer_letter_generator_android, name='offer_letter_generator_android'),
 
     path('create_razorpay_order_android/', views.create_razorpay_order_android, name='create_razorpay_order_android'),
     path('verify_payment_yearly_android/', views.verify_payment_yearly_android, name='verify_payment_yearly_android'),

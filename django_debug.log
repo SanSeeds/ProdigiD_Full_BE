@@ -186,3 +186,27 @@ ERROR 2024-11-25 11:29:42,313 views Error during logout: Field 'id' expected a n
 ERROR 2024-11-25 11:29:42,314 log Internal Server Error: /logout_view_android/
 ERROR 2024-11-25 11:29:42,315 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
 ERROR 2024-11-25 11:29:42,315 basehttp "POST /logout_view_android/ HTTP/1.1" 500 45
+ERROR 2024-12-13 11:50:43,659 log Internal Server Error: /profile_info/
+ERROR 2024-12-13 11:50:43,663 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:50:43,663 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:50:43,873 log Internal Server Error: /profile_info/
+ERROR 2024-12-13 11:50:43,874 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:50:43,874 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:50:47,504 log Internal Server Error: /profile_info/
+ERROR 2024-12-13 11:50:47,504 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:50:47,504 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:50:47,579 log Internal Server Error: /profile_info/
+ERROR 2024-12-13 11:50:47,580 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:50:47,580 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:51:16,864 log Internal Server Error: /profile_info/
+ERROR 2024-12-13 11:51:16,864 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:51:16,864 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:51:17,050 log Internal Server Error: /profile_info/
+ERROR 2024-12-13 11:51:17,050 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:51:17,050 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:52:03,646 log Internal Server Error: /profile_info/
+ERROR 2024-12-13 11:52:03,646 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:52:03,646 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:52:03,744 log Internal Server Error: /profile_info/
+ERROR 2024-12-13 11:52:03,746 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2024-12-13 11:52:03,746 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51

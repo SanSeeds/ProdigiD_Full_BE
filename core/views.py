@@ -1567,6 +1567,7 @@ def update_user_services(request, email):
 def get_user_services(request, email):
     if request.method == "GET":
         try:
+            email = email.lower()
             user = get_object_or_404(User, email=email)
             user_services = get_object_or_404(UserService, user=user)
 
@@ -3172,6 +3173,7 @@ def profile_info(request):
                 'last_login': user.last_login.isoformat() if user.last_login else None,
                 'username': user.username,
                 'date_joined': user.date_joined.isoformat(),
+                'state': user.state
             },
             'services': {
                 'email_service': user_service.email_service,
@@ -4450,6 +4452,7 @@ def generate_blog_view_guest(request):
 
         # Extract and decrypt the incoming payload
         data = json.loads(body)
+        print(data)
         encrypted_content = data.get('encrypted_content')
 
         if not encrypted_content:
@@ -6441,16 +6444,17 @@ def sales_script_generator_android(request):
         data = json.loads(body)
         
         # Extract fields from the JSON data
-        num_words = data.get('num_words')
-        company_details = data.get('company_details')
-        product_descriptions = data.get('product_descriptions')
-        features_benefits = data.get('features_benefits')
-        pricing_info = data.get('pricing_info')
-        promotions = data.get('promotions')
-        target_audience = data.get('target_audience')
-        sales_objectives = data.get('sales_objectives')
-        competitive_advantage = data.get('competitive_advantage')
-        compliance = data.get('compliance')
+        company_details = data.get('company_details', '')
+        product_descriptions = data.get('product_descriptions', '')
+        features_benefits = data.get('features_benefits', '')
+        pricing_info = data.get('pricing_info', '')
+        promotions = data.get('promotions', '')
+        target_audience = data.get('target_audience', '')
+        sales_objectives = data.get('sales_objectives', '')
+        competitive_advantage = data.get('competitive_advantage', '')
+        compliance = data.get('compliance', '')
+        num_words = data.get('num_words', '')
+
 
         logger.debug(f"Data extracted for sales script generation: num_words={num_words}, company_details={company_details}")
 
@@ -6489,8 +6493,7 @@ def sales_script_generator_android(request):
     logger.error("Method not allowed.")
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated, HasAPIKey])
+@csrf_exempt
 def content_generator_android(request):
     try:
         # Load and decode the request body
@@ -6549,11 +6552,127 @@ def content_generator_android(request):
     logger.error("Method not allowed.")
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
+@csrf_exempt
+def generate_blog_view_android(request):
+    try:
+        # Load and decode the request body
+        body = request.body.decode('utf-8')
+        logger.debug(f"Request body received: {body}")
+
+        # Parse the incoming payload
+        data = json.loads(body)
+
+        # Extract the required fields
+        title = data.get('title')
+        tone = data.get('tone')
+        keywords = data.get('keywords', None)  # Optional
+
+        # Ensure required fields are present
+        if not title or not tone:
+            return JsonResponse({"error": "Missing 'title' or 'tone'."}, status=400)
+
+        # Call the generate_blog function
+        blog_content = generate_blog(title, tone, keywords)
+
+        # Return the blog content as a JSON response
+        return JsonResponse({'blog_content': blog_content}, status=200)
+
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON format received.")
+        return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
+    except ValueError as e:
+        logger.error(f"ValueError occurred: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+    # If not a POST request, return an error
+    return JsonResponse({"error": "Only POST method is allowed."}, status=405)
+
+@csrf_exempt
+def create_presentation_android(request):
+    try:
+        # Handle the multipart form data
+        content = request.POST.get('content')
+        if not content:
+            return JsonResponse({'error': 'No content found in the request.'}, status=400)
+
+        # Parse JSON data
+        data = json.loads(content)
+
+        # Extract fields from the data
+        title = data.get('title')
+        num_slides = data.get('num_slides')
+        bg_image_path = request.FILES.get('background_image')  # bg_image as a file
+        document = request.FILES.get('document')  # document as a file
+
+        print(f"Title: {title}, Number of Slides: {num_slides}, Background Image: {bg_image_path}, Document: {document}")
+
+        if not title or not num_slides:
+            return JsonResponse({'error': 'Title and number of slides are required.'}, status=400)
+
+        # Handle document content optionally
+        document_content = extract_document_content(document) if document else ""
+
+        # Generate presentation logic
+        prs = Presentation()
+        slide_titles = generate_slide_titles(document_content, num_slides, None, title)
+        slide_titles = slide_titles.replace('[', '').replace(']', '').replace('"', '').split(',')
+
+        slide_contents = {}
+        error_messages = []
+
+        # Function to generate slide content in a separate thread
+        def generate_and_store_slide_content(slide_title):
+            try:
+                content = generate_slide_content(document_content, slide_title, None).replace("*", '').split('\n')
+                current_content = [point.strip() for point in content if len(point.strip()) > 0]
+                if len(current_content) > 4:
+                    current_content = current_content[:4]  # Limit to only 4 points
+                slide_contents[slide_title] = current_content
+            except Exception as e:
+                error_messages.append(f"Error generating content for '{slide_title}': {str(e)}")
+
+        # Start threads for generating slide content
+        threads = []
+        for st in slide_titles:
+            thread = Thread(target=generate_and_store_slide_content, args=(st.strip(),))
+            thread.start()
+            threads.append(thread)
+
+        # Wait for all threads to finish
+        for thread in threads:
+            thread.join()
+
+        # Check for any errors that occurred during content generation
+        if error_messages:
+            return JsonResponse({'error': error_messages}, status=500)
+
+        # Add slides to the presentation
+        for slide_title, slide_content in slide_contents.items():
+            add_slide(prs, slide_title, slide_content, bg_image_path)
+
+        # Save presentation to a BytesIO object
+        buffer = BytesIO()
+        prs.save(buffer)
+        buffer.seek(0)  # Rewind the buffer
+
+        # Return file response
+        response = FileResponse(buffer, as_attachment=True, filename='SmartOffice_Assistant_Presentation.pptx')
+        return response
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
 
 @csrf_exempt
 def get_user_services_android(request, email):
     if request.method == "GET":
         try:
+            email = email.lower()
             user = get_object_or_404(User, email=email)
             user_services = get_object_or_404(UserService, user=user)
 
@@ -6613,6 +6732,89 @@ def get_user_services_android(request, email):
             return JsonResponse({"error": "User services not found"}, status=404)
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+@csrf_exempt
+def rephrasely_view_android(request):
+    if request.method == 'POST':
+        try:
+            # Extract the incoming payload
+            data = json.loads(request.body.decode('utf-8'))
+            logger.debug(f'Incoming content: {data}')
+
+            # Extract required fields
+            text_to_rephrase = data.get('text_to_rephrase')
+            tone = data.get('tone')
+            target_audience = data.get('target_audience')
+            num_words = data.get('num_words', "default")  # Optional, default is "default"
+
+            # Call the rephrasely function
+            rephrased_text = rephrasely(text_to_rephrase, tone, target_audience, num_words)
+
+            # Return the rephrased content directly
+            return JsonResponse({'rephrased_text': rephrased_text}, status=200)
+
+        except json.JSONDecodeError:
+            logger.error('Invalid JSON format received.')
+            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+        except ValueError as e:
+            logger.error(f'ValueError: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            logger.error(f'Exception: {str(e)}')
+            return JsonResponse({'error': str(e)}, status=500)
+
+    logger.warning('Method not allowed.')
+    return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+def offer_letter_generator_android(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        if not data:
+            logger.warning('No content found in the request.')
+            return JsonResponse({'error': 'No content found in the request.'}, status=400)
+
+        print(data)
+        candidate_name = data.get('candidateFullName')
+        company_details = data.get('companyDetails')
+        position_title = data.get('positionTitle')
+        department = data.get('department')
+        status = data.get('status')
+        location = data.get('location')
+        start_date = data.get('expectedStartDate')
+        compensation_benefits = data.get('compensationBenefits')  # Merged field
+        work_hours = data.get('workHours')
+        terms = data.get('termsConditions')
+        acceptance_deadline = data.get('deadline')
+        contact_info = data.get('contactInfo')
+        documents_needed = data.get('documentsNeeded')
+        closing_remarks = data.get('closingRemarks')
+
+        logger.info('Generating offer letter content.')
+        offer_letter_content = generate_offer_letter(
+            company_details, candidate_name, position_title, department, status,
+            location, start_date, compensation_benefits, work_hours,
+            terms, acceptance_deadline, contact_info, documents_needed, closing_remarks
+        )
+
+        if offer_letter_content:
+            logger.info('Offer letter content generated successfully.')
+            return JsonResponse({'generated_content': offer_letter_content}, status=200)
+
+        logger.error('Failed to generate offer letter content.')
+        return JsonResponse({'error': 'Failed to generate offer letter. Please try again.'}, status=500)
+
+    except json.JSONDecodeError:
+        logger.error('Invalid JSON format received.')
+        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+    except ValueError as e:
+        logger.error(f'ValueError: {str(e)}')
+        return JsonResponse({'error': str(e)}, status=400)
+    except Exception as e:
+        logger.error(f'Exception: {str(e)}')
+        return JsonResponse({'error': str(e)}, status=500)
+
+    logger.warning('Method not allowed.')
+    return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 
 import zipfile

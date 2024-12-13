@@ -2336,7 +2336,6 @@ def translate_content_google(request):
             # Use deep_translator's GoogleTranslator for translation
             translated_content = GoogleTranslator(source='auto', target=language_code).translate(generated_content)
             logger.info(f'Content translated successfully: {translated_content}')  # Log the translated content
-            print("translated text is", translated_content)
             # Encrypt the response content
             encrypted_response = encrypt_data({
                 'generated_content': generated_content,
@@ -2668,7 +2667,6 @@ def translate(request):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future = executor.submit(perform_translation)
             translated_text = future.result()
-            print(translated_text)
     
 
         logger.info('Translation successful')
@@ -2723,7 +2721,6 @@ def translate_android(request):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future = executor.submit(perform_translation)
             translated_text = future.result()
-            print(translated_text)
         
         logger.info('Translation successful')
 
@@ -2781,7 +2778,6 @@ def translate_international(request):
             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
 
         decrypted_content = decrypt_data(encrypted_content)
-        print(f"Decrypted content: {decrypted_content}")
 
         # If decrypted content is a string, parse it into a dictionary
         if isinstance(decrypted_content, str):
@@ -2816,7 +2812,6 @@ def translate_international(request):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future = executor.submit(perform_translation)
             translated_text = future.result()
-            print(translated_text)
 
         logger.info('Translation successful')
 
@@ -3107,7 +3102,6 @@ def profile(request):
 
     # Encrypt the response content
     encrypted_response = encrypt_data(response_data)
-    print(response_data)
     logger.info('Profile data retrieved successfully.')
 
     # Return the encrypted response
@@ -3342,7 +3336,6 @@ def summarize_document(request):
 
         # Decrypt the JSON payload
         decrypted_content = decrypt_data(encrypted_content)
-        print(decrypted_content)
         data = json.loads(decrypted_content)
         logger.debug(f'Decrypted content: {data}')
 
@@ -3842,14 +3835,11 @@ def email_generator_guest(request):
         try:
             # Extract and decrypt the incoming payload
             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-            print(f'Encrypted content received: {encrypted_content}')
 
             if not encrypted_content:
-                print('No encrypted content found in the request.')
                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
 
             decrypted_content = decrypt_data(encrypted_content)
-            print(f'Decrypted content: {decrypted_content}')
             data = json.loads(decrypted_content)
 
             purpose = data.get('purpose')
@@ -3869,14 +3859,12 @@ def email_generator_guest(request):
             priority_level = data.get('priorityLevel')
             closing_remarks = data.get('closingRemarks')
 
-            print(f'Generating email with the following data: {data}')
 
             # Retrieve the guest email and existing word count if it exists
             guest_email = data.get('email')  # Assuming the email is part of the data
             if guest_email:
                 guest_word_count = GuestLogin.objects.filter(email=guest_email).first()
                 if guest_word_count and guest_word_count.word_count >= 2000:
-                    print('Word Count limit already exceeded')
                     return JsonResponse({'error': 'Word Count limit already exceeded'}, status=400)
 
             # Generate email content based on the data
@@ -3887,15 +3875,12 @@ def email_generator_guest(request):
             )
 
             if generated_content:
-                print('Email content generated successfully.')
 
                 # Calculate the word count for the generated content
                 word_count = len(generated_content.split())
-                print(f"Generated content word count: {word_count}")
 
                 # Encrypt the response content
                 encrypted_response = encrypt_data({'generated_content': generated_content})
-                print(f'Encrypted response: {encrypted_response}')
 
                 # Update or create the word count in the GuestLogin model
                 if guest_email:
@@ -3903,14 +3888,12 @@ def email_generator_guest(request):
                         # Update existing word count
                         guest_word_count.word_count += word_count
                         guest_word_count.save()
-                        print(f'Word count for {guest_email} updated successfully. New word count: {guest_word_count.word_count}')
                     else:
                         # Create new record if no existing word count found
                         guest_word_count = GuestLogin.objects.create(
                             email=guest_email,
                             word_count=word_count
                         )
-                        print(f'Word count for {guest_email} saved successfully. Word count: {word_count}')
                 else:
                     print('No email found in the request data.')
 
@@ -3918,11 +3901,9 @@ def email_generator_guest(request):
                 return JsonResponse({'encrypted_content': encrypted_response})
 
             else:
-                print('Failed to generate email content.')
                 return JsonResponse({'error': 'Failed to generate email content.'}, status=500)
 
         except Exception as e:
-            print(f'Error processing request: {e}')
             return JsonResponse({'error': 'An error occurred while processing the request.'}, status=500)
 
 
@@ -4066,7 +4047,6 @@ def offer_letter_generator_guest(request):
             # Calculate the word count for the generated content
             word_count = len(offer_letter_content.split())
             logger.debug(f"Generated offer letter content word count: {word_count}")
-            print("Word Count is: ", word_count)
 
             # Encrypt the response content
             encrypted_content = encrypt_data({'generated_content': offer_letter_content})
@@ -4473,7 +4453,6 @@ def generate_blog_view_guest(request):
         tone = data.get('tone')
         keywords = data.get('keywords', None)  # Optional
         guest_email = data.get('email')  # Extract email from the payload
-        print(guest_email)
 
         # Ensure required fields are present
         if not title or not tone:

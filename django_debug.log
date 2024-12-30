@@ -1,8 +1,13 @@
-ERROR 2024-12-27 07:20:24,844 views Exception: 'GoogleTranslator' object has no attribute 'detect'
-ERROR 2024-12-27 07:20:24,851 log Internal Server Error: /offer_letter_generator/
-ERROR 2024-12-27 07:20:24,851 basehttp "POST /offer_letter_generator/ HTTP/1.1" 500 64
-ERROR 2024-12-27 07:20:24,851 basehttp "POST /offer_letter_generator/ HTTP/1.1" 500 64
-ERROR 2024-12-27 08:01:44,976 views Exception: Your default credentials were not found. To set up Application Default Credentials, see https://cloud.google.com/docs/authentication/external/set-up-adc for more information.
-ERROR 2024-12-27 08:01:44,979 log Internal Server Error: /offer_letter_generator/
-ERROR 2024-12-27 08:01:44,981 basehttp "POST /offer_letter_generator/ HTTP/1.1" 500 187
-ERROR 2024-12-27 08:01:44,981 basehttp "POST /offer_letter_generator/ HTTP/1.1" 500 187
+ERROR 2024-12-29 17:05:09,144 views Language detection failed: name 'classify' is not defined
+ERROR 2024-12-30 09:04:56,804 views Translation failed with status code: 400
+ERROR 2024-12-30 09:04:56,806 log Internal Server Error: /translate_content/
+ERROR 2024-12-30 09:04:56,806 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-12-30 09:04:56,806 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-12-30 09:05:06,968 views Translation failed with status code: 400
+ERROR 2024-12-30 09:05:06,968 log Internal Server Error: /translate_content/
+ERROR 2024-12-30 09:05:06,969 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-12-30 09:05:06,969 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-12-30 09:05:47,010 views Translation failed with status code: 400
+ERROR 2024-12-30 09:05:47,012 log Internal Server Error: /translate_content/
+ERROR 2024-12-30 09:05:47,012 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-12-30 09:05:47,012 basehttp "POST /translate_content/ HTTP/1.1" 500 32

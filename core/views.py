@@ -3594,7 +3594,92 @@ def sales_script_generator(request):
     logger.error("Method not allowed.")
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
+# from langid import classify
 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated, HasAPIKey])
+# def sales_script_generator(request):
+#     try:
+#         # Load and decode the request body
+#         body = request.body.decode('utf-8')
+#         logger.debug(f"Request body received: {body}")
+
+#         # Extract and decrypt the incoming payload
+#         data = json.loads(body)
+#         encrypted_content = data.get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning("No encrypted content found in the request.")
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         logger.debug(f"Encrypted content received: {encrypted_content}")
+
+#         decrypted_content = decrypt_data(encrypted_content)
+#         logger.debug(f"Decrypted content: {decrypted_content}")
+
+#         # Detect language of the decrypted content
+#         try:
+#             detected_language, confidence = classify(decrypted_content)
+#             print(detected_language)
+#             logger.info(f"Detected language: {detected_language} with confidence: {confidence:.2f}")
+#         except Exception as e:
+#             logger.error(f"Language detection failed: {str(e)}")
+#             return JsonResponse({'error': 'Failed to detect language of the payload.'}, status=400)
+
+#         # Process the decrypted content
+#         data = json.loads(decrypted_content)
+
+#         # Extract fields from the decrypted JSON data
+#         num_words = data.get('num_words')
+#         company_details = data.get('company_details')
+#         product_descriptions = data.get('product_descriptions')
+#         features_benefits = data.get('features_benefits')
+#         pricing_info = data.get('pricing_info')
+#         promotions = data.get('promotions')
+#         target_audience = data.get('target_audience')
+#         sales_objectives = data.get('sales_objectives')
+#         competitive_advantage = data.get('competitive_advantage')
+#         compliance = data.get('compliance')
+
+#         logger.debug(f"Data extracted for sales script generation: num_words={num_words}, company_details={company_details}")
+
+#         # Generate the sales script
+#         logger.info("Generating sales script...")
+#         sales_script = generate_sales_script(
+#             company_details,
+#             num_words,
+#             product_descriptions,
+#             features_benefits,
+#             pricing_info,
+#             promotions,
+#             target_audience,
+#             sales_objectives,
+#             competitive_advantage,
+#             compliance,
+#         )
+
+#         if sales_script:
+#             logger.info("Sales script generated successfully.")
+#             encrypted_response_content = encrypt_data({'generated_content': sales_script})
+#             return JsonResponse({
+#                 'encrypted_content': encrypted_response_content,
+#                 'language': detected_language
+#             }, status=200)
+
+#         logger.error("Failed to generate sales script.")
+#         return JsonResponse({'error': 'Failed to generate sales script. Please try again.'}, status=500)
+
+#     except json.JSONDecodeError:
+#         logger.error("Invalid JSON format received.")
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         logger.error(f"ValueError occurred: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f"An unexpected error occurred: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=500)
+
+#     logger.error("Method not allowed.")
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -7292,6 +7377,70 @@ def fix_null_values_in_translation(request):
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
+@csrf_exempt
+def translate_json_from_english_to_other(request):
+    global line_number
+    translated_json = {}
+    if request.method == 'POST':
+        try:
+            json_file = request.FILES.get('file')
+            source_language = request.POST.get('source_language')
+            translate_to = request.POST.get('translate_to')
+
+            if not json_file:
+                return JsonResponse({'error': 'No JSON file provided.'}, status=400)
+
+            if not source_language:
+                return JsonResponse({'error': 'No source language provided.'}, status=400)
+
+            if not translate_to:
+                return JsonResponse({'error': 'No target language provided.'}, status=400)
+
+            file_content = json_file.read().decode('utf-8')
+            original_json = json.loads(file_content)
+
+            translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
+            translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
+
+            async def translate_key_value(key, value, source_lang, target_lang):
+                global line_number
+                try:
+                    print(f"Line {line_number}: Translating key '{key}' with value '{value}'")
+                    translation_result = bhashini_translate(value, target_lang, source_lang)
+                    translated_json[key] = translation_result["translated_content"]
+                    print(f"Line {line_number}: Translated value '{translated_json[key]}'")
+                    line_number += 1
+                except Exception as e:
+                    print(f"Line {line_number}: Error translating key '{key}' - {str(e)}")
+                    translated_json[key] = f"Translation Error: {str(e)}"
+
+            async def trans_main(translation_tasks, source_lang, target_lang):
+                tasks = [translate_key_value(key, value, source_lang, target_lang) for key, value in translation_tasks]
+                await asyncio.gather(*tasks)
+
+            asyncio.run(trans_main(translation_tasks, source_language, translate_to))
+
+            # Sort the keys alphabetically
+            translated_json = dict(sorted(translated_json.items()))
+
+            translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
+            translated_file_name = f"translated_{translate_to}.json"
+            zip_buffer = BytesIO()
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
+                zip_archive.writestr(translated_file_name, translated_json_str)
+
+            zip_buffer.seek(0)
+            response = HttpResponse(zip_buffer, content_type='application/zip')
+            response['Content-Disposition'] = 'attachment; filename="translated_sorted_files.zip"'
+            return response
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON file format.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': f'Error during translation: {str(e)}'}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+    
 
 from django.http import JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt

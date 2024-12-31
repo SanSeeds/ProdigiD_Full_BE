@@ -67,6 +67,7 @@ urlpatterns = [
     path('translate_content_formatted/', views.translate_content_formatted, name='translate_content_formatted'),  # Add the new path
     path('empty_cart/', views.empty_cart, name='empty_cart'),  # Add the new path
     path('translate_json_files_new/',views.translate_json_files_new,name='translate_json_files_new'),
+    path('translate_json_from_english_to_other/',views.translate_json_from_english_to_other,name='translate_json_from_english_to_other'),
     path('extend_service/',views.extend_service,name='extend_service'),
     path('verify_payment_yearly/',views.verify_payment_yearly,name='verify_payment_yearly'),
     path('translate_and_download_document/',views.translate_and_download_document,name='translate_and_download_document'),
@@ -81,6 +82,8 @@ urlpatterns = [
     path('generate_blog_view_android/', views.generate_blog_view_android, name='generate_blog_view_android'),
     path('create_presentation_android/', views.create_presentation_android, name='create_presentation_android'),
     path('summarize_document_android/', views.summarize_document_android, name='summarize_document_android'),
+    path('fix_null_values_in_translation/', views.fix_null_values_in_translation, name='fix_null_values_in_translation'),
+
 
 
 

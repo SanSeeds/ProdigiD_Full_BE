@@ -1,127 +1,49 @@
-ERROR 2024-12-13 04:59:20,098 views Exception occurred: Connection unexpectedly closed
-ERROR 2024-12-13 04:59:20,104 log Internal Server Error: /verify_payment/
-ERROR 2024-12-13 04:59:20,105 basehttp "POST /verify_payment/ HTTP/1.1" 500 89
-ERROR 2024-12-13 04:59:20,105 basehttp "POST /verify_payment/ HTTP/1.1" 500 89
-ERROR 2024-12-13 05:00:02,554 views Exception occurred: Connection unexpectedly closed
-ERROR 2024-12-13 05:00:02,555 log Internal Server Error: /verify_payment/
-ERROR 2024-12-13 05:00:02,556 basehttp "POST /verify_payment/ HTTP/1.1" 500 89
-ERROR 2024-12-13 05:00:02,556 basehttp "POST /verify_payment/ HTTP/1.1" 500 89
-ERROR 2024-12-13 05:01:45,286 views Exception occurred: Connection unexpectedly closed
-ERROR 2024-12-13 05:01:45,288 log Internal Server Error: /verify_payment/
-ERROR 2024-12-13 05:01:45,289 basehttp "POST /verify_payment/ HTTP/1.1" 500 89
-ERROR 2024-12-13 05:01:45,289 basehttp "POST /verify_payment/ HTTP/1.1" 500 89
-ERROR 2024-12-13 05:07:50,573 log Internal Server Error: /send_email_verification_otp/
-ERROR 2024-12-13 05:07:50,575 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 64
-ERROR 2024-12-13 05:07:50,575 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 64
-ERROR 2024-12-13 05:07:54,028 log Internal Server Error: /send_email_verification_otp/
-ERROR 2024-12-13 05:07:54,029 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 64
-ERROR 2024-12-13 05:07:54,029 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 64
-ERROR 2024-12-13 05:08:26,155 log Internal Server Error: /send_email_verification_otp/
-ERROR 2024-12-13 05:08:26,159 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 64
-ERROR 2024-12-13 05:08:26,159 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 64
-ERROR 2024-12-13 05:08:29,990 log Internal Server Error: /send_email_verification_otp/
-ERROR 2024-12-13 05:08:29,991 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 64
-ERROR 2024-12-13 05:08:29,991 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 64
-ERROR 2024-12-13 05:08:43,960 log Internal Server Error: /send_email_verification_otp/
-ERROR 2024-12-13 05:08:43,961 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 64
-ERROR 2024-12-13 05:08:43,961 basehttp "POST /send_email_verification_otp/ HTTP/1.1" 500 64
-ERROR 2024-12-13 05:26:59,932 log Internal Server Error: /profile/
-Traceback (most recent call last):
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
-    response = get_response(request)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
-    response = self.handle_exception(exc)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
-    self.raise_uncaught_exception(exc)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
-    raise exc
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
-    response = handler(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/decorators.py", line 50, in handler
-    return func(*args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/core/views.py", line 3110, in profile
-    print(response_data)
-NameError: name 'res' is not defined
-ERROR 2024-12-13 05:26:59,933 basehttp "GET /profile/ HTTP/1.1" 500 102036
-ERROR 2024-12-13 05:26:59,933 basehttp "GET /profile/ HTTP/1.1" 500 102036
-ERROR 2024-12-13 05:26:59,953 log Internal Server Error: /profile/
-Traceback (most recent call last):
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
-    response = get_response(request)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
-    response = self.handle_exception(exc)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
-    self.raise_uncaught_exception(exc)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
-    raise exc
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
-    response = handler(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/decorators.py", line 50, in handler
-    return func(*args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/core/views.py", line 3110, in profile
-    print(response_data)
-NameError: name 'res' is not defined
-ERROR 2024-12-13 05:26:59,953 basehttp "GET /profile/ HTTP/1.1" 500 102036
-ERROR 2024-12-13 05:26:59,953 basehttp "GET /profile/ HTTP/1.1" 500 102036
-ERROR 2024-12-13 05:27:11,398 log Internal Server Error: /profile/
-Traceback (most recent call last):
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
-    response = get_response(request)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
-    response = self.handle_exception(exc)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
-    self.raise_uncaught_exception(exc)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
-    raise exc
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
-    response = handler(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/decorators.py", line 50, in handler
-    return func(*args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/core/views.py", line 3110, in profile
-    print(response_data)
-NameError: name 'res' is not defined
-ERROR 2024-12-13 05:27:11,398 basehttp "GET /profile/ HTTP/1.1" 500 102036
-ERROR 2024-12-13 05:27:11,398 basehttp "GET /profile/ HTTP/1.1" 500 102036
-ERROR 2024-12-13 05:27:11,422 log Internal Server Error: /profile/
-Traceback (most recent call last):
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
-    response = get_response(request)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
-    return view_func(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
-    return self.dispatch(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
-    response = self.handle_exception(exc)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
-    self.raise_uncaught_exception(exc)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
-    raise exc
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
-    response = handler(request, *args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/env/lib/python3.10/site-packages/rest_framework/decorators.py", line 50, in handler
-    return func(*args, **kwargs)
-  File "/Users/abhinavsaxena/Desktop/Esprit/ProdigiDesk/ProdigiD_Full_BE/core/views.py", line 3110, in profile
-    print(response_data)
-NameError: name 'res' is not defined
-ERROR 2024-12-13 05:27:11,422 basehttp "GET /profile/ HTTP/1.1" 500 102036
-ERROR 2024-12-13 05:27:11,422 basehttp "GET /profile/ HTTP/1.1" 500 102036
+ERROR 2024-12-29 17:05:09,144 views Language detection failed: name 'classify' is not defined
+ERROR 2024-12-30 09:04:56,804 views Translation failed with status code: 400
+ERROR 2024-12-30 09:04:56,806 log Internal Server Error: /translate_content/
+ERROR 2024-12-30 09:04:56,806 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-12-30 09:04:56,806 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-12-30 09:05:06,968 views Translation failed with status code: 400
+ERROR 2024-12-30 09:05:06,968 log Internal Server Error: /translate_content/
+ERROR 2024-12-30 09:05:06,969 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-12-30 09:05:06,969 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-12-30 09:05:47,010 views Translation failed with status code: 400
+ERROR 2024-12-30 09:05:47,012 log Internal Server Error: /translate_content/
+ERROR 2024-12-30 09:05:47,012 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-12-30 09:05:47,012 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-12-30 10:39:42,866 log Internal Server Error: /create_presentation/
+ERROR 2024-12-30 10:39:42,867 basehttp "POST /create_presentation/ HTTP/1.1" 500 65
+ERROR 2024-12-30 10:39:42,867 basehttp "POST /create_presentation/ HTTP/1.1" 500 65
+ERROR 2024-12-30 18:01:20,484 log Internal Server Error: /create_presentation/
+ERROR 2024-12-30 18:01:20,487 basehttp "POST /create_presentation/ HTTP/1.1" 500 109
+ERROR 2024-12-30 18:01:20,487 basehttp "POST /create_presentation/ HTTP/1.1" 500 109
+ERROR 2024-12-31 04:30:52,332 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:30:52,333 basehttp "POST /create_presentation/ HTTP/1.1" 500 377
+ERROR 2024-12-31 04:30:52,333 basehttp "POST /create_presentation/ HTTP/1.1" 500 377
+ERROR 2024-12-31 04:30:52,404 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:30:52,405 basehttp "POST /create_presentation/ HTTP/1.1" 500 377
+ERROR 2024-12-31 04:30:52,405 basehttp "POST /create_presentation/ HTTP/1.1" 500 377
+ERROR 2024-12-31 04:30:52,547 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:30:52,547 basehttp "POST /create_presentation/ HTTP/1.1" 500 376
+ERROR 2024-12-31 04:30:52,547 basehttp "POST /create_presentation/ HTTP/1.1" 500 376
+ERROR 2024-12-31 04:30:53,291 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:30:53,292 basehttp "POST /create_presentation/ HTTP/1.1" 500 369
+ERROR 2024-12-31 04:30:53,292 basehttp "POST /create_presentation/ HTTP/1.1" 500 369
+ERROR 2024-12-31 04:31:06,784 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:31:06,788 basehttp "POST /create_presentation/ HTTP/1.1" 500 370
+ERROR 2024-12-31 04:31:06,788 basehttp "POST /create_presentation/ HTTP/1.1" 500 370
+ERROR 2024-12-31 04:31:06,935 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:31:06,936 basehttp "POST /create_presentation/ HTTP/1.1" 500 370
+ERROR 2024-12-31 04:31:06,936 basehttp "POST /create_presentation/ HTTP/1.1" 500 370
+ERROR 2024-12-31 04:40:51,225 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:40:51,226 basehttp "POST /create_presentation/ HTTP/1.1" 500 370
+ERROR 2024-12-31 04:40:51,226 basehttp "POST /create_presentation/ HTTP/1.1" 500 370
+ERROR 2024-12-31 04:40:51,533 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:40:51,534 basehttp "POST /create_presentation/ HTTP/1.1" 500 369
+ERROR 2024-12-31 04:40:51,534 basehttp "POST /create_presentation/ HTTP/1.1" 500 369
+ERROR 2024-12-31 04:40:51,549 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:40:51,549 basehttp "POST /create_presentation/ HTTP/1.1" 500 376
+ERROR 2024-12-31 04:40:51,549 basehttp "POST /create_presentation/ HTTP/1.1" 500 376
+ERROR 2024-12-31 04:40:55,679 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:40:55,679 basehttp "POST /create_presentation/ HTTP/1.1" 500 377
+ERROR 2024-12-31 04:40:55,679 basehttp "POST /create_presentation/ HTTP/1.1" 500 377

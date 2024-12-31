@@ -11,3 +11,39 @@ ERROR 2024-12-30 09:05:47,010 views Translation failed with status code: 400
 ERROR 2024-12-30 09:05:47,012 log Internal Server Error: /translate_content/
 ERROR 2024-12-30 09:05:47,012 basehttp "POST /translate_content/ HTTP/1.1" 500 32
 ERROR 2024-12-30 09:05:47,012 basehttp "POST /translate_content/ HTTP/1.1" 500 32
+ERROR 2024-12-30 10:39:42,866 log Internal Server Error: /create_presentation/
+ERROR 2024-12-30 10:39:42,867 basehttp "POST /create_presentation/ HTTP/1.1" 500 65
+ERROR 2024-12-30 10:39:42,867 basehttp "POST /create_presentation/ HTTP/1.1" 500 65
+ERROR 2024-12-30 18:01:20,484 log Internal Server Error: /create_presentation/
+ERROR 2024-12-30 18:01:20,487 basehttp "POST /create_presentation/ HTTP/1.1" 500 109
+ERROR 2024-12-30 18:01:20,487 basehttp "POST /create_presentation/ HTTP/1.1" 500 109
+ERROR 2024-12-31 04:30:52,332 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:30:52,333 basehttp "POST /create_presentation/ HTTP/1.1" 500 377
+ERROR 2024-12-31 04:30:52,333 basehttp "POST /create_presentation/ HTTP/1.1" 500 377
+ERROR 2024-12-31 04:30:52,404 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:30:52,405 basehttp "POST /create_presentation/ HTTP/1.1" 500 377
+ERROR 2024-12-31 04:30:52,405 basehttp "POST /create_presentation/ HTTP/1.1" 500 377
+ERROR 2024-12-31 04:30:52,547 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:30:52,547 basehttp "POST /create_presentation/ HTTP/1.1" 500 376
+ERROR 2024-12-31 04:30:52,547 basehttp "POST /create_presentation/ HTTP/1.1" 500 376
+ERROR 2024-12-31 04:30:53,291 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:30:53,292 basehttp "POST /create_presentation/ HTTP/1.1" 500 369
+ERROR 2024-12-31 04:30:53,292 basehttp "POST /create_presentation/ HTTP/1.1" 500 369
+ERROR 2024-12-31 04:31:06,784 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:31:06,788 basehttp "POST /create_presentation/ HTTP/1.1" 500 370
+ERROR 2024-12-31 04:31:06,788 basehttp "POST /create_presentation/ HTTP/1.1" 500 370
+ERROR 2024-12-31 04:31:06,935 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:31:06,936 basehttp "POST /create_presentation/ HTTP/1.1" 500 370
+ERROR 2024-12-31 04:31:06,936 basehttp "POST /create_presentation/ HTTP/1.1" 500 370
+ERROR 2024-12-31 04:40:51,225 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:40:51,226 basehttp "POST /create_presentation/ HTTP/1.1" 500 370
+ERROR 2024-12-31 04:40:51,226 basehttp "POST /create_presentation/ HTTP/1.1" 500 370
+ERROR 2024-12-31 04:40:51,533 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:40:51,534 basehttp "POST /create_presentation/ HTTP/1.1" 500 369
+ERROR 2024-12-31 04:40:51,534 basehttp "POST /create_presentation/ HTTP/1.1" 500 369
+ERROR 2024-12-31 04:40:51,549 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:40:51,549 basehttp "POST /create_presentation/ HTTP/1.1" 500 376
+ERROR 2024-12-31 04:40:51,549 basehttp "POST /create_presentation/ HTTP/1.1" 500 376
+ERROR 2024-12-31 04:40:55,679 log Internal Server Error: /create_presentation/
+ERROR 2024-12-31 04:40:55,679 basehttp "POST /create_presentation/ HTTP/1.1" 500 377
+ERROR 2024-12-31 04:40:55,679 basehttp "POST /create_presentation/ HTTP/1.1" 500 377

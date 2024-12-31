@@ -10,7 +10,7 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.http import FileResponse, HttpResponse, JsonResponse
 from gtts import gTTS
-from .email_llama3 import BHASHINI_API_KEY, BHASHINI_USER_ID, add_slide, ask_question_chatbot, generate_blog, generate_slide_titles, extract_document_content, generate_email, bhashini_translate,generate_bus_pro, generate_offer_letter, generate_slide_content, generate_slide_titles, generate_summary, generate_content, generate_sales_script, rephrasely, translate_multiple_texts, translate_with_retry  
+from .email_llama3 import BHASHINI_API_KEY, BHASHINI_USER_ID, ask_question_chatbot, generate_blog, generate_slide_titles, extract_document_content, generate_email, bhashini_translate,generate_bus_pro, generate_offer_letter, generate_slide_content, generate_slide_titles, generate_summary, generate_content, generate_sales_script, get_templates, rephrasely, translate_multiple_texts, translate_with_retry, update_presentation_with_generated_content  
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from django.utils import timezone
@@ -3702,6 +3702,126 @@ def logout_view(request):
         return JsonResponse({'error': 'An error occurred during logout.'}, status=500)
 
 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def create_presentation(request):
+#     try:
+#         # Handle the multipart form data
+#         encrypted_content = request.POST.get('encrypted_content')
+#         if not encrypted_content:
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         # Decrypt the content
+#         decrypted_content = decrypt_data(encrypted_content)
+
+#         # Parse decrypted JSON data
+#         data = json.loads(decrypted_content)
+
+#         # Extract fields from the decrypted data
+#         title = data.get('title')
+#         num_slides = data.get('num_slides')
+#         bg_image_path = request.FILES.get('background_image')  # bg_image as a file
+#         document = request.FILES.get('document')  # document as a file
+
+#         if not title or not num_slides:
+#             return JsonResponse({'error': 'Title and number of slides are required.'}, status=400)
+
+#         # Handle document content optionally
+#         document_content = extract_document_content(document) if document else ""
+
+#         # Generate presentation logic
+#         prs = Presentation()
+#         slide_titles = generate_slide_titles(document_content, num_slides, None, title)
+#         slide_titles = slide_titles.replace('[', '').replace(']', '').replace('"', '').split(',')
+
+#         slide_contents = {}
+#         error_messages = []
+
+#         # Function to generate slide content in a separate thread
+#         def generate_and_store_slide_content(slide_title):
+#             try:
+#                 content = generate_slide_content(document_content, slide_title, None).replace("*", '').split('\n')
+#                 current_content = [point.strip() for point in content if len(point.strip()) > 0]
+#                 if len(current_content) > 4:
+#                     current_content = current_content[:4]  # Limit to only 4 points
+#                 slide_contents[slide_title] = current_content
+#             except Exception as e:
+#                 error_messages.append(f"Error generating content for '{slide_title}': {str(e)}")
+
+#         # Start threads for generating slide content
+#         threads = []
+#         for st in slide_titles:
+#             thread = Thread(target=generate_and_store_slide_content, args=(st.strip(),))
+#             thread.start()
+#             threads.append(thread)
+
+#         # Wait for all threads to finish
+#         for thread in threads:
+#             thread.join()
+
+#         # Check for any errors that occurred during content generation
+#         if error_messages:
+#             return JsonResponse({'error': error_messages}, status=500)
+
+#         # Add slides to the presentation
+#         for slide_title, slide_content in slide_contents.items():
+#             add_slide(prs, slide_title, slide_content, bg_image_path)
+
+#         # Save presentation to a BytesIO object
+#         buffer = BytesIO()
+#         prs.save(buffer)
+#         buffer.seek(0)  # Rewind the buffer
+
+#         # Return file response
+#         response = FileResponse(buffer, as_attachment=True, filename='SmartOffice_Assistant_Presentation.pptx')
+#         return response
+
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
+
+# @api_view(['POST'])
+# @permission_classes([])
+# def create_presentation(request):
+#     try:
+#         data = json.loads(request.body)
+#         print(data) 
+#         title = data.get('title')
+#         num_slides = data.get('num_slides')
+#         special_instructions = data.get('special_instructions')
+#         template_name = data.get('template_name', 'default')
+#         document = request.FILES.get('document')
+
+#         if not title or not num_slides:
+#             return JsonResponse({'error': 'Title and number of slides are required.'}, status=400)
+
+#         document_content = extract_document_content(document) if document else ""
+
+#         templates = get_templates()
+#         template_path = templates.get(template_name, templates['default'])
+#         output_path = "SmartAssistant_Presentation.pptx"
+
+#         prs=update_presentation_with_generated_content(
+#             template_path, output_path, document_content, title, num_slides, special_instructions
+#         )
+
+#         # with open(output_path, 'rb') as f:
+#         #     response = FileResponse(f, as_attachment=True, filename=output_path)
+#         # return response
+#         buffer = BytesIO()
+#         prs.save(buffer)
+#         buffer.seek(0)  # Rewind the buffer
+
+#         # Return file response
+#         response = FileResponse(buffer, as_attachment=True, filename='SmartOffice_Assistant_Presentation.pptx')
+#         return response  
+
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_presentation(request):
@@ -3720,8 +3840,9 @@ def create_presentation(request):
         # Extract fields from the decrypted data
         title = data.get('title')
         num_slides = data.get('num_slides')
-        bg_image_path = request.FILES.get('background_image')  # bg_image as a file
-        document = request.FILES.get('document')  # document as a file
+        special_instructions = data.get('special_instructions')
+        template_name = data.get('template_name', 'default')
+        document = request.FILES.get('document')
 
         if not title or not num_slides:
             return JsonResponse({'error': 'Title and number of slides are required.'}, status=400)
@@ -3729,43 +3850,15 @@ def create_presentation(request):
         # Handle document content optionally
         document_content = extract_document_content(document) if document else ""
 
-        # Generate presentation logic
-        prs = Presentation()
-        slide_titles = generate_slide_titles(document_content, num_slides, None, title)
-        slide_titles = slide_titles.replace('[', '').replace(']', '').replace('"', '').split(',')
+        # Get template path
+        templates = get_templates()
+        template_path = templates.get(template_name, templates['default'])
+        output_path = "SmartAssistant_Presentation.pptx"
 
-        slide_contents = {}
-        error_messages = []
-
-        # Function to generate slide content in a separate thread
-        def generate_and_store_slide_content(slide_title):
-            try:
-                content = generate_slide_content(document_content, slide_title, None).replace("*", '').split('\n')
-                current_content = [point.strip() for point in content if len(point.strip()) > 0]
-                if len(current_content) > 4:
-                    current_content = current_content[:4]  # Limit to only 4 points
-                slide_contents[slide_title] = current_content
-            except Exception as e:
-                error_messages.append(f"Error generating content for '{slide_title}': {str(e)}")
-
-        # Start threads for generating slide content
-        threads = []
-        for st in slide_titles:
-            thread = Thread(target=generate_and_store_slide_content, args=(st.strip(),))
-            thread.start()
-            threads.append(thread)
-
-        # Wait for all threads to finish
-        for thread in threads:
-            thread.join()
-
-        # Check for any errors that occurred during content generation
-        if error_messages:
-            return JsonResponse({'error': error_messages}, status=500)
-
-        # Add slides to the presentation
-        for slide_title, slide_content in slide_contents.items():
-            add_slide(prs, slide_title, slide_content, bg_image_path)
+        # Generate presentation with the provided data
+        prs = update_presentation_with_generated_content(
+            template_path, output_path, document_content, title, num_slides, special_instructions
+        )
 
         # Save presentation to a BytesIO object
         buffer = BytesIO()

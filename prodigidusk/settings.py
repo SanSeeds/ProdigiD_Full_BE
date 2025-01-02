@@ -192,7 +192,7 @@ DRF_API_LOGGER_DATABASE = True  # Default to False
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173", "https://prodigidesk.ai","http://localhost:3000"
+    "http://localhost:5173", "https://prodigidesk.ai","http://localhost:3000", 
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -250,33 +250,33 @@ SECURE_HSTS_PRELOAD = True
 # }
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'OPTIONS': {
-                'options': '-c search_path=prodigi'
-            },
-        'NAME': 'prodigidesk_db',
-        'USER': 'postgres',
-        'PASSWORD': 'tf4g]hL03av(',
-        'HOST': '13.235.176.62',
-        'PORT': '5432',
-    }
-}
-
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
 #         'OPTIONS': {
-#                 'options': '-c search_path=prodigidesk'
+#                 'options': '-c search_path=prodigi'
 #             },
-#         'NAME': 'ProdigiDesk',
+#         'NAME': 'prodigidesk_db',
 #         'USER': 'postgres',
-#         'PASSWORD': '1766',
-#         'HOST': 'localhost',
+#         'PASSWORD': 'tf4g]hL03av(',
+#         'HOST': '13.235.176.62',
 #         'PORT': '5432',
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'OPTIONS': {
+                'options': '-c search_path=prodigidesk'
+            },
+        'NAME': 'ProdigiDesk',
+        'USER': 'postgres',
+        'PASSWORD': '1766',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
 # 
 
 REST_FRAMEWORK = {

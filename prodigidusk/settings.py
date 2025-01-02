@@ -179,6 +179,7 @@ DRF_API_LOGGER_DATABASE = True  # Default to False
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:5174",
     "http://localhost:3000",
     "http://192.168.134.240:8000",
     "http://192.168.241.240:8000",  # Your current IP
@@ -190,6 +191,7 @@ CORS_ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:5174",
     "http://localhost:8000",
     "http://192.168.241.240:8000",
     "https://prodigidesk.ai",

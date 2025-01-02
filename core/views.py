@@ -3522,82 +3522,8 @@ def content_generator(request):
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 #Encrypted API For sales script Service
-@api_view(['POST'])
-@permission_classes([IsAuthenticated,HasAPIKey])
-def sales_script_generator(request):
-    try:
-        # Load and decode the request body
-        body = request.body.decode('utf-8')
-        logger.debug(f"Request body received: {body}")
-
-        # Extract and decrypt the incoming payload
-        data = json.loads(body)
-        encrypted_content = data.get('encrypted_content')
-        if not encrypted_content:
-            logger.warning("No encrypted content found in the request.")
-            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-        logger.debug(f"Encrypted content received: {encrypted_content}")
-
-        decrypted_content = decrypt_data(encrypted_content)
-        logger.debug(f"Decrypted content: {decrypted_content}")
-
-        data = json.loads(decrypted_content)
-
-        # Extract fields from the decrypted JSON data
-        num_words = data.get('num_words')
-        company_details = data.get('company_details')
-        product_descriptions = data.get('product_descriptions')
-        features_benefits = data.get('features_benefits')
-        pricing_info = data.get('pricing_info')
-        promotions = data.get('promotions')
-        target_audience = data.get('target_audience')
-        sales_objectives = data.get('sales_objectives')
-        competitive_advantage = data.get('competitive_advantage')
-        compliance = data.get('compliance')
-
-        logger.debug(f"Data extracted for sales script generation: num_words={num_words}, company_details={company_details}")
-
-        # Generate the sales script
-        logger.info("Generating sales script...")
-        sales_script = generate_sales_script(
-            company_details,
-            num_words,
-            product_descriptions,
-            features_benefits,
-            pricing_info,
-            promotions,
-            target_audience,
-            sales_objectives,
-            competitive_advantage,
-            compliance,
-        )
-
-        if sales_script:
-            logger.info("Sales script generated successfully.")
-            encrypted_response_content = encrypt_data({'generated_content': sales_script})
-            return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
-
-        logger.error("Failed to generate sales script.")
-        return JsonResponse({'error': 'Failed to generate sales script. Please try again.'}, status=500)
-
-    except json.JSONDecodeError:
-        logger.error("Invalid JSON format received.")
-        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-    except ValueError as e:
-        logger.error(f"ValueError occurred: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=400)
-    except Exception as e:
-        logger.error(f"An unexpected error occurred: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
-
-    logger.error("Method not allowed.")
-    return JsonResponse({'error': 'Method not allowed.'}, status=405)
-
-# from langid import classify
-
 # @api_view(['POST'])
-# @permission_classes([IsAuthenticated, HasAPIKey])
+# @permission_classes([IsAuthenticated,HasAPIKey])
 # def sales_script_generator(request):
 #     try:
 #         # Load and decode the request body
@@ -3616,16 +3542,6 @@ def sales_script_generator(request):
 #         decrypted_content = decrypt_data(encrypted_content)
 #         logger.debug(f"Decrypted content: {decrypted_content}")
 
-#         # Detect language of the decrypted content
-#         try:
-#             detected_language, confidence = classify(decrypted_content)
-#             print(detected_language)
-#             logger.info(f"Detected language: {detected_language} with confidence: {confidence:.2f}")
-#         except Exception as e:
-#             logger.error(f"Language detection failed: {str(e)}")
-#             return JsonResponse({'error': 'Failed to detect language of the payload.'}, status=400)
-
-#         # Process the decrypted content
 #         data = json.loads(decrypted_content)
 
 #         # Extract fields from the decrypted JSON data
@@ -3660,10 +3576,7 @@ def sales_script_generator(request):
 #         if sales_script:
 #             logger.info("Sales script generated successfully.")
 #             encrypted_response_content = encrypt_data({'generated_content': sales_script})
-#             return JsonResponse({
-#                 'encrypted_content': encrypted_response_content,
-#                 'language': detected_language
-#             }, status=200)
+#             return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
 
 #         logger.error("Failed to generate sales script.")
 #         return JsonResponse({'error': 'Failed to generate sales script. Please try again.'}, status=500)
@@ -3680,6 +3593,291 @@ def sales_script_generator(request):
 
 #     logger.error("Method not allowed.")
 #     return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+from langid import classify
+
+#With Language Detection and Translation using Bhashini API
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated, HasAPIKey])
+# def sales_script_generator(request):
+#     try:
+#         # Load and decode the request body
+#         body = request.body.decode('utf-8')
+#         logger.debug(f"Request body received: {body}")
+
+#         # Extract and decrypt the incoming payload
+#         data = json.loads(body)
+#         encrypted_content = data.get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning("No encrypted content found in the request.")
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         logger.debug(f"Encrypted content received: {encrypted_content}")
+
+#         decrypted_content = decrypt_data(encrypted_content)
+#         logger.debug(f"Decrypted content: {decrypted_content}")
+
+#         # Parse the decrypted JSON
+#         data = json.loads(decrypted_content)
+#         logger.debug(f"Parsed decrypted JSON: {data}")
+
+#         # Define the Indian languages mapping
+#         indian_languages = {
+#             "en": "English",
+#             "hi": "Hindi",
+#             "ta": "Tamil",
+#             "te": "Telugu",
+#             "mr": "Marathi",
+#             "kn": "Kannada",
+#             "bn": "Bengali",
+#             "or": "Odia",
+#             "as": "Assamese",
+#             "pa": "Punjabi",
+#             "ml": "Malayalam",
+#             "gu": "Gujarati",
+#             "ur": "Urdu",
+#             "sa": "Sanskrit",
+#             "ne": "Nepali",
+#             "brx": "Bodo",
+#             "mai": "Maithili",
+#             "sd": "Sindhi",
+#             "ks": "Kashmiri",
+#             "kok": "Konkani",
+#             "doi": "Dogri",
+#             "gom": "Goan Konkani",
+#             "sat": "Santali"
+#         }
+
+#         # Fields that require language detection and potential translation
+#         fields_to_check = [
+#             'company_details', 'product_descriptions', 'features_benefits', 
+#             'pricing_info', 'promotions', 'target_audience', 
+#             'sales_objectives', 'competitive_advantage', 'compliance'
+#         ]
+
+#         # Translate only non-English content
+#         for field in fields_to_check:
+#             value = data.get(field)
+#             if value:
+#                 try:
+#                     # Detect language of the field value
+#                     detected_language, confidence = classify(value)
+#                     language_name = indian_languages.get(detected_language, "Unknown")
+#                     print(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+#                     print(f"Original Value: {value}")
+                    
+#                     logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+
+#                     # Translate if the detected language is not English
+#                     if detected_language != 'en':
+#                         print(f"Translating {field} from {language_name} to English.")
+#                         translation_response = bhashini_translate(
+#                             text=value,
+#                             from_code=language_name,
+#                             to_code="English"
+#                         )
+#                         translated_text = translation_response.get('translated_content', value)
+#                         print(f"Translated Value for {field}: {translated_text}")
+#                         logger.debug(f"Translated {field}: {translated_text}")
+#                         data[field] = translated_text
+#                     else:
+#                         print(f"{field} is already in English. No translation needed.")
+#                 except Exception as e:
+#                     print(f"Error processing field {field}: {str(e)}")
+#                     logger.error(f"Error processing field {field}: {str(e)}")
+
+#         logger.debug(f"Data after translation: {data}")
+
+#         # Extract fields from the processed data
+#         num_words = data.get('num_words')
+#         company_details = data.get('company_details')
+#         product_descriptions = data.get('product_descriptions')
+#         features_benefits = data.get('features_benefits')
+#         pricing_info = data.get('pricing_info')
+#         promotions = data.get('promotions')
+#         target_audience = data.get('target_audience')
+#         sales_objectives = data.get('sales_objectives')
+#         competitive_advantage = data.get('competitive_advantage')
+#         compliance = data.get('compliance')
+
+#         logger.debug(f"Data extracted for sales script generation: num_words={num_words}, company_details={company_details}")
+
+#         # Generate the sales script
+#         logger.info("Generating sales script...")
+#         sales_script = generate_sales_script(
+#             company_details,
+#             num_words,
+#             product_descriptions,
+#             features_benefits,
+#             pricing_info,
+#             promotions,
+#             target_audience,
+#             sales_objectives,
+#             competitive_advantage,
+#             compliance,
+#         )
+
+#         if sales_script:
+#             logger.info("Sales script generated successfully.")
+#             encrypted_response_content = encrypt_data({'generated_content': sales_script})
+#             return JsonResponse({
+#                 'encrypted_content': encrypted_response_content,
+#                 'language': 'en'
+#             }, status=200)
+
+#         logger.error("Failed to generate sales script.")
+#         return JsonResponse({'error': 'Failed to generate sales script. Please try again.'}, status=500)
+
+#     except json.JSONDecodeError:
+#         logger.error("Invalid JSON format received.")
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         logger.error(f"ValueError occurred: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f"An unexpected error occurred: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=500)
+
+from deep_translator import GoogleTranslator
+
+#With Language Detection and Translation using Google Translate API
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, HasAPIKey])
+def sales_script_generator(request):
+    try:
+        # Load and decode the request body
+        body = request.body.decode('utf-8')
+        logger.debug(f"Request body received: {body}")
+
+        # Extract and decrypt the incoming payload
+        data = json.loads(body)
+        encrypted_content = data.get('encrypted_content')
+        if not encrypted_content:
+            logger.warning("No encrypted content found in the request.")
+            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+        logger.debug(f"Encrypted content received: {encrypted_content}")
+
+        decrypted_content = decrypt_data(encrypted_content)
+        logger.debug(f"Decrypted content: {decrypted_content}")
+
+        # Parse the decrypted JSON
+        data = json.loads(decrypted_content)
+        logger.debug(f"Parsed decrypted JSON: {data}")
+
+        # Define the Indian languages mapping
+        indian_languages = {
+            "English": "en",
+            "Hindi": "hi",
+            "Tamil": "ta",
+            "Telugu": "te",
+            "Marathi": "mr",
+            "Kannada": "kn",
+            "Bengali": "bn",
+            "Odia": "or",
+            "Assamese": "as",
+            "Punjabi": "pa",
+            "Malayalam": "ml",
+            "Gujarati": "gu",
+            "Urdu": "ur",
+            "Sanskrit": "sa",
+            "Nepali": "ne",
+            "Bodo": "brx",
+            "Maithili": "mai",
+            "Sindhi": "sd",
+            "Kashmiri": "ks",
+            "Konkani": "kok",
+            "Dogri": "doi",
+            "Goan Konkani": "gom",
+            "Santali": "sat",
+        }
+
+        # Fields that require language detection and potential translation
+        fields_to_check = [
+            'company_details', 'product_descriptions', 'features_benefits', 
+            'pricing_info', 'promotions', 'target_audience', 
+            'sales_objectives', 'competitive_advantage', 'compliance'
+        ]
+
+        # Translate only non-English content
+        for field in fields_to_check:
+            value = data.get(field)
+            if value:
+                try:
+                    # Detect language of the field value
+                    detected_language, confidence = classify(value)
+                    language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+                    print(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+                    print(f"Original Value: {value}")
+                    
+                    logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+
+                    # Translate if the detected language is not English
+                    if detected_language != 'en':
+                        print(f"Translating {field} from {language_name} to English.")
+                        translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
+                        print(f"Translated Value for {field}: {translated_text}")
+                        logger.debug(f"Translated {field}: {translated_text}")
+                        data[field] = translated_text
+                    else:
+                        print(f"{field} is already in English. No translation needed.")
+                except Exception as e:
+                    print(f"Error processing field {field}: {str(e)}")
+                    logger.error(f"Error processing field {field}: {str(e)}")
+
+        logger.debug(f"Data after translation: {data}")
+
+        # Extract fields from the processed data
+        num_words = data.get('num_words')
+        company_details = data.get('company_details')
+        product_descriptions = data.get('product_descriptions')
+        features_benefits = data.get('features_benefits')
+        pricing_info = data.get('pricing_info')
+        promotions = data.get('promotions')
+        target_audience = data.get('target_audience')
+        sales_objectives = data.get('sales_objectives')
+        competitive_advantage = data.get('competitive_advantage')
+        compliance = data.get('compliance')
+
+        logger.debug(f"Data extracted for sales script generation: num_words={num_words}, company_details={company_details}")
+
+        # Generate the sales script
+        logger.info("Generating sales script...")
+        sales_script = generate_sales_script(
+            company_details,
+            num_words,
+            product_descriptions,
+            features_benefits,
+            pricing_info,
+            promotions,
+            target_audience,
+            sales_objectives,
+            competitive_advantage,
+            compliance,
+        )
+
+        if sales_script:
+            logger.info("Sales script generated successfully.")
+            encrypted_response_content = encrypt_data({'generated_content': sales_script})
+            return JsonResponse({
+                'encrypted_content': encrypted_response_content,
+                'language': 'en'
+            }, status=200)
+
+        logger.error("Failed to generate sales script.")
+        return JsonResponse({'error': 'Failed to generate sales script. Please try again.'}, status=500)
+
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON format received.")
+        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+    except ValueError as e:
+        logger.error(f"ValueError occurred: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

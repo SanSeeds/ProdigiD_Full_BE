@@ -7189,45 +7189,6 @@ def rephrasely_view_android(request):
     logger.warning('Method not allowed.')
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
-<<<<<<< HEAD
-@csrf_exempt
-def offer_letter_generator_android(request):
-    try:
-        data = json.loads(request.body.decode('utf-8'))
-        if not data:
-            logger.warning('No content found in the request.')
-            return JsonResponse({'error': 'No content found in the request.'}, status=400)
-
-        print("hey" ,data)
-        candidate_name = data.get('candidateFullName')
-        company_details = data.get('companyDetails')
-        position_title = data.get('positionTitle')
-        department = data.get('department')
-        status = data.get('status')
-        location = data.get('location')
-        start_date = data.get('expectedStartDate')
-        compensation_benefits = data.get('compensationBenefits')  # Merged field
-        work_hours = data.get('workHours')
-        terms = data.get('termsConditions')
-        acceptance_deadline = data.get('deadline')
-        contact_info = data.get('contactInfo')
-        documents_needed = data.get('documentsNeeded')
-        closing_remarks = data.get('closingRemarks')
-
-        logger.info('Generating offer letter content.')
-        offer_letter_content = generate_offer_letter(
-            company_details, candidate_name, position_title, department, status,
-            location, start_date, compensation_benefits, work_hours,
-            terms, acceptance_deadline, contact_info, documents_needed, closing_remarks
-        )
-
-        if offer_letter_content:
-            logger.info('Offer letter content generated successfully.')
-            return JsonResponse({'generated_content': offer_letter_content}, status=200)
-
-        logger.error('Failed to generate offer letter content.')
-        return JsonResponse({'error': 'Failed to generate offer letter. Please try again.'}, status=500)
-=======
 # @csrf_exempt
 # def summarize_document_android(request):
 #     try:
@@ -7323,7 +7284,6 @@ def summarize_document_android(request):
         logger.info('Summary generated successfully.')
 
         return JsonResponse({'summary': summary}, status=200)
->>>>>>> df9da479e8cbd1032a7eebaffd062e76c39565c5
 
     except json.JSONDecodeError:
         logger.error('Invalid JSON format received.')
@@ -7334,12 +7294,6 @@ def summarize_document_android(request):
     except Exception as e:
         logger.error(f'Exception: {str(e)}')
         return JsonResponse({'error': str(e)}, status=500)
-<<<<<<< HEAD
-
-    logger.warning('Method not allowed.')
-    return JsonResponse({'error': 'Method not allowed.'}, status=405)
-=======
->>>>>>> df9da479e8cbd1032a7eebaffd062e76c39565c5
 
 
 import zipfile

@@ -3388,6 +3388,65 @@ def change_password(request):
 #         logger.error(f'Exception: {str(e)}')
 #         return JsonResponse({'error': str(e)}, status=500)
 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated, HasAPIKey])
+# def summarize_document(request):
+#     try:
+#         # Extract encrypted content from request.POST
+#         encrypted_content = request.POST.get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning('No encrypted content found in the request.')
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         # Decrypt the JSON payload
+#         decrypted_content = decrypt_data(encrypted_content)
+#         data = json.loads(decrypted_content)
+#         logger.debug(f'Decrypted content: {data}')
+
+#         # Extract form fields from decrypted data
+#         document_context = data.get('documentContext')
+#         main_subject = data.get('mainSubject')
+#         summary_purpose = data.get('summaryPurpose')
+#         length_detail = data.get('lengthDetail')
+#         important_elements = data.get('importantElements')
+#         audience = data.get('audience')
+#         tone = data.get('tone')
+#         format_ = data.get('format')
+#         additional_instructions = data.get('additionalInstructions')
+
+#         # Extract the uploaded file from request.FILES
+#         document_file = request.FILES.get('documentFile')
+#         if not document_file:
+#             logger.warning('No document file provided.')
+#             return JsonResponse({'error': 'No document file provided.'}, status=400)
+
+#         # Generate summary using provided data and the uploaded document
+#         summary = generate_summary(
+#             document_context, main_subject, summary_purpose, length_detail,
+#             important_elements, audience, tone, format_, additional_instructions, document_file
+#         )
+
+
+#         if summary.startswith("Error:"):
+#             logger.error(summary)
+#             return JsonResponse({'error': summary}, status=500)
+
+#         # Encrypt the response content
+#         encrypted_response = encrypt_data({'summary': summary})
+#         logger.info('Summary generated and encrypted successfully.')
+
+#         return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+#     except json.JSONDecodeError:
+#         logger.error('Invalid JSON format received.')
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         logger.error(f'ValueError: {str(e)}')
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f'Exception: {str(e)}')
+#         return JsonResponse({'error': str(e)}, status=500)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def summarize_document(request):
@@ -3426,10 +3485,14 @@ def summarize_document(request):
             important_elements, audience, tone, format_, additional_instructions, document_file
         )
 
-
+        # Handle specific error scenarios from generate_summary
         if summary.startswith("Error:"):
-            logger.error(summary)
-            return JsonResponse({'error': summary}, status=500)
+            if "Uploaded file too large" in summary:
+                logger.warning(summary)
+                return JsonResponse({'error': summary}, status=413) 
+            else:
+                logger.error(summary)
+                return JsonResponse({'error': summary}, status=500)
 
         # Encrypt the response content
         encrypted_response = encrypt_data({'summary': summary})
@@ -4020,6 +4083,64 @@ def logout_view(request):
 #     except Exception as e:
 #         return JsonResponse({'error': str(e)}, status=500)
 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def create_presentation(request):
+#     try:
+#         # Handle the multipart form data
+#         encrypted_content = request.POST.get('encrypted_content')
+#         if not encrypted_content:
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         # Decrypt the content
+#         decrypted_content = decrypt_data(encrypted_content)
+
+#         # Parse decrypted JSON data
+#         data = json.loads(decrypted_content)
+
+#         # Extract fields from the decrypted data
+#         title = data.get('title')
+#         num_slides = data.get('num_slides')
+#         special_instructions = data.get('special_instructions')
+#         template_name = data.get('template_name', 'default')
+#         document = request.FILES.get('document')
+
+#         if not title or not num_slides:
+#             return JsonResponse({'error': 'Title and number of slides are required.'}, status=400)
+
+#         # Handle document content optionally
+#         document_content = extract_document_content(document) if document else ""
+#         word_count = len(document_content.split())
+#         print(word_count)
+#         if word_count > 2000:
+#             return JsonResponse({'error': 'Document content exceeds the word limit of 2000 words.'}, status=400)
+        
+
+#         # Get template path
+#         templates = get_templates()
+#         template_path = templates.get(template_name, templates['default'])
+#         output_path = "SmartAssistant_Presentation.pptx"
+
+#         # Generate presentation with the provided data
+#         prs = update_presentation_with_generated_content(
+#             template_path, output_path, document_content, title, num_slides, special_instructions
+#         )
+
+#         # Save presentation to a BytesIO object
+#         buffer = BytesIO()
+#         prs.save(buffer)
+#         buffer.seek(0)  # Rewind the buffer
+
+#         # Return file response
+#         response = FileResponse(buffer, as_attachment=True, filename='SmartOffice_Assistant_Presentation.pptx')
+#         return response
+
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_presentation(request):
@@ -4047,6 +4168,10 @@ def create_presentation(request):
 
         # Handle document content optionally
         document_content = extract_document_content(document) if document else ""
+        word_count = len(document_content.split())
+        print(f"Word count: {word_count}")
+        if word_count > 2000:
+            return JsonResponse({'error': 'Document content exceeds the word limit of 2000 words.'}, status=413)
 
         # Get template path
         templates = get_templates()
@@ -4071,8 +4196,6 @@ def create_presentation(request):
         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
-
 
 
 #Encrypted API For generate blog Service

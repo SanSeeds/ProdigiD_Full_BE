@@ -10,7 +10,7 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.http import FileResponse, HttpResponse, JsonResponse
 from gtts import gTTS
-from .email_llama3 import BHASHINI_API_KEY, BHASHINI_USER_ID, add_slide, ask_question_chatbot, generate_blog, generate_slide_titles, extract_document_content, generate_email, bhashini_translate,generate_bus_pro, generate_offer_letter, generate_slide_content, generate_slide_titles, generate_summary, generate_content, generate_sales_script, rephrasely, translate_multiple_texts, translate_with_retry  
+from .email_llama3 import BHASHINI_API_KEY, BHASHINI_USER_ID, ask_question_chatbot, generate_blog, generate_slide_titles, extract_document_content, generate_email, bhashini_translate,generate_bus_pro, generate_offer_letter, generate_slide_content, generate_slide_titles, generate_summary, generate_content, generate_sales_script, get_templates, rephrasely, translate_multiple_texts, translate_with_retry, update_presentation_with_generated_content  
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from django.utils import timezone
@@ -3388,6 +3388,65 @@ def change_password(request):
 #         logger.error(f'Exception: {str(e)}')
 #         return JsonResponse({'error': str(e)}, status=500)
 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated, HasAPIKey])
+# def summarize_document(request):
+#     try:
+#         # Extract encrypted content from request.POST
+#         encrypted_content = request.POST.get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning('No encrypted content found in the request.')
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         # Decrypt the JSON payload
+#         decrypted_content = decrypt_data(encrypted_content)
+#         data = json.loads(decrypted_content)
+#         logger.debug(f'Decrypted content: {data}')
+
+#         # Extract form fields from decrypted data
+#         document_context = data.get('documentContext')
+#         main_subject = data.get('mainSubject')
+#         summary_purpose = data.get('summaryPurpose')
+#         length_detail = data.get('lengthDetail')
+#         important_elements = data.get('importantElements')
+#         audience = data.get('audience')
+#         tone = data.get('tone')
+#         format_ = data.get('format')
+#         additional_instructions = data.get('additionalInstructions')
+
+#         # Extract the uploaded file from request.FILES
+#         document_file = request.FILES.get('documentFile')
+#         if not document_file:
+#             logger.warning('No document file provided.')
+#             return JsonResponse({'error': 'No document file provided.'}, status=400)
+
+#         # Generate summary using provided data and the uploaded document
+#         summary = generate_summary(
+#             document_context, main_subject, summary_purpose, length_detail,
+#             important_elements, audience, tone, format_, additional_instructions, document_file
+#         )
+
+
+#         if summary.startswith("Error:"):
+#             logger.error(summary)
+#             return JsonResponse({'error': summary}, status=500)
+
+#         # Encrypt the response content
+#         encrypted_response = encrypt_data({'summary': summary})
+#         logger.info('Summary generated and encrypted successfully.')
+
+#         return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+#     except json.JSONDecodeError:
+#         logger.error('Invalid JSON format received.')
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         logger.error(f'ValueError: {str(e)}')
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f'Exception: {str(e)}')
+#         return JsonResponse({'error': str(e)}, status=500)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def summarize_document(request):
@@ -3426,10 +3485,14 @@ def summarize_document(request):
             important_elements, audience, tone, format_, additional_instructions, document_file
         )
 
-
+        # Handle specific error scenarios from generate_summary
         if summary.startswith("Error:"):
-            logger.error(summary)
-            return JsonResponse({'error': summary}, status=500)
+            if "Uploaded file too large" in summary:
+                logger.warning(summary)
+                return JsonResponse({'error': summary}, status=413) 
+            else:
+                logger.error(summary)
+                return JsonResponse({'error': summary}, status=500)
 
         # Encrypt the response content
         encrypted_response = encrypt_data({'summary': summary})
@@ -3522,8 +3585,227 @@ def content_generator(request):
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 #Encrypted API For sales script Service
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated,HasAPIKey])
+# def sales_script_generator(request):
+#     try:
+#         # Load and decode the request body
+#         body = request.body.decode('utf-8')
+#         logger.debug(f"Request body received: {body}")
+
+#         # Extract and decrypt the incoming payload
+#         data = json.loads(body)
+#         encrypted_content = data.get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning("No encrypted content found in the request.")
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         logger.debug(f"Encrypted content received: {encrypted_content}")
+
+#         decrypted_content = decrypt_data(encrypted_content)
+#         logger.debug(f"Decrypted content: {decrypted_content}")
+
+#         data = json.loads(decrypted_content)
+
+#         # Extract fields from the decrypted JSON data
+#         num_words = data.get('num_words')
+#         company_details = data.get('company_details')
+#         product_descriptions = data.get('product_descriptions')
+#         features_benefits = data.get('features_benefits')
+#         pricing_info = data.get('pricing_info')
+#         promotions = data.get('promotions')
+#         target_audience = data.get('target_audience')
+#         sales_objectives = data.get('sales_objectives')
+#         competitive_advantage = data.get('competitive_advantage')
+#         compliance = data.get('compliance')
+
+#         logger.debug(f"Data extracted for sales script generation: num_words={num_words}, company_details={company_details}")
+
+#         # Generate the sales script
+#         logger.info("Generating sales script...")
+#         sales_script = generate_sales_script(
+#             company_details,
+#             num_words,
+#             product_descriptions,
+#             features_benefits,
+#             pricing_info,
+#             promotions,
+#             target_audience,
+#             sales_objectives,
+#             competitive_advantage,
+#             compliance,
+#         )
+
+#         if sales_script:
+#             logger.info("Sales script generated successfully.")
+#             encrypted_response_content = encrypt_data({'generated_content': sales_script})
+#             return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
+
+#         logger.error("Failed to generate sales script.")
+#         return JsonResponse({'error': 'Failed to generate sales script. Please try again.'}, status=500)
+
+#     except json.JSONDecodeError:
+#         logger.error("Invalid JSON format received.")
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         logger.error(f"ValueError occurred: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f"An unexpected error occurred: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=500)
+
+#     logger.error("Method not allowed.")
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+from langid import classify
+
+#With Language Detection and Translation using Bhashini API
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated, HasAPIKey])
+# def sales_script_generator(request):
+#     try:
+#         # Load and decode the request body
+#         body = request.body.decode('utf-8')
+#         logger.debug(f"Request body received: {body}")
+
+#         # Extract and decrypt the incoming payload
+#         data = json.loads(body)
+#         encrypted_content = data.get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning("No encrypted content found in the request.")
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         logger.debug(f"Encrypted content received: {encrypted_content}")
+
+#         decrypted_content = decrypt_data(encrypted_content)
+#         logger.debug(f"Decrypted content: {decrypted_content}")
+
+#         # Parse the decrypted JSON
+#         data = json.loads(decrypted_content)
+#         logger.debug(f"Parsed decrypted JSON: {data}")
+
+#         # Define the Indian languages mapping
+#         indian_languages = {
+#             "en": "English",
+#             "hi": "Hindi",
+#             "ta": "Tamil",
+#             "te": "Telugu",
+#             "mr": "Marathi",
+#             "kn": "Kannada",
+#             "bn": "Bengali",
+#             "or": "Odia",
+#             "as": "Assamese",
+#             "pa": "Punjabi",
+#             "ml": "Malayalam",
+#             "gu": "Gujarati",
+#             "ur": "Urdu",
+#             "sa": "Sanskrit",
+#             "ne": "Nepali",
+#             "brx": "Bodo",
+#             "mai": "Maithili",
+#             "sd": "Sindhi",
+#             "ks": "Kashmiri",
+#             "kok": "Konkani",
+#             "doi": "Dogri",
+#             "gom": "Goan Konkani",
+#             "sat": "Santali"
+#         }
+
+#         # Fields that require language detection and potential translation
+#         fields_to_check = [
+#             'company_details', 'product_descriptions', 'features_benefits', 
+#             'pricing_info', 'promotions', 'target_audience', 
+#             'sales_objectives', 'competitive_advantage', 'compliance'
+#         ]
+
+#         # Translate only non-English content
+#         for field in fields_to_check:
+#             value = data.get(field)
+#             if value:
+#                 try:
+#                     # Detect language of the field value
+#                     detected_language, confidence = classify(value)
+#                     language_name = indian_languages.get(detected_language, "Unknown")
+#                     print(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+#                     print(f"Original Value: {value}")
+                    
+#                     logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+
+#                     # Translate if the detected language is not English
+#                     if detected_language != 'en':
+#                         print(f"Translating {field} from {language_name} to English.")
+#                         translation_response = bhashini_translate(
+#                             text=value,
+#                             from_code=language_name,
+#                             to_code="English"
+#                         )
+#                         translated_text = translation_response.get('translated_content', value)
+#                         print(f"Translated Value for {field}: {translated_text}")
+#                         logger.debug(f"Translated {field}: {translated_text}")
+#                         data[field] = translated_text
+#                     else:
+#                         print(f"{field} is already in English. No translation needed.")
+#                 except Exception as e:
+#                     print(f"Error processing field {field}: {str(e)}")
+#                     logger.error(f"Error processing field {field}: {str(e)}")
+
+#         logger.debug(f"Data after translation: {data}")
+
+#         # Extract fields from the processed data
+#         num_words = data.get('num_words')
+#         company_details = data.get('company_details')
+#         product_descriptions = data.get('product_descriptions')
+#         features_benefits = data.get('features_benefits')
+#         pricing_info = data.get('pricing_info')
+#         promotions = data.get('promotions')
+#         target_audience = data.get('target_audience')
+#         sales_objectives = data.get('sales_objectives')
+#         competitive_advantage = data.get('competitive_advantage')
+#         compliance = data.get('compliance')
+
+#         logger.debug(f"Data extracted for sales script generation: num_words={num_words}, company_details={company_details}")
+
+#         # Generate the sales script
+#         logger.info("Generating sales script...")
+#         sales_script = generate_sales_script(
+#             company_details,
+#             num_words,
+#             product_descriptions,
+#             features_benefits,
+#             pricing_info,
+#             promotions,
+#             target_audience,
+#             sales_objectives,
+#             competitive_advantage,
+#             compliance,
+#         )
+
+#         if sales_script:
+#             logger.info("Sales script generated successfully.")
+#             encrypted_response_content = encrypt_data({'generated_content': sales_script})
+#             return JsonResponse({
+#                 'encrypted_content': encrypted_response_content,
+#                 'language': 'en'
+#             }, status=200)
+
+#         logger.error("Failed to generate sales script.")
+#         return JsonResponse({'error': 'Failed to generate sales script. Please try again.'}, status=500)
+
+#     except json.JSONDecodeError:
+#         logger.error("Invalid JSON format received.")
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         logger.error(f"ValueError occurred: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f"An unexpected error occurred: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=500)
+
+from deep_translator import GoogleTranslator
+
+#With Language Detection and Translation using Google Translate API
 @api_view(['POST'])
-@permission_classes([IsAuthenticated,HasAPIKey])
+@permission_classes([IsAuthenticated, HasAPIKey])
 def sales_script_generator(request):
     try:
         # Load and decode the request body
@@ -3542,9 +3824,73 @@ def sales_script_generator(request):
         decrypted_content = decrypt_data(encrypted_content)
         logger.debug(f"Decrypted content: {decrypted_content}")
 
+        # Parse the decrypted JSON
         data = json.loads(decrypted_content)
+        logger.debug(f"Parsed decrypted JSON: {data}")
 
-        # Extract fields from the decrypted JSON data
+        # Define the Indian languages mapping
+        indian_languages = {
+            "English": "en",
+            "Hindi": "hi",
+            "Tamil": "ta",
+            "Telugu": "te",
+            "Marathi": "mr",
+            "Kannada": "kn",
+            "Bengali": "bn",
+            "Odia": "or",
+            "Assamese": "as",
+            "Punjabi": "pa",
+            "Malayalam": "ml",
+            "Gujarati": "gu",
+            "Urdu": "ur",
+            "Sanskrit": "sa",
+            "Nepali": "ne",
+            "Bodo": "brx",
+            "Maithili": "mai",
+            "Sindhi": "sd",
+            "Kashmiri": "ks",
+            "Konkani": "kok",
+            "Dogri": "doi",
+            "Goan Konkani": "gom",
+            "Santali": "sat",
+        }
+
+        # Fields that require language detection and potential translation
+        fields_to_check = [
+            'company_details', 'product_descriptions', 'features_benefits', 
+            'pricing_info', 'promotions', 'target_audience', 
+            'sales_objectives', 'competitive_advantage', 'compliance'
+        ]
+
+        # Translate only non-English content
+        for field in fields_to_check:
+            value = data.get(field)
+            if value:
+                try:
+                    # Detect language of the field value
+                    detected_language, confidence = classify(value)
+                    language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+                    print(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+                    print(f"Original Value: {value}")
+                    
+                    logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+
+                    # Translate if the detected language is not English
+                    if detected_language != 'en':
+                        print(f"Translating {field} from {language_name} to English.")
+                        translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
+                        print(f"Translated Value for {field}: {translated_text}")
+                        logger.debug(f"Translated {field}: {translated_text}")
+                        data[field] = translated_text
+                    else:
+                        print(f"{field} is already in English. No translation needed.")
+                except Exception as e:
+                    print(f"Error processing field {field}: {str(e)}")
+                    logger.error(f"Error processing field {field}: {str(e)}")
+
+        logger.debug(f"Data after translation: {data}")
+
+        # Extract fields from the processed data
         num_words = data.get('num_words')
         company_details = data.get('company_details')
         product_descriptions = data.get('product_descriptions')
@@ -3576,7 +3922,10 @@ def sales_script_generator(request):
         if sales_script:
             logger.info("Sales script generated successfully.")
             encrypted_response_content = encrypt_data({'generated_content': sales_script})
-            return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
+            return JsonResponse({
+                'encrypted_content': encrypted_response_content,
+                'language': 'en'
+            }, status=200)
 
         logger.error("Failed to generate sales script.")
         return JsonResponse({'error': 'Failed to generate sales script. Please try again.'}, status=500)
@@ -3590,9 +3939,6 @@ def sales_script_generator(request):
     except Exception as e:
         logger.error(f"An unexpected error occurred: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
-
-    logger.error("Method not allowed.")
-    return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 
 
@@ -3617,6 +3963,184 @@ def logout_view(request):
         return JsonResponse({'error': 'An error occurred during logout.'}, status=500)
 
 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def create_presentation(request):
+#     try:
+#         # Handle the multipart form data
+#         encrypted_content = request.POST.get('encrypted_content')
+#         if not encrypted_content:
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         # Decrypt the content
+#         decrypted_content = decrypt_data(encrypted_content)
+
+#         # Parse decrypted JSON data
+#         data = json.loads(decrypted_content)
+
+#         # Extract fields from the decrypted data
+#         title = data.get('title')
+#         num_slides = data.get('num_slides')
+#         bg_image_path = request.FILES.get('background_image')  # bg_image as a file
+#         document = request.FILES.get('document')  # document as a file
+
+#         if not title or not num_slides:
+#             return JsonResponse({'error': 'Title and number of slides are required.'}, status=400)
+
+#         # Handle document content optionally
+#         document_content = extract_document_content(document) if document else ""
+
+#         # Generate presentation logic
+#         prs = Presentation()
+#         slide_titles = generate_slide_titles(document_content, num_slides, None, title)
+#         slide_titles = slide_titles.replace('[', '').replace(']', '').replace('"', '').split(',')
+
+#         slide_contents = {}
+#         error_messages = []
+
+#         # Function to generate slide content in a separate thread
+#         def generate_and_store_slide_content(slide_title):
+#             try:
+#                 content = generate_slide_content(document_content, slide_title, None).replace("*", '').split('\n')
+#                 current_content = [point.strip() for point in content if len(point.strip()) > 0]
+#                 if len(current_content) > 4:
+#                     current_content = current_content[:4]  # Limit to only 4 points
+#                 slide_contents[slide_title] = current_content
+#             except Exception as e:
+#                 error_messages.append(f"Error generating content for '{slide_title}': {str(e)}")
+
+#         # Start threads for generating slide content
+#         threads = []
+#         for st in slide_titles:
+#             thread = Thread(target=generate_and_store_slide_content, args=(st.strip(),))
+#             thread.start()
+#             threads.append(thread)
+
+#         # Wait for all threads to finish
+#         for thread in threads:
+#             thread.join()
+
+#         # Check for any errors that occurred during content generation
+#         if error_messages:
+#             return JsonResponse({'error': error_messages}, status=500)
+
+#         # Add slides to the presentation
+#         for slide_title, slide_content in slide_contents.items():
+#             add_slide(prs, slide_title, slide_content, bg_image_path)
+
+#         # Save presentation to a BytesIO object
+#         buffer = BytesIO()
+#         prs.save(buffer)
+#         buffer.seek(0)  # Rewind the buffer
+
+#         # Return file response
+#         response = FileResponse(buffer, as_attachment=True, filename='SmartOffice_Assistant_Presentation.pptx')
+#         return response
+
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
+
+# @api_view(['POST'])
+# @permission_classes([])
+# def create_presentation(request):
+#     try:
+#         data = json.loads(request.body)
+#         print(data) 
+#         title = data.get('title')
+#         num_slides = data.get('num_slides')
+#         special_instructions = data.get('special_instructions')
+#         template_name = data.get('template_name', 'default')
+#         document = request.FILES.get('document')
+
+#         if not title or not num_slides:
+#             return JsonResponse({'error': 'Title and number of slides are required.'}, status=400)
+
+#         document_content = extract_document_content(document) if document else ""
+
+#         templates = get_templates()
+#         template_path = templates.get(template_name, templates['default'])
+#         output_path = "SmartAssistant_Presentation.pptx"
+
+#         prs=update_presentation_with_generated_content(
+#             template_path, output_path, document_content, title, num_slides, special_instructions
+#         )
+
+#         # with open(output_path, 'rb') as f:
+#         #     response = FileResponse(f, as_attachment=True, filename=output_path)
+#         # return response
+#         buffer = BytesIO()
+#         prs.save(buffer)
+#         buffer.seek(0)  # Rewind the buffer
+
+#         # Return file response
+#         response = FileResponse(buffer, as_attachment=True, filename='SmartOffice_Assistant_Presentation.pptx')
+#         return response  
+
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
+
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def create_presentation(request):
+#     try:
+#         # Handle the multipart form data
+#         encrypted_content = request.POST.get('encrypted_content')
+#         if not encrypted_content:
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         # Decrypt the content
+#         decrypted_content = decrypt_data(encrypted_content)
+
+#         # Parse decrypted JSON data
+#         data = json.loads(decrypted_content)
+
+#         # Extract fields from the decrypted data
+#         title = data.get('title')
+#         num_slides = data.get('num_slides')
+#         special_instructions = data.get('special_instructions')
+#         template_name = data.get('template_name', 'default')
+#         document = request.FILES.get('document')
+
+#         if not title or not num_slides:
+#             return JsonResponse({'error': 'Title and number of slides are required.'}, status=400)
+
+#         # Handle document content optionally
+#         document_content = extract_document_content(document) if document else ""
+#         word_count = len(document_content.split())
+#         print(word_count)
+#         if word_count > 2000:
+#             return JsonResponse({'error': 'Document content exceeds the word limit of 2000 words.'}, status=400)
+        
+
+#         # Get template path
+#         templates = get_templates()
+#         template_path = templates.get(template_name, templates['default'])
+#         output_path = "SmartAssistant_Presentation.pptx"
+
+#         # Generate presentation with the provided data
+#         prs = update_presentation_with_generated_content(
+#             template_path, output_path, document_content, title, num_slides, special_instructions
+#         )
+
+#         # Save presentation to a BytesIO object
+#         buffer = BytesIO()
+#         prs.save(buffer)
+#         buffer.seek(0)  # Rewind the buffer
+
+#         # Return file response
+#         response = FileResponse(buffer, as_attachment=True, filename='SmartOffice_Assistant_Presentation.pptx')
+#         return response
+
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_presentation(request):
@@ -3635,52 +4159,29 @@ def create_presentation(request):
         # Extract fields from the decrypted data
         title = data.get('title')
         num_slides = data.get('num_slides')
-        bg_image_path = request.FILES.get('background_image')  # bg_image as a file
-        document = request.FILES.get('document')  # document as a file
+        special_instructions = data.get('special_instructions')
+        template_name = data.get('template_name', 'default')
+        document = request.FILES.get('document')
 
         if not title or not num_slides:
             return JsonResponse({'error': 'Title and number of slides are required.'}, status=400)
 
         # Handle document content optionally
         document_content = extract_document_content(document) if document else ""
+        word_count = len(document_content.split())
+        print(f"Word count: {word_count}")
+        if word_count > 2000:
+            return JsonResponse({'error': 'Document content exceeds the word limit of 2000 words.'}, status=413)
 
-        # Generate presentation logic
-        prs = Presentation()
-        slide_titles = generate_slide_titles(document_content, num_slides, None, title)
-        slide_titles = slide_titles.replace('[', '').replace(']', '').replace('"', '').split(',')
+        # Get template path
+        templates = get_templates()
+        template_path = templates.get(template_name, templates['default'])
+        output_path = "SmartAssistant_Presentation.pptx"
 
-        slide_contents = {}
-        error_messages = []
-
-        # Function to generate slide content in a separate thread
-        def generate_and_store_slide_content(slide_title):
-            try:
-                content = generate_slide_content(document_content, slide_title, None).replace("*", '').split('\n')
-                current_content = [point.strip() for point in content if len(point.strip()) > 0]
-                if len(current_content) > 4:
-                    current_content = current_content[:4]  # Limit to only 4 points
-                slide_contents[slide_title] = current_content
-            except Exception as e:
-                error_messages.append(f"Error generating content for '{slide_title}': {str(e)}")
-
-        # Start threads for generating slide content
-        threads = []
-        for st in slide_titles:
-            thread = Thread(target=generate_and_store_slide_content, args=(st.strip(),))
-            thread.start()
-            threads.append(thread)
-
-        # Wait for all threads to finish
-        for thread in threads:
-            thread.join()
-
-        # Check for any errors that occurred during content generation
-        if error_messages:
-            return JsonResponse({'error': error_messages}, status=500)
-
-        # Add slides to the presentation
-        for slide_title, slide_content in slide_contents.items():
-            add_slide(prs, slide_title, slide_content, bg_image_path)
+        # Generate presentation with the provided data
+        prs = update_presentation_with_generated_content(
+            template_path, output_path, document_content, title, num_slides, special_instructions
+        )
 
         # Save presentation to a BytesIO object
         buffer = BytesIO()
@@ -3695,8 +4196,6 @@ def create_presentation(request):
         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-
-
 
 
 #Encrypted API For generate blog Service
@@ -7292,6 +7791,70 @@ def fix_null_values_in_translation(request):
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
+@csrf_exempt
+def translate_json_from_english_to_other(request):
+    global line_number
+    translated_json = {}
+    if request.method == 'POST':
+        try:
+            json_file = request.FILES.get('file')
+            source_language = request.POST.get('source_language')
+            translate_to = request.POST.get('translate_to')
+
+            if not json_file:
+                return JsonResponse({'error': 'No JSON file provided.'}, status=400)
+
+            if not source_language:
+                return JsonResponse({'error': 'No source language provided.'}, status=400)
+
+            if not translate_to:
+                return JsonResponse({'error': 'No target language provided.'}, status=400)
+
+            file_content = json_file.read().decode('utf-8')
+            original_json = json.loads(file_content)
+
+            translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
+            translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
+
+            async def translate_key_value(key, value, source_lang, target_lang):
+                global line_number
+                try:
+                    print(f"Line {line_number}: Translating key '{key}' with value '{value}'")
+                    translation_result = bhashini_translate(value, target_lang, source_lang)
+                    translated_json[key] = translation_result["translated_content"]
+                    print(f"Line {line_number}: Translated value '{translated_json[key]}'")
+                    line_number += 1
+                except Exception as e:
+                    print(f"Line {line_number}: Error translating key '{key}' - {str(e)}")
+                    translated_json[key] = f"Translation Error: {str(e)}"
+
+            async def trans_main(translation_tasks, source_lang, target_lang):
+                tasks = [translate_key_value(key, value, source_lang, target_lang) for key, value in translation_tasks]
+                await asyncio.gather(*tasks)
+
+            asyncio.run(trans_main(translation_tasks, source_language, translate_to))
+
+            # Sort the keys alphabetically
+            translated_json = dict(sorted(translated_json.items()))
+
+            translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
+            translated_file_name = f"translated_{translate_to}.json"
+            zip_buffer = BytesIO()
+            with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
+                zip_archive.writestr(translated_file_name, translated_json_str)
+
+            zip_buffer.seek(0)
+            response = HttpResponse(zip_buffer, content_type='application/zip')
+            response['Content-Disposition'] = 'attachment; filename="translated_sorted_files.zip"'
+            return response
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON file format.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': f'Error during translation: {str(e)}'}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+    
 
 from django.http import JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt

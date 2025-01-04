@@ -112,3 +112,15 @@ ERROR 2025-01-03 13:24:20,921 log Internal Server Error: /translate_content/
 ERROR 2025-01-03 13:24:20,921 basehttp "POST /translate_content/ HTTP/1.1" 500 32
 ERROR 2025-01-03 13:24:20,921 basehttp "POST /translate_content/ HTTP/1.1" 500 32
 >>>>>>> 8fe1bde02e28673e301b1e4cb6ef07f4548ee3eb
+ERROR 2025-01-03 21:12:51,040 views Error: Document is empty or could not be read!
+ERROR 2025-01-03 21:12:51,042 log Internal Server Error: /summarize_document/
+ERROR 2025-01-03 21:12:51,043 basehttp "POST /summarize_document/ HTTP/1.1" 500 59
+ERROR 2025-01-03 21:12:51,043 basehttp "POST /summarize_document/ HTTP/1.1" 500 59
+ERROR 2025-01-03 21:12:55,590 views Error: Document is empty or could not be read!
+ERROR 2025-01-03 21:12:55,594 log Internal Server Error: /summarize_document/
+ERROR 2025-01-03 21:12:55,597 basehttp "POST /summarize_document/ HTTP/1.1" 500 59
+ERROR 2025-01-03 21:12:55,597 basehttp "POST /summarize_document/ HTTP/1.1" 500 59
+ERROR 2025-01-03 21:14:43,405 views Error: Document is empty or could not be read!
+ERROR 2025-01-03 21:14:43,408 log Internal Server Error: /summarize_document/
+ERROR 2025-01-03 21:14:43,411 basehttp "POST /summarize_document/ HTTP/1.1" 500 59
+ERROR 2025-01-03 21:14:43,411 basehttp "POST /summarize_document/ HTTP/1.1" 500 59

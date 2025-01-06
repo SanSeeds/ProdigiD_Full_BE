@@ -275,20 +275,34 @@ SECURE_HSTS_PRELOAD = True
 #     }
 # }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'OPTIONS': {
+#                 'options': '-c search_path=prodigi'
+#             },
+#         'NAME': 'ProdigiDesk',
+#         'USER': 'postgres',
+#         'PASSWORD': 'rish123',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+# 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'OPTIONS': {
-                'options': '-c search_path=prodigi'
+                'options': '-c search_path=prodigi2'
             },
-        'NAME': 'ProdigiDesk',
+        'NAME': 'prodigidesk2',
         'USER': 'postgres',
         'PASSWORD': 'rish123',
         'HOST': 'localhost',
         'PORT': '5432',
     }
 }
-# 
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

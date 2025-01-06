@@ -97,7 +97,7 @@ urlpatterns = [
     path('check_session_status_android/', views.check_session_status_android, name='check_session_status_android'),
     path('verify_payment_android/', views.verify_payment_android, name='verify_payment_android'),
     path('content_generator_android/', views.content_generator_android, name='content_generator_android'),
-    path('offer_letter_generator_android/', views.offer_letter_generator_android, name='offer_letter_generator_android'),
+    # path('offer_letter_generator_android/', views.offer_letter_generator_android, name='offer_letter_generator_android'),
 
     path('create_razorpay_order_android/', views.create_razorpay_order_android, name='create_razorpay_order_android'),
     path('verify_payment_yearly_android/', views.verify_payment_yearly_android, name='verify_payment_yearly_android'),

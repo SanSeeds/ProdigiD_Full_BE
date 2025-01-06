@@ -210,3 +210,10 @@ ERROR 2024-12-13 11:52:03,646 basehttp "GET /profile_info/?encrypted_content=Ji3
 ERROR 2024-12-13 11:52:03,744 log Internal Server Error: /profile_info/
 ERROR 2024-12-13 11:52:03,746 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
 ERROR 2024-12-13 11:52:03,746 basehttp "GET /profile_info/?encrypted_content=Ji3sEK50uLRbeVHEiNLQ7J%2Fr1AGwaf4ydZMTiC6gxB3SNBMUMJXMd%2FWqOmoAAcKR HTTP/1.1" 500 51
+ERROR 2025-01-03 10:53:35,930 views Internal server error: relation "core_usersession" does not exist
+LINE 1: ...n"."created_at", "core_usersession"."active" FROM "core_user...
+                                                             ^
+
+ERROR 2025-01-03 10:53:35,933 log Internal Server Error: /check_session_status/
+ERROR 2025-01-03 10:53:35,934 basehttp "POST /check_session_status/ HTTP/1.1" 500 89
+ERROR 2025-01-03 10:53:35,934 basehttp "POST /check_session_status/ HTTP/1.1" 500 89

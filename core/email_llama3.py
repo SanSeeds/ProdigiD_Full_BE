@@ -268,12 +268,225 @@ def generate_offer_letter(company_details, candidate_name, position_title, depar
 
     return chat_completion.choices[0].message.content
 
+# def generate_summary(document_context, main_subject, summary_purpose, length_detail, important_elements, audience, tone, format, additional_instructions, document_file):
+#     # Extract the document content from the uploaded file
+#     try:
+#         document_content = extract_document_content(document_file)
+#     except Exception as e:
+#         return f"Error: Could not extract content. Details: {str(e)}"
+
+#     # Collect all fields to check for inappropriate language
+#     inputs = {
+#         "Document Context": document_context,
+#         "Main Subject": main_subject,
+#         "Summary Purpose": summary_purpose,
+#         "Length Detail": length_detail,
+#         "Important Elements": important_elements,
+#         "Audience": audience,
+#         "Tone": tone,
+#         "Format": format,
+#         "Additional Instructions": additional_instructions
+#     }
+
+#     # Check if any input parameter contains inappropriate words
+#     inappropriate_key = None
+#     inappropriate_value = None
+#     for key, value in inputs.items():
+#         if value and contains_inappropriate_language(value):
+#             inappropriate_key = key
+#             inappropriate_value = value
+#             break
+
+#     if inappropriate_key:
+#         return f"This type of language is not allowed in {inappropriate_key}: {inappropriate_value}"
+
+#     if not document_content:
+#         return "Error: Document is empty or could not be read!"
+
+#     # Build the prompt with the inputs
+#     prompt = f"Please summarize the following document content based on the provided instructions:\n\n"
+#     prompt += f"Document Content: {document_content}\n\n"
+#     prompt += "Summary Instructions:\n"
+#     for key, value in inputs.items():
+#         prompt += f"- {key}: {value}\n"
+
+ 
+#     if length_detail == 'Brief Summary':
+
+#         prompt += "Keep it concise, around 150 words."
+
+#     elif length_detail == 'Standard Summary':
+
+#         prompt += "Provide a detailed summary, around 300 words."
+
+#     else:  # In-Depth Summary
+
+#         prompt += "Offer a comprehensive summary, around 450 words."
+ 
+    
+#     prompt += (
+#         "\n\nPlease ensure the summary is:\n"
+#         "- Concise and covers all the main points.\n"
+#         "- Avoids any hallucinations or fabricated information. Use only the provided details.\n"
+#         "- Accurate and factual, maintaining integrity throughout the summary.\n"
+#         "- Free of inappropriate language.\n"
+#         "- Summarize the document content, adding appropriate subheadings where necessary to enhance clarity and organization.\n"
+#         "- In the requested tone and format.\n"
+#         "- Provide a conclusion at the end."
+#     )
+
+#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
+
+#     chat_completion = client.chat.completions.create(
+#         messages=[
+#             {
+#                 "role": "user",
+#                 "content": prompt,
+#             }
+#         ],
+#         model="llama-3.3-70b-versatile",
+#     )
+
+#     return chat_completion.choices[0].message.content
+
+# def generate_summary(document_context, main_subject, summary_purpose, length_detail, important_elements, audience, tone, format, additional_instructions, document_file):
+#     # Extract the document content from the uploaded file
+#     try:
+#         document_content = extract_document_content(document_file)
+#         print(document_content)
+#     except Exception as e:
+#         return f"Error: Could not extract content. Details: {str(e)}"
+
+#     if not document_content:
+#         return "Error: Document is empty or could not be read!"
+
+#     # Count the number of words in the document
+#     word_count = len(document_content.split())
+#     print(word_count)
+#     if word_count > 2000:
+#         return "Error: Uploaded file too large. Please upload a document with fewer than 2000 words."
+
+#     # Collect all fields to check for inappropriate language
+#     inputs = {
+#         "Document Context": document_context,
+#         "Main Subject": main_subject,
+#         "Summary Purpose": summary_purpose,
+#         "Length Detail": length_detail,
+#         "Important Elements": important_elements,
+#         "Audience": audience,
+#         "Tone": tone,
+#         "Format": format,
+#         "Additional Instructions": additional_instructions
+#     }
+
+#     # Check if any input parameter contains inappropriate words
+#     inappropriate_key = None
+#     inappropriate_value = None
+#     for key, value in inputs.items():
+#         if value and contains_inappropriate_language(value):
+#             inappropriate_key = key
+#             inappropriate_value = value
+#             break
+
+#     if inappropriate_key:
+#         return f"This type of language is not allowed in {inappropriate_key}: {inappropriate_value}"
+
+#     # Build the prompt with the inputs
+#     prompt = f"Please summarize the following document content based on the provided instructions:\n\n"
+#     prompt += f"Document Content: {document_content}\n\n"
+#     prompt += "Summary Instructions:\n"
+#     for key, value in inputs.items():
+#         prompt += f"- {key}: {value}\n"
+
+#     if length_detail == 'Brief Summary':
+#         prompt += "Keep it concise, around 150 words."
+#     elif length_detail == 'Standard Summary':
+#         prompt += "Provide a detailed summary, around 300 words."
+#     else:  # In-Depth Summary
+#         prompt += "Offer a comprehensive summary, around 450 words."
+
+#     prompt += (
+#         "\n\nPlease ensure the summary is:\n"
+#         "- Concise and covers all the main points.\n"
+#         "- Avoids any hallucinations or fabricated information. Use only the provided details.\n"
+#         "- Accurate and factual, maintaining integrity throughout the summary.\n"
+#         "- Free of inappropriate language.\n"
+#         "- Summarize the document content, adding appropriate subheadings where necessary to enhance clarity and organization.\n"
+#         "- In the requested tone and format.\n"
+#         "- Provide a conclusion at the end."
+#     )
+
+#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
+
+#     chat_completion = client.chat.completions.create(
+#         messages=[
+#             {
+#                 "role": "user",
+#                 "content": prompt,
+#             }
+#         ],
+#         model="llama-3.3-70b-versatile",
+#     )
+
+#     return chat_completion.choices[0].message.content
+
+import langid
+
+indian_languages = {
+    "English": "en",
+    "Hindi": "hi",
+    "Tamil": "ta",
+    "Telugu": "te",
+    "Marathi": "mr",
+    "Kannada": "kn",
+    "Bengali": "bn",
+    "Odia": "or",
+    "Assamese": "as",
+    "Punjabi": "pa",
+    "Malayalam": "ml",
+    "Gujarati": "gu",
+    "Urdu": "ur",
+    "Sanskrit": "sa",
+    "Nepali": "ne",
+    "Bodo": "brx",
+    "Maithili": "mai",
+    "Sindhi": "sd",
+    "Kashmiri": "ks",
+    "Konkani": "kok",
+    "Dogri": "doi",
+    "Goan Konkani": "gom",
+    "Santali": "sat",
+}
+
 def generate_summary(document_context, main_subject, summary_purpose, length_detail, important_elements, audience, tone, format, additional_instructions, document_file):
     # Extract the document content from the uploaded file
     try:
         document_content = extract_document_content(document_file)
+        print(document_content)
     except Exception as e:
         return f"Error: Could not extract content. Details: {str(e)}"
+
+    if not document_content:
+        return "Error: Document is empty or could not be read!"
+
+    # Detect the language of the document content
+    detected_lang, _ = langid.classify(document_content)
+    
+    # Find the language name from the code
+    detected_language_name = next((name for name, code in indian_languages.items() if code == detected_lang), "Unknown")
+
+    if detected_language_name != "English":
+        # Translate the document content to English
+        translation_result = bhashini_translate(document_content, to_code="English", from_code=detected_language_name)
+        if translation_result["status_code"] != 200:
+            return f"Error in translation: {translation_result['message']}"
+        document_content = translation_result["translated_content"]
+        print(document_content)
+
+    # Count the number of words in the document
+    word_count = len(document_content.split())
+    if word_count > 2000:
+        return "Error: Uploaded file too large. Please upload a document with fewer than 2000 words."
 
     # Collect all fields to check for inappropriate language
     inputs = {
@@ -300,9 +513,6 @@ def generate_summary(document_context, main_subject, summary_purpose, length_det
     if inappropriate_key:
         return f"This type of language is not allowed in {inappropriate_key}: {inappropriate_value}"
 
-    if not document_content:
-        return "Error: Document is empty or could not be read!"
-
     # Build the prompt with the inputs
     prompt = f"Please summarize the following document content based on the provided instructions:\n\n"
     prompt += f"Document Content: {document_content}\n\n"
@@ -310,20 +520,13 @@ def generate_summary(document_context, main_subject, summary_purpose, length_det
     for key, value in inputs.items():
         prompt += f"- {key}: {value}\n"
 
- 
     if length_detail == 'Brief Summary':
-
         prompt += "Keep it concise, around 150 words."
-
     elif length_detail == 'Standard Summary':
-
         prompt += "Provide a detailed summary, around 300 words."
-
     else:  # In-Depth Summary
-
         prompt += "Offer a comprehensive summary, around 450 words."
- 
-    
+
     prompt += (
         "\n\nPlease ensure the summary is:\n"
         "- Concise and covers all the main points.\n"
@@ -348,6 +551,136 @@ def generate_summary(document_context, main_subject, summary_purpose, length_det
     )
 
     return chat_completion.choices[0].message.content
+
+# from deep_translator import GoogleTranslator
+# from langid import classify
+# from deep_translator import GoogleTranslator
+# import logging
+
+# def generate_summary(document_context, main_subject, summary_purpose, length_detail, important_elements, audience, tone, format, additional_instructions, document_file):
+#     # Define Indian languages mapping
+#     indian_languages = {
+#         "English": "en",
+#         "Hindi": "hi",
+#         "Tamil": "ta",
+#         "Telugu": "te",
+#         "Marathi": "mr",
+#         "Kannada": "kn",
+#         "Bengali": "bn",
+#         "Odia": "or",
+#         "Assamese": "as",
+#         "Punjabi": "pa",
+#         "Malayalam": "ml",
+#         "Gujarati": "gu",
+#         "Urdu": "ur",
+#         "Sanskrit": "sa",
+#         "Nepali": "ne",
+#         "Bodo": "brx",
+#         "Maithili": "mai",
+#         "Sindhi": "sd",
+#         "Kashmiri": "ks",
+#         "Konkani": "kok",
+#         "Dogri": "doi",
+#         "Goan Konkani": "gom",
+#         "Santali": "sat",
+#     }
+
+#     # Extract the document content from the uploaded file
+#     try:
+#         document_content = extract_document_content(document_file)
+#         print(document_content)
+#     except Exception as e:
+#         return f"Error: Could not extract content. Details: {str(e)}"
+
+#     if not document_content:
+#         return "Error: Document is empty or could not be read!"
+
+#     # Count the number of words in the document
+#     word_count = len(document_content.split())
+#     logging.info(f"Word count of document: {word_count}")
+#     if word_count > 2000:
+#         return "Error: Uploaded file too large. Please upload a document with fewer than 2000 words."
+
+#     # Detect the language of the document content
+#     detected_language_code = classify(document_content)[0]
+    
+#     # Get the language name from the dictionary
+#     detected_language_name = next((name for name, code in indian_languages.items() if code == detected_language_code), "Unknown")
+
+#     logging.info(f"Detected language: {detected_language_name} (Code: {detected_language_code})")
+
+#     # Translate document content to English if it is not in English
+#     if detected_language_code != 'en':
+#         try:
+#             # Translate document content to English
+#             document_content = GoogleTranslator(source=detected_language_code, target='en').translate(document_content)
+#             logging.info(f"Translated document content: {document_content[:500]}")  # Log the first 500 characters
+#         except Exception as e:
+#             return f"Error: Could not translate document content. Details: {str(e)}"
+
+#     # Collect all fields
+#     inputs = {
+#         "Document Context": document_context,
+#         "Main Subject": main_subject,
+#         "Summary Purpose": summary_purpose,
+#         "Length Detail": length_detail,
+#         "Important Elements": important_elements,
+#         "Audience": audience,
+#         "Tone": tone,
+#         "Format": format,
+#         "Additional Instructions": additional_instructions
+#     }
+
+#     # Check if any input parameter contains inappropriate words
+#     inappropriate_key = None
+#     inappropriate_value = None
+#     for key, value in inputs.items():
+#         if value and contains_inappropriate_language(value):
+#             inappropriate_key = key
+#             inappropriate_value = value
+#             break
+
+#     if inappropriate_key:
+#         return f"This type of language is not allowed in {inappropriate_key}: {inappropriate_value}"
+
+#     # Build the prompt with the inputs
+#     prompt = f"Please summarize the following document content based on the provided instructions:\n\n"
+#     prompt += f"Document Content: {document_content}\n\n"
+#     prompt += "Summary Instructions:\n"
+#     for key, value in inputs.items():
+#         prompt += f"- {key}: {value}\n"
+
+#     if length_detail == 'Brief Summary':
+#         prompt += "Keep it concise, around 150 words."
+#     elif length_detail == 'Standard Summary':
+#         prompt += "Provide a detailed summary, around 300 words."
+#     else:  # In-Depth Summary
+#         prompt += "Offer a comprehensive summary, around 450 words."
+
+#     prompt += (
+#         "\n\nPlease ensure the summary is:\n"
+#         "- Concise and covers all the main points.\n"
+#         "- Avoids any hallucinations or fabricated information. Use only the provided details.\n"
+#         "- Accurate and factual, maintaining integrity throughout the summary.\n"
+#         "- Free of inappropriate language.\n"
+#         "- Summarize the document content, adding appropriate subheadings where necessary to enhance clarity and organization.\n"
+#         "- In the requested tone and format.\n"
+#         "- Provide a conclusion at the end."
+#     )
+
+#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
+
+#     chat_completion = client.chat.completions.create(
+#         messages=[
+#             {
+#                 "role": "user",
+#                 "content": prompt,
+#             }
+#         ],
+#         model="llama-3.3-70b-versatile",
+#     )
+
+#     return chat_completion.choices[0].message.content
 
 
 # Function to generate content based on provided parameters
@@ -695,8 +1028,8 @@ def bhashini_translate(text: str,  to_code: str = "Hindi", from_code: str = "Eng
 def get_templates():
     return { 
         "default": "media/templates/default_theme_prod.pptx",
-        "t1": "media/templates/artistic_fashion_final.pptx",
-        "t2": "media/templates/blue_cinematography_temp.pptx",
+        "Professional Template 2": "media/templates/universal_blue_theme.pptx",
+        "Professional Template 3": "media/templates/Liquid_void_presentation.pptx",
         "t3": "media/templates/blue_spheres_theme.pptx",
         "t4": "media/templates/futuristic_444.pptx",
         "t5": "media/templates/retro_theme_ppt (1).pptx",
@@ -800,17 +1133,19 @@ def update_presentation_with_generated_content(template_path, output_path, docum
 
 
 
-def generate_blog(title, tone, keywords=None):
+def generate_blog(title, tone, custom_tone, keywords=None):
     # Ensure all fields are checked for inappropriate language
     fields_to_check = [title, keywords]
     if any(contains_inappropriate_language(str(field)) for field in fields_to_check if field is not None):
         return "Error: Input contains inappropriate language."
+    print(keywords)
+    
 
     # Create the prompt for the blog generation
     prompt = (
         f"As a professional blog generator with extensive experience in the field, create a compelling blog post "
         f"with a maximum of {1000} words. The title of the blog is '{title}' and it should be written in a "
-        f"{tone} tone with appropriate side headings."
+        f"{tone} tone with a custom tone of '{custom_tone}' and appropriate side headings."
     )
     prompt += (
         "\n\nMake sure to introduce the topic engagingly and provide valuable insights throughout the blog. "
@@ -839,7 +1174,6 @@ def generate_blog(title, tone, keywords=None):
 
     # Return the generated blog content
     return chat_completion.choices[0].message.content
-
    
 def rephrasely(text_to_rephrase, tone, target_audience, num_words="default"):
     # Ensure input text is checked for inappropriate language

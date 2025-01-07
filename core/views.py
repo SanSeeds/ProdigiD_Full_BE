@@ -2228,17 +2228,10 @@ def email_generator(request):
             logger.warning('No encrypted content found in the request.')
             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
 
-        decrypted_content = decrypt_data(encrypted_content)
-        data = json.loads(decrypted_content)
-        logger.debug(f'Decrypted content: {data}')
+            decrypted_content = decrypt_data(encrypted_content)
+            logger.debug(f'Decrypted content: {decrypted_content}')
+            data = json.loads(decrypted_content)
 
-<<<<<<< HEAD
-        # Define the fields that need language detection and translation
-        fields_to_translate = [
-            'subject', 'contextualBackground', 'additionalDetails',
-            'callToAction', 'closingRemarks'
-        ]
-=======
             # Define the fields that need language detection and translation
             fields_to_check = [
                 'purpose', 'subject', 'to', 'tone', 'contextualBackground', 
@@ -2330,110 +2323,28 @@ def email_generator(request):
             additional_details = data.get('additionalDetails')
             priority_level = data.get('priorityLevel')
             closing_remarks = data.get('closingRemarks')
->>>>>>> 2c66bf8489218c4b0b01dc3400c561b54d1e78d1
 
-        # Define the Indian languages mapping
-        indian_languages = {
-            "English": "en",
-            "Hindi": "hi",
-            "Tamil": "ta",
-            "Telugu": "te",
-            "Marathi": "mr",
-            "Kannada": "kn",
-            "Bengali": "bn",
-            "Odia": "or",
-            "Assamese": "as",
-            "Punjabi": "pa",
-            "Malayalam": "ml",
-            "Gujarati": "gu",
-            "Urdu": "ur",
-            "Sanskrit": "sa",
-            "Nepali": "ne",
-            "Bodo": "brx",
-            "Maithili": "mai",
-            "Sindhi": "sd",
-            "Kashmiri": "ks",
-            "Konkani": "kok",
-            "Dogri": "doi",
-            "Goan Konkani": "gom",
-            "Santali": "sat",
-        }
+            logger.info(f'Generating email with the following data: {data}')
 
-<<<<<<< HEAD
-        # Translate non-English content
-        for field in fields_to_translate:
-            value = data.get(field)
-            if value:
-                try:
-                    # Detect language of the field value
-                    detected_language, confidence = classify(value)
-                    language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
-                    logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
-                    print(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
-                    print(f"Original Value: {value}")
-=======
             generated_content = generate_email(
                 purpose, num_words, subject, rephrase, to, tone, data['keywords'],
                 contextual_background, call_to_action, additional_details,
                 priority_level, closing_remarks
             )
->>>>>>> 2c66bf8489218c4b0b01dc3400c561b54d1e78d1
-
-                    # If detected language is not English, translate
-                    if detected_language != 'en':
-                        print(f"Translating {field} from {language_name} to English.")
-                        translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
-                        print(f"Translated Value for {field}: {translated_text}")
-                        logger.debug(f"Translated {field}: {translated_text}")
-                        data[field] = translated_text
-                    else:
-                        logger.info(f"{field} is already in English. No translation needed.")
-                except Exception as e:
-                    logger.error(f"Error processing field {field}: {str(e)}")
-
-        # Extract fields from the processed data
-        purpose = data.get('purpose', data.get('otherPurpose', ''))
-        num_words = data.get('num_words')
-        subject = data.get('subject')
-        rephrase = data.get('rephraseSubject', False)
-        to = data.get('to')
-        tone = data.get('tone')
-        keywords = data.get('keywords', [])
-        contextual_background = data.get('contextualBackground')
-        call_to_action = data.get('callToAction', data.get('otherCallToAction', ''))
-        additional_details = data.get('additionalDetails')
-        priority_level = data.get('priorityLevel')
-        closing_remarks = data.get('closingRemarks')
-
-<<<<<<< HEAD
-        logger.info('Generating email content.')
-        generated_content = generate_email(
-            purpose, num_words, subject, rephrase, to, tone, keywords,
-            contextual_background, call_to_action, additional_details,
-            priority_level, closing_remarks
-        )
 
         if generated_content:
             encrypted_response = encrypt_data({'generated_content': generated_content})
             logger.info('Email content generated successfully.')
             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
 
-        logger.error('Failed to generate email content.')
-        return JsonResponse({'error': 'Failed to generate email. Please try again.'}, status=500)
+                return JsonResponse({'encrypted_content': encrypted_response})
+            else:
+                logger.error('Failed to generate email content.')
+                return JsonResponse({'error': 'Failed to generate email content.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            logger.error(f'Error processing request: {e}')
+            return JsonResponse({'error': 'An error occurred while processing the request.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    except json.JSONDecodeError:
-        logger.error('Invalid JSON format received.')
-        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-    except ValueError as e:
-        logger.error(f'ValueError: {str(e)}')
-        return JsonResponse({'error': str(e)}, status=400)
-    except Exception as e:
-        logger.error(f'Exception: {str(e)}')
-        return JsonResponse({'error': str(e)}, status=500)
-
-    logger.warning('Method not allowed.')
-    return JsonResponse({'error': 'Method not allowed.'}, status=405)
-=======
 #Encrypted API For Email Service
 # @api_view(['POST'])
 # @permission_classes([IsAuthenticated, HasAPIKey])
@@ -2550,7 +2461,6 @@ def email_generator(request):
 
 #     logger.warning('Method not allowed.')
 #     return JsonResponse({'error': 'Method not allowed.'}, status=405)
->>>>>>> 2c66bf8489218c4b0b01dc3400c561b54d1e78d1
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -3360,14 +3270,6 @@ def offer_letter_generator(request):
 
 <<<<<<< HEAD
 
-# @api_view(['GET', 'POST'])
-# @permission_classes([IsAuthenticated])
-# def profile(request):
-#     user = request.user
-#     profile = Profile.objects.get(user=user)
-#     errors = []
-=======
->>>>>>> 2c66bf8489218c4b0b01dc3400c561b54d1e78d1
 
 
 
@@ -4875,6 +4777,7 @@ def create_presentation_english(request):
 #     return JsonResponse({"error": "Only POST method is allowed."}, status=405)
 
 
+
 #Encrypted API For generate blog Service
 # @api_view(['POST'])
 # @permission_classes([IsAuthenticated])
@@ -5043,11 +4946,7 @@ def generate_blog_view(request):
         }
 
         # Fields that require language detection and potential translation
-<<<<<<< HEAD
-        fields_to_check = ['title', 'tone', 'keywords']
-=======
         fields_to_check = ['title', 'tone', 'keywords', 'customTone']
->>>>>>> 2c66bf8489218c4b0b01dc3400c561b54d1e78d1
 
         # Translate only non-English content
         for field in fields_to_check:
@@ -5090,11 +4989,7 @@ def generate_blog_view(request):
 
         # Call the generate_blog function
         logger.info("Generating blog content...")
-<<<<<<< HEAD
-        blog_content = generate_blog(title, tone, keywords)
-=======
         blog_content = generate_blog(title, tone, custom_tone, keywords)
->>>>>>> 2c66bf8489218c4b0b01dc3400c561b54d1e78d1
 
         if blog_content:
             logger.info("Blog content generated successfully.")

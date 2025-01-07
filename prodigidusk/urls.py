@@ -26,6 +26,7 @@ urlpatterns = [
 
     path('add_user/', views.add_user, name='add_user'),
     path('create_presentation/', views.create_presentation, name='create_presentation'),
+    path('create_presentation_english/', views.create_presentation_english, name='create_presentation_english'),
     path('save_selected_services/', views.save_selected_services, name='save_selected_services'),
     path('get_user_services/<str:email>/', views.get_user_services, name='get_user_services'),
     path('update_services/', views.update_user_services, name='update_user_services'),

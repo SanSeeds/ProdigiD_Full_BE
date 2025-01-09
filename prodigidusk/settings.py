@@ -192,7 +192,7 @@ DRF_API_LOGGER_DATABASE = True  # Default to False
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173", "https://prodigidesk.ai","http://localhost:3000"
+    "http://localhost:5173", "https://prodigidesk.ai","http://localhost:3000", 
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -277,7 +277,7 @@ DATABASES = {
 #         'PORT': '5432',
 #     }
 # }
-# 
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

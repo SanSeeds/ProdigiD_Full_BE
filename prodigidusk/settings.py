@@ -277,7 +277,7 @@ DATABASES = {
 #         'PORT': '5432',
 #     }
 # }
-# 
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

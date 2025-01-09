@@ -2851,7 +2851,7 @@ def offer_letter_generator(request):
 
 
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated, HasAPIKey])
+@permission_classes([IsAuthenticated])
 def profile(request):
     user = request.user
     profile = Profile.objects.get(user=user)

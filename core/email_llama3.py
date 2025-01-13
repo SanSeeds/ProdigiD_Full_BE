@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from django.conf import settings
@@ -458,16 +459,119 @@ indian_languages = {
     "Santali": "sat",
 }
 
-def generate_summary(document_context, main_subject, summary_purpose, length_detail, important_elements, audience, tone, format, additional_instructions, document_file):
-    # Extract the document content from the uploaded file
-    try:
-        document_content = extract_document_content(document_file)
-        print(document_content)
-    except Exception as e:
-        return f"Error: Could not extract content. Details: {str(e)}"
+# def generate_summary(document_context, main_subject, summary_purpose, length_detail, important_elements, audience, tone, format, additional_instructions, document_file):
+#     # Extract the document content from the uploaded file
+#     try:
+#         document_content = extract_document_content(document_file)
+#         print(document_content)
+#     except Exception as e:
+#         return f"Error: Could not extract content. Details: {str(e)}"
 
-    if not document_content:
-        return "Error: Document is empty or could not be read!"
+#     if not document_content:
+#         return "Error: Document is empty or could not be read!"
+
+#     # Detect the language of the document content
+#     detected_lang, _ = langid.classify(document_content)
+    
+#     # Find the language name from the code
+#     detected_language_name = next((name for name, code in indian_languages.items() if code == detected_lang), "Unknown")
+
+#     if detected_language_name != "English":
+#         # Translate the document content to English
+#         translation_result = bhashini_translate(document_content, to_code="English", from_code=detected_language_name)
+#         if translation_result["status_code"] != 200:
+#             return f"Error in translation: {translation_result['message']}"
+#         document_content = translation_result["translated_content"]
+#         print(document_content)
+
+#     # Count the number of words in the document
+#     word_count = len(document_content.split())
+#     if word_count > 20000:
+#         return "Error: Uploaded file too large. Please upload a document with fewer than 20000 words."
+
+#     # Collect all fields to check for inappropriate language
+#     inputs = {
+#         "Document Context": document_context,
+#         "Main Subject": main_subject,
+#         "Summary Purpose": summary_purpose,
+#         "Length Detail": length_detail,
+#         "Important Elements": important_elements,
+#         "Audience": audience,
+#         "Tone": tone,
+#         "Format": format,
+#         "Additional Instructions": additional_instructions
+#     }
+
+#     # Check if any input parameter contains inappropriate words
+#     inappropriate_key = None
+#     inappropriate_value = None
+#     for key, value in inputs.items():
+#         if value and contains_inappropriate_language(value):
+#             inappropriate_key = key
+#             inappropriate_value = value
+#             break
+
+#     if inappropriate_key:
+#         return f"This type of language is not allowed in {inappropriate_key}: {inappropriate_value}"
+
+#     # Build the prompt with the inputs
+#     prompt = f"Please summarize the following document content based on the provided instructions:\n\n"
+#     prompt += f"Document Content: {document_content}\n\n"
+#     prompt += "Summary Instructions:\n"
+#     for key, value in inputs.items():
+#         prompt += f"- {key}: {value}\n"
+
+#     if length_detail == 'Brief Summary':
+#         prompt += "Keep it concise, around 150 words."
+#     elif length_detail == 'Standard Summary':
+#         prompt += "Provide a detailed summary, around 300 words."
+#     else:  # In-Depth Summary
+#         prompt += "Offer a comprehensive summary, around 450 words."
+
+#     prompt += (
+#         "\n\nPlease ensure the summary is:\n"
+#         "- Concise and covers all the main points.\n"
+#         "- Avoids any hallucinations or fabricated information. Use only the provided details.\n"
+#         "- Accurate and factual, maintaining integrity throughout the summary.\n"
+#         "- Free of inappropriate language.\n"
+#         "- Summarize the document content, adding appropriate subheadings where necessary to enhance clarity and organization.\n"
+#         "- In the requested tone and format.\n"
+#         "- Provide a conclusion at the end."
+#     )
+
+#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
+
+#     chat_completion = client.chat.completions.create(
+#         messages=[
+#             {
+#                 "role": "user",
+#                 "content": prompt,
+#             }
+#         ],
+#         model="llama-3.3-70b-versatile",
+#     )
+
+#     return chat_completion.choices[0].message.content
+
+
+def generate_summary(document_context, main_subject, summary_purpose, length_detail, important_elements, audience, tone, format, additional_instructions, document_file=None, text=None):
+    # Check for document content source
+    if document_file:
+        try:
+            # Extract the document content from the uploaded file
+            document_content = extract_document_content(document_file)
+            
+            print(document_content)
+        except Exception as e:
+            return f"Error: Could not extract content from the uploaded document. Details: {str(e)}"
+
+        if not document_content:
+            return "Error: Document is empty or could not be read!"
+    elif text:
+        document_content = text
+        print(f"Using provided text for summarization: {document_content[:100]}...")  # Log only the first 100 characters
+    else:
+        return "Error: No valid document or text content provided for summarization."
 
     # Detect the language of the document content
     detected_lang, _ = langid.classify(document_content)
@@ -481,12 +585,12 @@ def generate_summary(document_context, main_subject, summary_purpose, length_det
         if translation_result["status_code"] != 200:
             return f"Error in translation: {translation_result['message']}"
         document_content = translation_result["translated_content"]
-        print(document_content)
+        print(f"Translated Content: {document_content[:100]}...")  # Log only the first 100 characters
 
     # Count the number of words in the document
     word_count = len(document_content.split())
-    if word_count > 2000:
-        return "Error: Uploaded file too large. Please upload a document with fewer than 2000 words."
+    if word_count > 20000:
+        return "Error: Content too large. Please provide content with fewer than 20,000 words."
 
     # Collect all fields to check for inappropriate language
     inputs = {
@@ -909,127 +1013,12 @@ def bhashini_translate(text: str,  to_code: str = "Hindi", from_code: str = "Eng
     return {"status_code": 200, "message": "Translation successful", "translated_content": translated_content}
 
 
-# def generate_slide_titles(document_content, num_slides, special_instructions, title):
-#     if document_content:
-#         prompt = f"Based on the following document content, generate titles for {num_slides} slides:\n\n{document_content}\n\n"
-#     else:
-#         prompt = f"Based on the title '{title}', generate titles for {num_slides} slides."
-
-#     if special_instructions:
-#         prompt += f" Pay attention to the following points: {special_instructions}. "
-
-#     prompt += (
-#         "Generate a list of titles directly, without introducing them. "
-#         "Each title should be concise, fit within two lines,should not be  less than 3 words and be suitable for a slide"
-#         "Avoid phrases like 'Here is the list of titles' or 'Here are the titles or 'slide number in title'. "
-#         "Ensure the titles are formatted as a Python list with {num_slides} elements, each in quotation marks. "
-#         "Do not generate false or gibberish content."
-#     )
-
-#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-#     chat_completion = client.chat.completions.create(
-#         messages=[{"role": "user", "content": prompt}],
-#         model="llama-3.3-70b-versatile",
-#     )
-#     title_list = chat_completion.choices[0].message.content
-#     return title_list
-
-
-# def generate_slide_content(document_content, title, special_instructions):
-#     if document_content:
-#         prompt = (
-#             f"Based on the following document content, generate 4 concise bullet points for a PPT slide "
-#             f"with the title '{title}':\n\n{document_content}\n\n"
-#         )
-#     else:
-#         prompt = f"Based on the title '{title}', generate 4 concise bullet points for a PPT slide."
-
-#     if special_instructions:
-#         prompt += f" Pay attention to the following points: {special_instructions}. "
-
-#     prompt += (
-#         "Generate bullet points directly, without introducing them with phrases like "
-#         "'Here are the 4 bullet points' or 'Here is the content'. "
-#         "Ensure each bullet point is concise, not exceeding two lines, and stays within 80 characters. "
-#         "Do not include the bullet point symbols, numbers, hyphens, or any introduction to the points. "
-#         "Do not hallucinate or generate false or gibberish content."
-#     )
-
-#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-#     chat_completion = client.chat.completions.create(
-#         messages=[{"role": "user", "content": prompt}],
-#         model="llama-3.3-70b-versatile",
-#     )
-#     slide_content = chat_completion.choices[0].message.content
-#     return slide_content
-
-# def add_slide(prs, title, content, bg_image_path):
-#     slide_layout = prs.slide_layouts[1]
-#     slide = prs.slides.add_slide(slide_layout)
-
-#     title_placeholder = slide.shapes.title
-#     content_placeholder = slide.placeholders[1]
-
-#     title_text_frame = title_placeholder.text_frame
-#     title_font_size = Pt(32)  # Title font size
-#     title_text_frame.clear()  # Clear any existing paragraphs
-
-#     p = title_text_frame.paragraphs[0]
-#     run = p.add_run()
-#     run.text = title.strip()  # No "(contd.)" handling
-#     run.font.size = title_font_size
-#     run.font.bold = True
-#     run.font.color.rgb = RGBColor(0, 51, 102)
-#     p.alignment = PP_ALIGN.CENTER
-
-#     content_text_frame = content_placeholder.text_frame
-#     content_font_size = Pt(24)  # Updated default content font size
-#     content_text_frame.clear()  # Clear any existing paragraphs
-
-#     for point in content:
-#         point = point.lstrip("*•")
-#         p = content_text_frame.add_paragraph()
-#         p.text = point.strip()
-#         p.font.size = content_font_size
-#         p.font.color.rgb = RGBColor(0, 0, 0)
-#         p.alignment = PP_ALIGN.LEFT
-
-#     # Set background image
-#     if bg_image_path is None:
-#         bg_image_path = settings.DEFAULT_BACKGROUND_IMAGE_PATH  # Path to the default background image
-
-#     left = top = Inches(0)
-#     pic = slide.shapes.add_picture(bg_image_path, left, top, width=prs.slide_width, height=prs.slide_height)
-#     slide.shapes._spTree.remove(pic._element)
-#     slide.shapes._spTree.insert(2, pic._element)
-
-# def create_presentation(document_path, title, num_slides, special_instructions, bg_image_path):
-#     # Extract content from the document
-    
-#     document_content=extract_document_content(document_path)
-
-#     prs = Presentation()
-#     slide_titles = generate_slide_titles(document_content, num_slides, special_instructions, title)
-#     slide_titles = slide_titles.replace('[', '').replace(']', '').replace('"', '').split(',')
-
-#     for st in slide_titles:
-        
-#         slide_content = generate_slide_content(document_content, st, special_instructions).replace("*", '').split('\n')
-#         current_content = [point.strip() for point in slide_content if len(point.strip()) > 0]
-
-#         if len(current_content) > 4:
-#             current_content = current_content[:4]  # Limit to only 4 points
-
-#         add_slide(prs, st.strip(), current_content, bg_image_path)
-
-#    # prs.save('SmartOffice_Assistant_Presentation_final.pptx')
-#     return prs
-
 def get_templates():
     return { 
         "default": "media/templates/default_theme_prod.pptx",
         "Professional Template 2": "media/templates/universal_blue_theme.pptx",
         "Professional Template 3": "media/templates/Liquid_void_presentation.pptx",
+        "Professional Template 4": "media/templates/professional_business_theme.pptx",
         "Creative Template 1": "media/templates/artistic_fashion_final.pptx",
         "Creative Template 2": "media/templates/retro_theme.pptx",
         "Creative Template 3": "media/templates/japanese_floral.pptx",
@@ -1038,104 +1027,157 @@ def get_templates():
         "Futuristic Template 2": "media/templates/blue_theme_cinematic.pptx",
         "Futuristic Template 3": "media/templates/futuristic_444.pptx",
         "Futuristic Template 4": "media/templates/3D_float_design_template.pptx",
-        "t3": "media/templates/blue_spheres_theme.pptx",
-        "t5": "media/templates/retro_theme_ppt (1).pptx",
-        "t6": "media/templates/simple_yellow_theme.pptx",
+        "Minimilistic Template 1": "media/templates/minimalist_lilac_theme.pptx",
+        "Minimilistic Template 2": "media/templates/blue_spheres_theme.pptx",
+        "Minimilistic Template 3": "media/templates/pastel_theme_futuristic.pptx",
+        "Minimilistic Template 4": "media/templates/simple_yellow_theme.pptx",
+
     }
 
-# Function to generate slide titles
-def generate_slide_titles(document_content, num_slides, special_instructions, title):
+# # Function to generate slide titles
+# def generate_slide_titles(document_content, num_slides, special_instructions, title):
+#     if document_content:
+#         prompt = f"Based on the following document content, generate titles for {num_slides} slides:\n\n{document_content}\n\n"
+#     else:
+#         prompt = f"Based on the title '{title}', generate titles for {num_slides} slides."
+ 
+#     if special_instructions:
+#         prompt += f" Pay attention to the following points: {special_instructions}. "
+#     prompt += (
+#         "Generate a list of titles directly, without introducing them. "
+#         "Each title should be concise, fit within two lines, should not be less than 3 words and be suitable for a slide. "
+#         "Avoid phrases like 'Here is the list of titles' or 'Here are the titles'. "
+#         "Ensure the titles are formatted as a Python list with {num_slides} elements, each in quotation marks. "
+#         "Do not generate false or gibberish content."
+#     )
+#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
+#     chat_completion = client.chat.completions.create(
+#         messages=[{"role": "user", "content": prompt}],
+#         model="llama-3.3-70b-specdec",
+#     )
+#     title_list = chat_completion.choices[0].message.content
+#     return title_list
+ 
+# # Function to generate slide content
+# def generate_slide_content(document_content, st, special_instructions, topic):
+#     if document_content:
+#         prompt = f"Based on the following document content, generate content for a PPT slide with the title '{st}' and topic '{topic}':\n\n{document_content}\n\n"
+#     else:
+#         prompt = f"Based on the topic '{topic}', generate content for a PPT slide with the title '{st}' and topic '{topic}':"
+
+#     if special_instructions:
+#         prompt += f" Pay attention to the following points: {special_instructions}. "
+#     prompt += (
+#         "Do not introduce the content with phrases like "
+#         "'Here are the 4 bullet points' or 'Here is the content'. "
+#         "Ensure content stays within 500 characters and is in the form of 4 different points. "
+#         "Ensure each point has around 10 words minimum and 15 words maximum. "
+#         "Do not include the bullet point symbols, numbers, or hyphens. "
+#         "Do not hallucinate or generate false or gibberish content."
+#     )
+#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
+#     chat_completion = client.chat.completions.create(
+#         messages=[{"role": "user", "content": prompt}],
+#         model="llama-3.3-70b-specdec",
+#     )
+#     slide_content = chat_completion.choices[0].message.content
+#     return slide_content 
+
+
+
+def generate_presentation_content(document_content, num_slides, special_instructions, title):
+    """
+    Generate all slide content in JSON format in a single API call.
+    """
+    client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
+ 
+    # Prepare the prompt
     if document_content:
-        prompt = f"Based on the following document content, generate titles for {num_slides} slides:\n\n{document_content}\n\n"
+        prompt = (
+            f"Based on the following document content  generate {num_slides} slide titles and their corresponding content:\n\n"
+            f"{document_content}\n\n"
+        )
     else:
-        prompt = f"Based on the title '{title}', generate titles for {num_slides} slides."
+        prompt = f"Based on the title '{title}', generate {num_slides} slide titles and their corresponding content.\n"
+ 
  
     if special_instructions:
         prompt += f" Pay attention to the following points: {special_instructions}. "
-    prompt += (
-        "Generate a list of titles directly, without introducing them. "
-        "Each title should be concise, fit within two lines, should not be less than 3 words and be suitable for a slide. "
-        "Avoid phrases like 'Here is the list of titles' or 'Here are the titles'. "
-        "Ensure the titles are formatted as a Python list with {num_slides} elements, each in quotation marks. "
-        "Do not generate false or gibberish content."
-    )
-    client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-    chat_completion = client.chat.completions.create(
-        messages=[{"role": "user", "content": prompt}],
-        model="llama-3.3-70b-specdec",
-    )
-    title_list = chat_completion.choices[0].message.content
-    return title_list
  
-# Function to generate slide content
-def generate_slide_content(document_content, st, special_instructions, topic):
-    if document_content:
-        prompt = f"Based on the following document content, generate content for a PPT slide with the title '{st}' and topic '{topic}':\n\n{document_content}\n\n"
-    else:
-        prompt = f"Based on the topic '{topic}', generate content for a PPT slide with the title '{st}' and topic '{topic}':"
-
-    if special_instructions:
-        prompt += f" Pay attention to the following points: {special_instructions}. "
     prompt += (
-        "Do not introduce the content with phrases like "
-        "'Here are the 4 bullet points' or 'Here is the content'. "
-        "Ensure content stays within 500 characters and is in the form of 4 different points. "
-        "Ensure each point has around 10 words minimum and 15 words maximum. "
-        "Do not include the bullet point symbols, numbers, or hyphens. "
-        "Do not hallucinate or generate false or gibberish content."
+        "Generate a JSON array of slide objects. "
+        "Each object should have the keys 'title' and 'content'. "
+        f"Constraint: Exactly {num_slides} slides objects should be generated always. "
+        "The 'title' value must be a concise string, suitable for a slide title. "
+        "The 'content' value must be a JSON array containing exactly four strings. "
+        "Each string in the 'content' array must be a detailed point, between 15 and 20 words, suitable for a slide bullet point. "
+        "Ensure that the content is professional, detailed, and not repetitive or gibberish. "
+        "Avoid generating nested JSON structures. "
+        "Do not include any additional text or explanations before and outside the JSON structure."
+        "Do not include any additional text or explanations before and outside the array structure."
+
     )
-    client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
+    print("This is the prompt")
+    # Fetch response from Groq API
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
-        model="llama-3.3-70b-specdec",
+        model="llama-3.3-70b-versatile", # Use specdec for better json formatting
     )
-    slide_content = chat_completion.choices[0].message.content
-    return slide_content 
+    print("This is the chat completion",chat_completion)
+    generated_content = chat_completion.choices[0].message.content
+    print("This is the generated content",generated_content)
+ 
+ 
+    # Parse the JSON response
+    try:
+        slides_data = json.loads(generated_content)
+        if not isinstance(slides_data, list):
+            raise ValueError("Output is not a list of dictionaries")
+        print(slides_data)
+        return slides_data
+    except json.JSONDecodeError as e:
+         print(f"Failed to parse Groq response as JSON: {e}")
+         print(f"Generated content: {generated_content}")
+         raise ValueError(f"Failed to parse Groq response as JSON: {e}")
 
-def update_presentation_with_generated_content(template_path, output_path, document_content, title, num_slides, special_instructions):
+
+
+def update_presentation_with_generated_content(template_path, output_path,document_content,title,num_slides,special_instructions):
+    """
+    Update the PowerPoint presentation with the generated titles and content.
+    """
     presentation = Presentation(template_path)
-
-    # Generate slide titles
-    titles = generate_slide_titles(document_content, num_slides, special_instructions, title)
-    titles = titles.replace('[', '').replace(']', '').replace('"', '').split(',')
-
-    # Generate slide contents
-    content = {}
-    for idx, slide_title in enumerate(titles):
-        slide_content = generate_slide_content(document_content, slide_title.strip(), special_instructions, title)
-        content_points = [point.strip() for point in slide_content.split('\n') if len(point.strip()) > 0]
-        content[idx + 1] = '\n'.join(content_points[:4])  # Limit to 4 points
-
-    # Update presentation slides
-    for slide_index, text in enumerate(titles):
-        if slide_index < len(presentation.slides) - 1:  # Exclude the last slide (e.g., "Thank You")
+ 
+    slides_data = generate_presentation_content(
+    document_content,num_slides,special_instructions,title)
+ 
+    # Update slides with titles and content
+    for slide_index, slide_data in enumerate(slides_data):
+        if slide_index < len(presentation.slides) - 1:  # Exclude the last slide (e.g., "Thank You" slide)
             slide = presentation.slides[slide_index]
             i = 0
             for shape in slide.shapes:
                 if shape.has_text_frame:
                     if i == 0:  # Title area
-                        if slide_index == 0:  # First slide uses the main title
-                            shape.text_frame.clear()
-                            shape.text_frame.text = title
-                        else:
-                            shape.text_frame.clear()
-                            shape.text_frame.text = text.strip()
-                    elif i == 1: 
-                         # Content area
                         shape.text_frame.clear()
-                        if slide_index + 1 in content:
-                            shape.text_frame.text = content[slide_index + 1]
+                        if slide_index == 0:  # Use user-entered title for first slide
+                            shape.text_frame.text = title
+                        else:  # Use AI-generated title for the rest
+                            shape.text_frame.text = slide_data['title']
+                    elif i == 1:  # Content area
+                        shape.text_frame.clear()
+                        shape.text_frame.text = '\n'.join(slide_data['content'])
                     i += 1
-
-    # Remove extra slides, preserving the last slide ("Thank You")
-    while len(presentation.slides) > len(titles) + 1:
+ 
+    # Remove extra slides, but preserve the last slide ("Thank You")
+    while len(presentation.slides) > len(slides_data) + 1:
         slide_id = presentation.slides._sldIdLst[-2]  # Get the second-to-last slide ID
-        presentation.slides._sldIdLst.remove(slide_id)  # Remove it
-
+        presentation.slides._sldIdLst.remove(slide_id)  # Remove it from the slide list
+ 
     # Save the updated presentation
-   # presentation.save(output_path)
+    presentation.save(output_path)
     print(f"Presentation saved as '{output_path}'")
-    return presentation 
+    return presentation
 
 
 

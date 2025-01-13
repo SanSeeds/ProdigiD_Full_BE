@@ -1,6 +1,8 @@
 import json
 import logging
 import os
+import random
+from PIL import Image
 from django.conf import settings
 from groq import Groq
 import requests
@@ -46,7 +48,9 @@ def sanitize_input(input_str):
 MAX_SENTENCES_PER_CHUNK = 30  # Number of sentences to process in a single chunk
 MAX_WORKERS = 50  # Number of threads for concurrent processing
 RETRY_LIMIT = 1000  # Maximum retries for translation API
-
+PEXELS_API_KEY = "iqy3drEfoM2c89oQV0MnN4g7OnXjrrJ0femqQmZu2r0OsXvvNr8s9hFl"
+PEXELS_BASE_URL = "https://api.pexels.com/v1/search"
+ 
 # Function to translate a single sentence
 def bhashini_translate_formatted(sentence, to_code, from_code="English"):
     lang_dict = {
@@ -656,136 +660,6 @@ def generate_summary(document_context, main_subject, summary_purpose, length_det
 
     return chat_completion.choices[0].message.content
 
-# from deep_translator import GoogleTranslator
-# from langid import classify
-# from deep_translator import GoogleTranslator
-# import logging
-
-# def generate_summary(document_context, main_subject, summary_purpose, length_detail, important_elements, audience, tone, format, additional_instructions, document_file):
-#     # Define Indian languages mapping
-#     indian_languages = {
-#         "English": "en",
-#         "Hindi": "hi",
-#         "Tamil": "ta",
-#         "Telugu": "te",
-#         "Marathi": "mr",
-#         "Kannada": "kn",
-#         "Bengali": "bn",
-#         "Odia": "or",
-#         "Assamese": "as",
-#         "Punjabi": "pa",
-#         "Malayalam": "ml",
-#         "Gujarati": "gu",
-#         "Urdu": "ur",
-#         "Sanskrit": "sa",
-#         "Nepali": "ne",
-#         "Bodo": "brx",
-#         "Maithili": "mai",
-#         "Sindhi": "sd",
-#         "Kashmiri": "ks",
-#         "Konkani": "kok",
-#         "Dogri": "doi",
-#         "Goan Konkani": "gom",
-#         "Santali": "sat",
-#     }
-
-#     # Extract the document content from the uploaded file
-#     try:
-#         document_content = extract_document_content(document_file)
-#         print(document_content)
-#     except Exception as e:
-#         return f"Error: Could not extract content. Details: {str(e)}"
-
-#     if not document_content:
-#         return "Error: Document is empty or could not be read!"
-
-#     # Count the number of words in the document
-#     word_count = len(document_content.split())
-#     logging.info(f"Word count of document: {word_count}")
-#     if word_count > 2000:
-#         return "Error: Uploaded file too large. Please upload a document with fewer than 2000 words."
-
-#     # Detect the language of the document content
-#     detected_language_code = classify(document_content)[0]
-    
-#     # Get the language name from the dictionary
-#     detected_language_name = next((name for name, code in indian_languages.items() if code == detected_language_code), "Unknown")
-
-#     logging.info(f"Detected language: {detected_language_name} (Code: {detected_language_code})")
-
-#     # Translate document content to English if it is not in English
-#     if detected_language_code != 'en':
-#         try:
-#             # Translate document content to English
-#             document_content = GoogleTranslator(source=detected_language_code, target='en').translate(document_content)
-#             logging.info(f"Translated document content: {document_content[:500]}")  # Log the first 500 characters
-#         except Exception as e:
-#             return f"Error: Could not translate document content. Details: {str(e)}"
-
-#     # Collect all fields
-#     inputs = {
-#         "Document Context": document_context,
-#         "Main Subject": main_subject,
-#         "Summary Purpose": summary_purpose,
-#         "Length Detail": length_detail,
-#         "Important Elements": important_elements,
-#         "Audience": audience,
-#         "Tone": tone,
-#         "Format": format,
-#         "Additional Instructions": additional_instructions
-#     }
-
-#     # Check if any input parameter contains inappropriate words
-#     inappropriate_key = None
-#     inappropriate_value = None
-#     for key, value in inputs.items():
-#         if value and contains_inappropriate_language(value):
-#             inappropriate_key = key
-#             inappropriate_value = value
-#             break
-
-#     if inappropriate_key:
-#         return f"This type of language is not allowed in {inappropriate_key}: {inappropriate_value}"
-
-#     # Build the prompt with the inputs
-#     prompt = f"Please summarize the following document content based on the provided instructions:\n\n"
-#     prompt += f"Document Content: {document_content}\n\n"
-#     prompt += "Summary Instructions:\n"
-#     for key, value in inputs.items():
-#         prompt += f"- {key}: {value}\n"
-
-#     if length_detail == 'Brief Summary':
-#         prompt += "Keep it concise, around 150 words."
-#     elif length_detail == 'Standard Summary':
-#         prompt += "Provide a detailed summary, around 300 words."
-#     else:  # In-Depth Summary
-#         prompt += "Offer a comprehensive summary, around 450 words."
-
-#     prompt += (
-#         "\n\nPlease ensure the summary is:\n"
-#         "- Concise and covers all the main points.\n"
-#         "- Avoids any hallucinations or fabricated information. Use only the provided details.\n"
-#         "- Accurate and factual, maintaining integrity throughout the summary.\n"
-#         "- Free of inappropriate language.\n"
-#         "- Summarize the document content, adding appropriate subheadings where necessary to enhance clarity and organization.\n"
-#         "- In the requested tone and format.\n"
-#         "- Provide a conclusion at the end."
-#     )
-
-#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-
-#     chat_completion = client.chat.completions.create(
-#         messages=[
-#             {
-#                 "role": "user",
-#                 "content": prompt,
-#             }
-#         ],
-#         model="llama-3.3-70b-versatile",
-#     )
-
-#     return chat_completion.choices[0].message.content
-
 
 # Function to generate content based on provided parameters
 def generate_content(company_info, content_purpose, desired_action, topic_details, keywords, audience_profile, format_structure, num_words, seo_keywords, references):
@@ -1034,57 +908,6 @@ def get_templates():
 
     }
 
-# # Function to generate slide titles
-# def generate_slide_titles(document_content, num_slides, special_instructions, title):
-#     if document_content:
-#         prompt = f"Based on the following document content, generate titles for {num_slides} slides:\n\n{document_content}\n\n"
-#     else:
-#         prompt = f"Based on the title '{title}', generate titles for {num_slides} slides."
- 
-#     if special_instructions:
-#         prompt += f" Pay attention to the following points: {special_instructions}. "
-#     prompt += (
-#         "Generate a list of titles directly, without introducing them. "
-#         "Each title should be concise, fit within two lines, should not be less than 3 words and be suitable for a slide. "
-#         "Avoid phrases like 'Here is the list of titles' or 'Here are the titles'. "
-#         "Ensure the titles are formatted as a Python list with {num_slides} elements, each in quotation marks. "
-#         "Do not generate false or gibberish content."
-#     )
-#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-#     chat_completion = client.chat.completions.create(
-#         messages=[{"role": "user", "content": prompt}],
-#         model="llama-3.3-70b-specdec",
-#     )
-#     title_list = chat_completion.choices[0].message.content
-#     return title_list
- 
-# # Function to generate slide content
-# def generate_slide_content(document_content, st, special_instructions, topic):
-#     if document_content:
-#         prompt = f"Based on the following document content, generate content for a PPT slide with the title '{st}' and topic '{topic}':\n\n{document_content}\n\n"
-#     else:
-#         prompt = f"Based on the topic '{topic}', generate content for a PPT slide with the title '{st}' and topic '{topic}':"
-
-#     if special_instructions:
-#         prompt += f" Pay attention to the following points: {special_instructions}. "
-#     prompt += (
-#         "Do not introduce the content with phrases like "
-#         "'Here are the 4 bullet points' or 'Here is the content'. "
-#         "Ensure content stays within 500 characters and is in the form of 4 different points. "
-#         "Ensure each point has around 10 words minimum and 15 words maximum. "
-#         "Do not include the bullet point symbols, numbers, or hyphens. "
-#         "Do not hallucinate or generate false or gibberish content."
-#     )
-#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-#     chat_completion = client.chat.completions.create(
-#         messages=[{"role": "user", "content": prompt}],
-#         model="llama-3.3-70b-specdec",
-#     )
-#     slide_content = chat_completion.choices[0].message.content
-#     return slide_content 
-
-
-
 def generate_presentation_content(document_content, num_slides, special_instructions, title):
     """
     Generate all slide content in JSON format in a single API call.
@@ -1179,51 +1002,81 @@ def update_presentation_with_generated_content(template_path, output_path,docume
     print(f"Presentation saved as '{output_path}'")
     return presentation
 
-
-
+def fetch_single_image(query, width, height): # Adjusted dimensions here
+    headers = {"Authorization": PEXELS_API_KEY}
+    params = {"query": query, "per_page": 5}  # Request up to 5 images
+    print("Code entered")
+    response = requests.get(PEXELS_BASE_URL, headers=headers, params=params)
+    print("response is",response)
+    if response.status_code == 200:
+        data = response.json()
+        photos = data.get("photos", [])
+        if photos:
+            # Choose a random photo from the top 5
+            random_photo = random.choice(photos)  
+            print("Random photo is",random_photo)
+            # Fetch the original URL and resize it using Pexels parameters
+            original_url = random_photo['src']['landscape'] # or 'large2x', 'large', 'medium', 'small', etc.
+            resized_url = f"{original_url}?auto=compress&cs=tinysrgb&h={height}&w={width}"
+            return Image(url=resized_url)
+        else:
+            print("No images found for the given query.")
+            return None
+    else:
+        print(f"Error: {response.status_code} - {response.text}")
+        return None
 
 def generate_blog(title, tone, custom_tone, keywords=None):
     # Ensure all fields are checked for inappropriate language
     fields_to_check = [title, keywords]
     if any(contains_inappropriate_language(str(field)) for field in fields_to_check if field is not None):
         return "Error: Input contains inappropriate language."
-    print(keywords)
     
 
-    # Create the prompt for the blog generation
+
     prompt = (
-        f"As a professional blog generator with extensive experience in the field, create a compelling blog post "
-        f"with a maximum of {1000} words. The title of the blog is '{title}' and it should be written in a "
-        f"{tone} tone with a custom tone of '{custom_tone}' and appropriate side headings."
-    )
-    prompt += (
-        "\n\nMake sure to introduce the topic engagingly and provide valuable insights throughout the blog. "
-        "Include relevant examples or case studies to illustrate key points."
-    )
-
-    if keywords:
-        prompt += (
-            f"\n\nIncorporate the following keywords: {', '.join(keywords)}. Ensure that the keywords are naturally "
-            "integrated into the content to enhance readability and SEO."
+        f"I want you to craft a professional, engaging, and commercially valuable blog. Use the following details provided by the user to craft a well-structured and impactful blog:\n\n"
+        f"1. **Title**: {title}\n"
+        f"2. **Keywords**: {', '.join(keywords) if keywords else 'N/A'}\n"
+        f"3. **Tone**: {tone} (custom tone: {custom_tone})\n\n"
+        f"**Instructions:**\n"
+        f"- Start with an attention-grabbing introduction that hooks the reader and clearly outlines the topic and its relevance.\n"
+        f"- Organize the content into clear sections with subheadings for readability.\n"
+        f"- Incorporate the provided keywords naturally throughout the blog to enhance SEO without making it feel forced.\n"
+        f"- Ensure each section provides valuable insights, actionable advice, or unique perspectives that align with the title.\n"
+        f"- Use persuasive language, real-world examples, and credible data where appropriate to enhance the content's appeal and trustworthiness.\n"
+        f"- Conclude with a thought-provoking summary or call to action that encourages further engagement (e.g., sharing the blog, visiting a website, or purchasing a product).\n"
+        f"- Maintain a tone that matches the provided tone style, keeping the target audience in mind.\n\n"
+        f"The blog should be comprehensive, well-researched, and between 800-1200 words to maximize its impact and commercial value."
         )
-
-    prompt += (
-        "\n\nConclude the blog with a strong closing statement that summarizes the key points."
-      #  "\n\nAlso, include a call-to-action or thought-provoking idea to engage the reader."
-        "\n\nEnsure that the content is informative, easy to understand, and engaging. Avoid jargon and ensure that "
-        "the blog flows logically from one section to the next."
-    )
-
+    
     # Call the Groq API to generate the blog
     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
+
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
         model="llama-3.3-70b-versatile",
+        temperature=0.8
     )
+    
 
+    image_query = f"{title} {' '.join(keywords) if keywords else ''}"
+    
+    # Fetch an image based on the title and keywords
+    image = fetch_single_image(image_query, 900, 500)
+    print("The image is generated:", image)
+    
+
+    if not image:
+        return "Error: Failed to fetch an image for the blog."
+    
     # Return the generated blog content
-    return chat_completion.choices[0].message.content
-   
+    # return chat_completion.choices[0].message.content
+    return chat_completion.choices[0].message.content, image
+
+ 
+
+
 def rephrasely(text_to_rephrase, tone, target_audience, num_words="default"):
     # Ensure input text is checked for inappropriate language
     if contains_inappropriate_language(text_to_rephrase):

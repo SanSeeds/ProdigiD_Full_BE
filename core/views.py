@@ -2157,6 +2157,64 @@ def reset_password(request):
 
 
 #Encrypted API For Email Service
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated, HasAPIKey])
+# def email_generator(request):
+#     if request.method == 'POST':
+#         try:
+#             # Extract and decrypt the incoming payload
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             logger.debug(f'Encrypted content received: {encrypted_content}')
+
+#             if not encrypted_content:
+#                 logger.warning('No encrypted content found in the request.')
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=status.HTTP_400_BAD_REQUEST)
+
+#             decrypted_content = decrypt_data(encrypted_content)
+#             logger.debug(f'Decrypted content: {decrypted_content}')
+#             data = json.loads(decrypted_content)
+
+#             # Extract data from the decrypted content
+#             purpose = data.get('purpose')
+#             if purpose == 'Other':
+#                 purpose = data.get('otherPurpose')
+#             num_words = data.get('num_words')
+#             subject = data.get('subject')
+#             rephrase = data.get('rephraseSubject', False)
+#             to = data.get('to')
+#             tone = data.get('tone')
+#             keywords = data.get('keywords', [])
+#             contextual_background = data.get('contextualBackground')
+#             call_to_action = data.get('callToAction')
+#             if call_to_action == 'Other':
+#                 call_to_action = data.get('otherCallToAction')
+#             additional_details = data.get('additionalDetails')
+#             priority_level = data.get('priorityLevel')
+#             closing_remarks = data.get('closingRemarks')
+
+#             logger.info(f'Generating email with the following data: {data}')
+
+#             generated_content = generate_email(
+#                 purpose, num_words, subject, rephrase, to, tone, keywords,
+#                 contextual_background, call_to_action, additional_details,
+#                 priority_level, closing_remarks
+#             )
+
+#             if generated_content:
+#                 logger.info('Email content generated successfully.')
+#                 # Encrypt the response content
+#                 encrypted_response = encrypt_data({'generated_content': generated_content})
+#                 logger.debug(f'Encrypted response: {encrypted_response}')
+
+#                 return JsonResponse({'encrypted_content': encrypted_response})
+#             else:
+#                 logger.error('Failed to generate email content.')
+#                 return JsonResponse({'error': 'Failed to generate email content.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#         except Exception as e:
+#             logger.error(f'Error processing request: {e}')
+#             return JsonResponse({'error': 'An error occurred while processing the request.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def email_generator(request):
@@ -2174,7 +2232,82 @@ def email_generator(request):
             logger.debug(f'Decrypted content: {decrypted_content}')
             data = json.loads(decrypted_content)
 
-            # Extract data from the decrypted content
+            # Define the fields that need language detection and translation
+            fields_to_check = [
+                'purpose', 'subject', 'to', 'tone', 'contextualBackground', 
+                'callToAction', 'additionalDetails', 'priorityLevel', 'closingRemarks'
+            ]
+
+            # Define the Indian languages mapping
+            indian_languages = {
+                "English": "en",
+                "Hindi": "hi",
+                "Tamil": "ta",
+                "Telugu": "te",
+                "Marathi": "mr",
+                "Kannada": "kn",
+                "Bengali": "bn",
+                "Odia": "or",
+                "Assamese": "as",
+                "Punjabi": "pa",
+                "Malayalam": "ml",
+                "Gujarati": "gu",
+                "Urdu": "ur",
+                "Sanskrit": "sa",
+                "Nepali": "ne",
+                "Bodo": "brx",
+                "Maithili": "mai",
+                "Sindhi": "sd",
+                "Kashmiri": "ks",
+                "Konkani": "kok",
+                "Dogri": "doi",
+                "Goan Konkani": "gom",
+                "Santali": "sat",
+            }
+
+            # Translate non-English content, including keywords
+            for field in fields_to_check:
+                value = data.get(field)
+                if value:
+                    try:
+                        # Detect language of the field value
+                        detected_language, confidence = classify(value)
+                        language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+                        logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+
+                        # If detected language is not English, translate
+                        if detected_language != 'en':
+                            logger.info(f"Translating {field} from {language_name} to English.")
+                            translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
+                            logger.debug(f"Translated {field}: {translated_text}")
+                            data[field] = translated_text
+                        else:
+                            logger.info(f"{field} is already in English. No translation needed.")
+                    except Exception as e:
+                        logger.error(f"Error processing field {field}: {str(e)}")
+
+            # Translate keywords
+            keywords = data.get('keywords', [])
+            translated_keywords = []
+            for keyword in keywords:
+                try:
+                    detected_language, confidence = classify(keyword)
+                    language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+                    logger.info(f"Keyword: {keyword} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+
+                    if detected_language != 'en':
+                        logger.info(f"Translating keyword from {language_name} to English.")
+                        translated_keyword = GoogleTranslator(source=detected_language, target='en').translate(keyword)
+                        logger.debug(f"Translated keyword: {translated_keyword}")
+                        translated_keywords.append(translated_keyword)
+                    else:
+                        translated_keywords.append(keyword)
+                except Exception as e:
+                    logger.error(f"Error translating keyword {keyword}: {str(e)}")
+                    translated_keywords.append(keyword)
+            data['keywords'] = translated_keywords
+
+            # Extract data from the processed content
             purpose = data.get('purpose')
             if purpose == 'Other':
                 purpose = data.get('otherPurpose')
@@ -2183,7 +2316,6 @@ def email_generator(request):
             rephrase = data.get('rephraseSubject', False)
             to = data.get('to')
             tone = data.get('tone')
-            keywords = data.get('keywords', [])
             contextual_background = data.get('contextualBackground')
             call_to_action = data.get('callToAction')
             if call_to_action == 'Other':
@@ -2195,7 +2327,7 @@ def email_generator(request):
             logger.info(f'Generating email with the following data: {data}')
 
             generated_content = generate_email(
-                purpose, num_words, subject, rephrase, to, tone, keywords,
+                purpose, num_words, subject, rephrase, to, tone, data['keywords'],
                 contextual_background, call_to_action, additional_details,
                 priority_level, closing_remarks
             )
@@ -2214,7 +2346,122 @@ def email_generator(request):
             logger.error(f'Error processing request: {e}')
             return JsonResponse({'error': 'An error occurred while processing the request.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+#Encrypted API For Email Service
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated, HasAPIKey])
+# def email_generator(request):
+#     try:
+#         # Load and decode the request body
+#         body = request.body.decode('utf-8')
+#         logger.debug(f"Request body received: {body}")
 
+#         encrypted_content = json.loads(body).get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning('No encrypted content found in the request.')
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         decrypted_content = decrypt_data(encrypted_content)
+#         data = json.loads(decrypted_content)
+#         logger.debug(f'Decrypted content: {data}')
+
+#         # Define the fields that need language detection and translation
+#         fields_to_translate = [
+#             'purpose','subject', 'contextualBackground', 'additionalDetails', 'otherPurpose', 
+#             'callToAction', 'closingRemarks', 'to', 'tone' , 'keywords', 'otherCallToAction'
+#         ]
+
+#         # Define the Indian languages mapping
+#         indian_languages = {
+#             "English": "en",
+#             "Hindi": "hi",
+#             "Tamil": "ta",
+#             "Telugu": "te",
+#             "Marathi": "mr",
+#             "Kannada": "kn",
+#             "Bengali": "bn",
+#             "Odia": "or",
+#             "Assamese": "as",
+#             "Punjabi": "pa",
+#             "Malayalam": "ml",
+#             "Gujarati": "gu",
+#             "Urdu": "ur",
+#             "Sanskrit": "sa",
+#             "Nepali": "ne",
+#             "Bodo": "brx",
+#             "Maithili": "mai",
+#             "Sindhi": "sd",
+#             "Kashmiri": "ks",
+#             "Konkani": "kok",
+#             "Dogri": "doi",
+#             "Goan Konkani": "gom",
+#             "Santali": "sat",
+#         }
+
+#         # Translate non-English content
+#         for field in fields_to_translate:
+#             value = data.get(field)
+#             if value:
+#                 try:
+#                     # Detect language of the field value
+#                     detected_language, confidence = classify(value)
+#                     language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+#                     logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+#                     print(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+#                     print(f"Original Value: {value}")
+
+#                     # If detected language is not English, translate
+#                     if detected_language != 'en':
+#                         print(f"Translating {field} from {language_name} to English.")
+#                         translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
+#                         print(f"Translated Value for {field}: {translated_text}")
+#                         logger.debug(f"Translated {field}: {translated_text}")
+#                         data[field] = translated_text
+#                     else:
+#                         logger.info(f"{field} is already in English. No translation needed.")
+#                 except Exception as e:
+#                     logger.error(f"Error processing field {field}: {str(e)}")
+
+#         # Extract fields from the processed data
+#         purpose = data.get('purpose', data.get('otherPurpose', ''))
+#         num_words = data.get('num_words')
+#         subject = data.get('subject')
+#         rephrase = data.get('rephraseSubject', False)
+#         to = data.get('to')
+#         tone = data.get('tone')
+#         keywords = data.get('keywords', [])
+#         contextual_background = data.get('contextualBackground')
+#         call_to_action = data.get('callToAction', data.get('otherCallToAction', ''))
+#         additional_details = data.get('additionalDetails')
+#         priority_level = data.get('priorityLevel')
+#         closing_remarks = data.get('closingRemarks')
+
+#         logger.info('Generating email content.')
+#         generated_content = generate_email(
+#             purpose, num_words, subject, rephrase, to, tone, keywords,
+#             contextual_background, call_to_action, additional_details,
+#             priority_level, closing_remarks
+#         )
+
+#         if generated_content:
+#             encrypted_response = encrypt_data({'generated_content': generated_content})
+#             logger.info('Email content generated successfully.')
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+#         logger.error('Failed to generate email content.')
+#         return JsonResponse({'error': 'Failed to generate email. Please try again.'}, status=500)
+
+#     except json.JSONDecodeError:
+#         logger.error('Invalid JSON format received.')
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         logger.error(f'ValueError: {str(e)}')
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f'Exception: {str(e)}')
+#         return JsonResponse({'error': str(e)}, status=500)
+
+#     logger.warning('Method not allowed.')
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -2359,190 +2606,6 @@ def translate_content_google(request):
     logger.error('Method not allowed.')
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
-
-# @csrf_exempt
-# @api_view(['POST'])
-# @permission_classes([])
-# def translate_content_google(request):
-#     translated_content = None
-#     language_name = ""
-
-#     if request.method == 'POST':
-#         try:
-#             # Extract the incoming payload
-#             data = json.loads(request.body.decode('utf-8'))
-#             logger.debug(f'Received data: {data}')
-
-#             generated_content = data.get('generated_content')
-#             language_name = data.get('language')
-
-#             if not generated_content or not language_name:
-#                 logger.warning('Both generated_content and language are required fields.')
-#                 return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
-
-#             # Validate the language
-#             if language_name not in SUPPORTED_LANGUAGES:
-#                 logger.warning(f'Unsupported language requested: {language_name}')
-#                 return JsonResponse({'error': f'Unsupported language. Supported languages are: {list(SUPPORTED_LANGUAGES.keys())}'}, status=400)
-
-#             # Get the corresponding language code
-#             language_code = SUPPORTED_LANGUAGES[language_name]
-#             logger.info(f'Translating content: {generated_content} to language: {language_name} ({language_code})')
-
-#             # Use deep_translator's GoogleTranslator for translation
-#             translated_content = GoogleTranslator(source='auto', target=language_code).translate(generated_content)
-#             logger.info(f'Content translated successfully: {translated_content}')  # Log the translated content
-#             print("Translated text is:", translated_content)
-
-#             return JsonResponse({
-#                 'generated_content': generated_content,
-#                 'translated_content': translated_content,
-#                 'selected_language': language_name
-#             }, status=200)
-
-#         except json.JSONDecodeError:
-#             logger.error('Invalid JSON format in request.')
-#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-#         except ValueError as e:
-#             logger.warning(f'ValueError: {str(e)}')
-#             return JsonResponse({'error': str(e)}, status=400)
-#         except Exception as e:
-#             logger.error(f'Unexpected error: {str(e)}')
-#             return JsonResponse({'error': str(e)}, status=500)
-
-#     logger.error('Method not allowed.')
-#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
-
-
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def translate_content_formatted(request):
-#     if request.method != 'POST':
-#         return JsonResponse({'error': 'Method not allowed.'}, status=405)
-
-#     try:
-#         # Extract and decrypt the incoming payload
-#         encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#         if not encrypted_content:
-#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#         decrypted_content = decrypt_data(encrypted_content)
-#         data = json.loads(decrypted_content)
-        
-#         generated_content = data.get('generated_content')
-#         language = data.get('language')
-
-#         if not generated_content or not language:
-#             return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
-
-#         # Split content into paragraphs or lines
-#         paragraphs = generated_content.split('\n\n')
-#         translated_paragraphs = []
-
-#         # Translate each paragraph synchronously
-#         for paragraph in paragraphs:
-#             response = bhashini_translate(paragraph, language)
-#             if response["status_code"] == 200:
-#                 translated_paragraphs.append(response["translated_content"])
-#             else:
-#                 return JsonResponse({'error': 'Translation failed with status code: {}'.format(response["status_code"])}, status=500)
-
-#         # Join translated paragraphs back
-#         translated_content = '\n\n'.join(translated_paragraphs)
-
-#         # Log the translated content for debugging
-#         logger.info(f'Translated content: {translated_content}')  # Log the translated content
-
-#         # Ensure translated content is properly encoded
-#         translated_content = translated_content.encode('utf-8').decode('utf-8')
-
-#         # Encrypt the response content
-#         encrypted_response = encrypt_data({
-#             'generated_content': generated_content,
-#             'translated_content': translated_content,
-#             'selected_language': language
-#         })
-
-#         return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#     except json.JSONDecodeError:
-#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-#     except ValueError as e:
-#         return JsonResponse({'error': str(e)}, status=400)
-#     except Exception as e:
-#         return JsonResponse({'error': str(e)}, status=500)
-
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def translate_content_formatted(request):
-#     if request.method != 'POST':
-#         return JsonResponse({'error': 'Method not allowed.'}, status=405)
-
-#     try:
-#         # Extract and decrypt the incoming payload
-#         encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#         if not encrypted_content:
-#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#         decrypted_content = decrypt_data(encrypted_content)
-#         data = json.loads(decrypted_content)
-        
-#         generated_content = data.get('generated_content')
-#         language = data.get('language')
-
-#         if not generated_content or not language:
-#             return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
-
-#         # Initialize the translated content list
-#         translated_paragraphs = []
-
-#         # Break content into paragraphs or smaller chunks
-#         paragraphs = generated_content.split('\n\n')  # Paragraphs
-
-#         for paragraph in paragraphs:
-#             # Split each paragraph into sentences for finer granularity
-#             sentences = paragraph.split('. ')  # Split by sentence
-#             translated_sentences = []
-
-#             for sentence in sentences:
-#                 if sentence.strip():  # Skip empty sentences
-#                     response = bhashini_translate(sentence, language)
-#                     if response["status_code"] == 200:
-#                         translated_sentences.append(response["translated_content"])
-#                     else:
-#                         return JsonResponse(
-#                             {'error': f'Translation failed for sentence: "{sentence}". Status code: {response["status_code"]}'},
-#                             status=500
-#                         )
-            
-#             # Combine the translated sentences back into a paragraph
-#             translated_paragraph = '. '.join(translated_sentences).strip()
-#             translated_paragraphs.append(translated_paragraph)
-
-#         # Combine the translated paragraphs back into the full content
-#         translated_content = '\n\n'.join(translated_paragraphs)
-
-#         # Log the translated content for debugging
-#         logger.info(f'Translated content: {translated_content}')  # Log the translated content
-
-#         # Ensure translated content is properly encoded
-#         translated_content = translated_content.encode('utf-8').decode('utf-8')
-
-#         # Encrypt the response content
-#         encrypted_response = encrypt_data({
-#             'generated_content': generated_content,
-#             'translated_content': translated_content,
-#             'selected_language': language
-#         })
-
-#         return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#     except json.JSONDecodeError:
-#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-#     except ValueError as e:
-#         return JsonResponse({'error': str(e)}, status=400)
-#     except Exception as e:
-#         return JsonResponse({'error': str(e)}, status=500)
 
 import json
 import requests
@@ -2838,64 +2901,65 @@ def translate_international(request):
 
     return JsonResponse({'encrypted_content': encrypted_response}, status=200)
 
-# @csrf_exempt
-# def translate_international(request):
-#     if request.method != 'POST':
-#         logger.warning('Invalid request method')
-#         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-#     try:
-#         # Extract the incoming payload
-#         data = json.loads(request.body.decode('utf-8'))
-        
-#         input_text = data.get('input_text', '')
-#         from_language_name = data.get('from_language', '')
-#         to_language_name = data.get('to_language', '')
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated, HasAPIKey])
+# def business_proposal_generator(request):
+#     if request.method == 'POST':
+#         try:
+#             # Extract and decrypt the incoming payload
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             if not encrypted_content:
+#                 logger.warning('No encrypted content found in the request.')
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
 
-#         if not (input_text and from_language_name and to_language_name):
-#             logger.warning('Missing input_text, from_language, or to_language.')
-#             return JsonResponse({'error': 'Please provide the input text and select both languages.'}, status=400)
+#             decrypted_content = decrypt_data(encrypted_content)
+#             data = json.loads(decrypted_content)
+#             logger.debug(f'Decrypted content: {data}')
 
-#         # Validate the languages
-#         if from_language_name not in SUPPORTED_LANGUAGES or to_language_name not in SUPPORTED_LANGUAGES:
-#             logger.warning('Invalid language selection.')
-#             return JsonResponse({'error': 'One or both of the languages are not supported.'}, status=400)
+#             business_intro = data.get('businessIntroduction')
+#             proposal_objective = data.get('proposalObjective')
+#             # Handle otherObjective if proposalObjective is 'Others'
+#             other_objective = data.get('otherObjective')
+#             if proposal_objective == 'Others' and other_objective:
+#                 proposal_objective = other_objective
 
-#         from_language = SUPPORTED_LANGUAGES[from_language_name]
-#         to_language = SUPPORTED_LANGUAGES[to_language_name]
+#             num_words = data.get('numberOfWords')
+#             scope_of_work = data.get('scopeOfWork')
+#             project_phases = data.get('projectPhases')
+#             expected_outcomes = data.get('expectedOutcomes')
+#             tech_innovations = data.get('technologiesAndInnovations')  # Combined field
+#             target_audience = data.get('targetAudience')
+#             budget_info = data.get('budgetInformation')
+#             timeline = data.get('timeline')
+#             benefits = data.get('benefitsToRecipient')
+#             closing_remarks = data.get('closingRemarks')
 
-#         def perform_translation():
-#             # Perform the translation using GoogleTranslator
-#             return GoogleTranslator(source=from_language, target=to_language).translate(input_text)
+#             logger.info('Generating business proposal content.')
+#             proposal_content = generate_bus_pro(
+#                 business_intro, proposal_objective, num_words, scope_of_work,
+#                 project_phases, expected_outcomes, tech_innovations, target_audience,
+#                 budget_info, timeline, benefits, closing_remarks
+#             )
 
-#         # Use ThreadPoolExecutor to run the translation in a separate thread
-#         with concurrent.futures.ThreadPoolExecutor() as executor:
-#             future = executor.submit(perform_translation)
-#             translated_text = future.result()
-#             print(translated_text)
+#             # Encrypt the response content
+#             encrypted_content = encrypt_data({'generated_content': proposal_content})
+#             logger.info('Business proposal content generated successfully.')
 
-#         logger.info('Translation successful')
+#             return JsonResponse({'encrypted_content': encrypted_content}, status=200)
 
-#     except json.JSONDecodeError:
-#         logger.error('Invalid JSON format received.')
-#         return JsonResponse({'error': 'Invalid JSON format received.'}, status=400)
-#     except KeyError as e:
-#         logger.error(f'Missing key in translation response: {str(e)}')
-#         return JsonResponse({'error': f'Missing key in translation response: {str(e)}'}, status=500)
-#     except Exception as e:
-#         logger.error(f'Error during request handling: {str(e)}')
-#         return JsonResponse({'error': f'Error during request handling: {str(e)}'}, status=500)
+#         except json.JSONDecodeError:
+#             logger.error('Invalid JSON format received.')
+#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#         except ValueError as e:
+#             logger.error(f'ValueError: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=400)
+#         except Exception as e:
+#             logger.error(f'Exception: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=500)
 
-#     # Prepare the response
-#     response_data = {
-#         'translated_text': translated_text,
-#         'input_text': input_text,
-#         'from_language': from_language_name,
-#         'to_language': to_language_name
-#     }
-
-#     return JsonResponse(response_data, status=200)
-
+#     logger.warning('Method not allowed.')
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 
 @api_view(['POST'])
@@ -2950,7 +3014,7 @@ def business_proposal_generator(request):
 
         # Fields to check for language detection and translation
         fields_to_check = [
-            'businessIntroduction', 'proposalObjective', 'scopeOfWork', 'projectPhases',
+            'businessIntroduction', 'proposalObjective','otherObjective', 'scopeOfWork', 'projectPhases',
             'expectedOutcomes', 'technologiesAndInnovations', 'targetAudience',
             'budgetInformation', 'timeline', 'benefitsToRecipient', 'closingRemarks'
         ]
@@ -3022,12 +3086,77 @@ def business_proposal_generator(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+
+
+
+
+#Encrypted API For Offer Letter Service
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated,HasAPIKey])
+# def offer_letter_generator(request):
+#     try:
+#         encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning('No encrypted content found in the request.')
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         decrypted_content = decrypt_data(encrypted_content)
+#         data = json.loads(decrypted_content)
+#         logger.debug(f'Decrypted content: {data}')
+
+#         company_details = data.get('companyDetails')
+#         candidate_name = data.get('candidateFullName')
+#         position_title = data.get('positionTitle')
+#         department = data.get('department')
+#         status = data.get('status')
+#         location = data.get('location')
+#         start_date = data.get('expectedStartDate')
+#         compensation_benefits = data.get('compensationBenefits')  # Merged field
+#         work_hours = data.get('workHours')
+#         terms = data.get('termsConditions')
+#         acceptance_deadline = data.get('deadline')
+#         contact_info = data.get('contactInfo')
+#         documents_needed = data.get('documentsNeeded')
+#         closing_remarks = data.get('closingRemarks')
+
+#         logger.info('Generating offer letter content.')
+#         offer_letter_content = generate_offer_letter(
+#             company_details,  candidate_name, position_title, department, status,
+#             location, start_date, compensation_benefits, work_hours,
+#             terms, acceptance_deadline, contact_info, documents_needed, closing_remarks
+#         )
+
+#         if offer_letter_content:
+#             encrypted_content = encrypt_data({'generated_content': offer_letter_content})
+#             logger.info('Offer letter content generated successfully.')
+#             return JsonResponse({'encrypted_content': encrypted_content}, status=200)
+
+#         logger.error('Failed to generate offer letter content.')
+#         return JsonResponse({'error': 'Failed to generate offer letter. Please try again.'}, status=500)
+
+#     except json.JSONDecodeError:
+#         logger.error('Invalid JSON format received.')
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         logger.error(f'ValueError: {str(e)}')
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f'Exception: {str(e)}')
+#         return JsonResponse({'error': str(e)}, status=500)
+
+#     logger.warning('Method not allowed.')
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
 #Encrypted API For Offer Letter Service
 @api_view(['POST'])
-@permission_classes([IsAuthenticated,HasAPIKey])
+@permission_classes([IsAuthenticated, HasAPIKey])
 def offer_letter_generator(request):
     try:
-        encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+        # Load and decode the request body
+        body = request.body.decode('utf-8')
+        logger.debug(f"Request body received: {body}")
+
+        encrypted_content = json.loads(body).get('encrypted_content')
         if not encrypted_content:
             logger.warning('No encrypted content found in the request.')
             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
@@ -3036,6 +3165,65 @@ def offer_letter_generator(request):
         data = json.loads(decrypted_content)
         logger.debug(f'Decrypted content: {data}')
 
+        # Define the fields that need language detection and translation
+        fields_to_check = [
+            'companyDetails', 'candidateFullName', 'positionTitle', 'department',
+            'status', 'location', 'compensationBenefits', 'workHours', 'termsConditions',
+            'deadline', 'contactInfo', 'documentsNeeded', 'closingRemarks'
+        ]
+
+        # Define the Indian languages mapping
+        indian_languages = {
+            "English": "en",
+            "Hindi": "hi",
+            "Tamil": "ta",
+            "Telugu": "te",
+            "Marathi": "mr",
+            "Kannada": "kn",
+            "Bengali": "bn",
+            "Odia": "or",
+            "Assamese": "as",
+            "Punjabi": "pa",
+            "Malayalam": "ml",
+            "Gujarati": "gu",
+            "Urdu": "ur",
+            "Sanskrit": "sa",
+            "Nepali": "ne",
+            "Bodo": "brx",
+            "Maithili": "mai",
+            "Sindhi": "sd",
+            "Kashmiri": "ks",
+            "Konkani": "kok",
+            "Dogri": "doi",
+            "Goan Konkani": "gom",
+            "Santali": "sat",
+        }
+
+        # Translate non-English content
+        for field in fields_to_check:
+            value = data.get(field)
+            if value:
+                try:
+                    # Detect language of the field value
+                    detected_language, confidence = classify(value)
+                    language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+                    logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+                    print(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+                    print(f"Original Value: {value}")
+
+                    # If detected language is not English, translate
+                    if detected_language != 'en':
+                        print(f"Translating {field} from {language_name} to English.")
+                        translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
+                        print(f"Translated Value for {field}: {translated_text}")
+                        logger.debug(f"Translated {field}: {translated_text}")
+                        data[field] = translated_text
+                    else:
+                        logger.info(f"{field} is already in English. No translation needed.")
+                except Exception as e:
+                    logger.error(f"Error processing field {field}: {str(e)}")
+
+        # Extract fields from the processed data
         company_details = data.get('companyDetails')
         candidate_name = data.get('candidateFullName')
         position_title = data.get('positionTitle')
@@ -3053,7 +3241,7 @@ def offer_letter_generator(request):
 
         logger.info('Generating offer letter content.')
         offer_letter_content = generate_offer_letter(
-            company_details,  candidate_name, position_title, department, status,
+            company_details, candidate_name, position_title, department, status,
             location, start_date, compensation_benefits, work_hours,
             terms, acceptance_deadline, contact_info, documents_needed, closing_remarks
         )
@@ -3081,95 +3269,7 @@ def offer_letter_generator(request):
 
 
 
-# @api_view(['GET', 'POST'])
-# @permission_classes([IsAuthenticated])
-# def profile(request):
-#     user = request.user
-#     profile = Profile.objects.get(user=user)
-#     errors = []
 
-#     if request.method == 'POST':
-#         try:
-#             # Decrypt the incoming payload
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             data = json.loads(decrypted_content)
-#             logger.debug(f'Decrypted content: {data}')
-
-#             # Update user and profile data based on received JSON
-#             user.first_name = data.get('first_name', user.first_name)
-#             user.last_name = data.get('last_name', user.last_name)
-#             user.email = data.get('email', user.email)
-#             profile.bio = data.get('bio', profile.bio)
-#             profile.location = data.get('location', profile.location)
-#             profile.user_gst = data.get('user_gst', profile.user_gst)
-
-#             birth_date = data.get('birth_date')
-#             if birth_date:
-#                 parsed_date = parse_date(birth_date)
-#                 if parsed_date:
-#                     profile.birth_date = parsed_date
-#                 else:
-#                     errors.append("Invalid date format for birth date.")
-#                     profile.birth_date = None
-
-#             if not user.first_name:
-#                 errors.append("First name is required.")
-#             if not user.last_name:
-#                 errors.append("Last name is required.")
-#             if not user.email:
-#                 errors.append("Email is required.")
-
-#             if not errors:
-#                 user.save()
-#                 profile.save()
-#                 response_data = {'message': 'Profile updated successfully.'}
-#             else:
-#                 response_data = {'errors': errors}
-
-#             # Encrypt the response content
-#             encrypted_response = encrypt_data(response_data)
-#             logger.info('Profile updated successfully.')
-
-#             # Return the encrypted response
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#         except json.JSONDecodeError:
-#             logger.error('Invalid JSON format received.')
-#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-#         except ValueError as e:
-#             logger.error(f'ValueError: {str(e)}')
-#             return JsonResponse({'error': str(e)}, status=400)
-#         except Exception as e:
-#             logger.error(f'Exception: {str(e)}')
-#             return JsonResponse({'error': str(e)}, status=500)
-
-#     # Handle GET request
-#     response_data = {
-#         'user': {
-#             'first_name': user.first_name,
-#             'last_name': user.last_name,
-#             'email': user.email,
-#             'state' : user.state
-#         },
-#         'profile': {
-#             'bio': profile.bio,
-#             'location': profile.location,
-#             'birth_date': profile.birth_date.isoformat() if profile.birth_date else None,
-#             'user_gst': profile.user_gst
-#         }
-#     }
-
-#     # Encrypt the response content
-#     encrypted_response = encrypt_data(response_data)
-#     logger.info('Profile data retrieved successfully.')
-
-#     # Return the encrypted response
-#     return JsonResponse({'encrypted_content': encrypted_response})
 
 
 @api_view(['GET', 'POST'])
@@ -3452,6 +3552,7 @@ def change_password(request):
 #         logger.error(f'Exception: {str(e)}')
 #         return JsonResponse({'error': str(e)}, status=500)
 
+
 # @api_view(['POST'])
 # @permission_classes([IsAuthenticated, HasAPIKey])
 # def summarize_document(request):
@@ -3490,10 +3591,14 @@ def change_password(request):
 #             important_elements, audience, tone, format_, additional_instructions, document_file
 #         )
 
-
+#         # Handle specific error scenarios from generate_summary
 #         if summary.startswith("Error:"):
-#             logger.error(summary)
-#             return JsonResponse({'error': summary}, status=500)
+#             if "Uploaded file too large" in summary:
+#                 logger.warning(summary)
+#                 return JsonResponse({'error': summary}, status=413) 
+#             else:
+#                 logger.error(summary)
+#                 return JsonResponse({'error': summary}, status=500)
 
 #         # Encrypt the response content
 #         encrypted_response = encrypt_data({'summary': summary})
@@ -3510,6 +3615,7 @@ def change_password(request):
 #     except Exception as e:
 #         logger.error(f'Exception: {str(e)}')
 #         return JsonResponse({'error': str(e)}, status=500)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
@@ -3594,6 +3700,7 @@ def summarize_document(request):
 
         # Extract the uploaded file from request.FILES
         document_file = request.FILES.get('documentFile')
+        print(document_file)
         if not document_file:
             logger.warning('No document file provided.')
             return JsonResponse({'error': 'No document file provided.'}, status=400)
@@ -3630,9 +3737,86 @@ def summarize_document(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+
+
+#Encrypted API For contnet generation Service
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated,HasAPIKey])
+# def content_generator(request):
+#     try:
+#         # Load and decode the request body
+#         body = request.body.decode('utf-8')
+#         logger.debug(f"Request body received: {body}")
+
+#         # Extract and decrypt the incoming payload
+#         data = json.loads(body)
+#         encrypted_content = data.get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning("No encrypted content found in the request.")
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         logger.debug(f"Encrypted content received: {encrypted_content}")
+
+#         decrypted_content = decrypt_data(encrypted_content)
+#         logger.debug(f"Decrypted content: {decrypted_content}")
+
+#         data = json.loads(decrypted_content)
+
+#         # Extract fields from the decrypted JSON data
+#         company_info = data.get('company_info')
+#         content_purpose = data.get('content_purpose')
+#         desired_action = data.get('desired_action')
+#         topic_details = data.get('topic_details')
+#         keywords = data.get('keywords')
+#         audience_profile = data.get('audience_profile')
+#         format_structure = data.get('format_structure')
+#         num_words = data.get('num_words')
+#         seo_keywords = data.get('seo_keywords')
+#         references = data.get('references')
+
+#         logger.debug(f"Data extracted for content generation: company_info={company_info}, content_purpose={content_purpose}, desired_action={desired_action}")
+
+#         # Generate the content
+#         logger.info("Generating content...")
+#         content = generate_content(
+#             company_info,
+#             content_purpose,
+#             desired_action,
+#             topic_details,
+#             keywords,
+#             audience_profile,
+#             format_structure,
+#             num_words,
+#             seo_keywords,
+#             references
+#         )
+
+#         if content:
+#             logger.info("Content generated successfully.")
+#             encrypted_response_content = encrypt_data({'generated_content': content})
+#             return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
+
+#         logger.error("Failed to generate content.")
+#         return JsonResponse({'error': 'Failed to generate content. Please try again.'}, status=500)
+
+#     except json.JSONDecodeError:
+#         logger.error("Invalid JSON format received.")
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         logger.error(f"ValueError occurred: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f"An unexpected error occurred: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=500)
+
+#     logger.error("Method not allowed.")
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+
+
 #Encrypted API For contnet generation Service
 @api_view(['POST'])
-@permission_classes([IsAuthenticated,HasAPIKey])
+@permission_classes([IsAuthenticated, HasAPIKey])
 def content_generator(request):
     try:
         # Load and decode the request body
@@ -3653,7 +3837,64 @@ def content_generator(request):
 
         data = json.loads(decrypted_content)
 
-        # Extract fields from the decrypted JSON data
+        # Define the fields that need language detection and translation
+        fields_to_check = [
+            'company_info', 'content_purpose', 'desired_action', 'topic_details', 
+            'keywords', 'audience_profile', 'format_structure', 'seo_keywords', 'references'
+        ]
+
+        # Define the Indian languages mapping
+        indian_languages = {
+            "English": "en",
+            "Hindi": "hi",
+            "Tamil": "ta",
+            "Telugu": "te",
+            "Marathi": "mr",
+            "Kannada": "kn",
+            "Bengali": "bn",
+            "Odia": "or",
+            "Assamese": "as",
+            "Punjabi": "pa",
+            "Malayalam": "ml",
+            "Gujarati": "gu",
+            "Urdu": "ur",
+            "Sanskrit": "sa",
+            "Nepali": "ne",
+            "Bodo": "brx",
+            "Maithili": "mai",
+            "Sindhi": "sd",
+            "Kashmiri": "ks",
+            "Konkani": "kok",
+            "Dogri": "doi",
+            "Goan Konkani": "gom",
+            "Santali": "sat",
+        }
+
+        # Translate non-English content
+        for field in fields_to_check:
+            value = data.get(field)
+            if value:
+                try:
+                    # Detect language of the field value
+                    detected_language, confidence = classify(value)
+                    language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+                    logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+                    print(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+                    print(f"Original Value: {value}")
+
+                    # If detected language is not English, translate
+                    if detected_language != 'en':
+                        print(f"Translating {field} from {language_name} to English.")
+                        translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
+                        print(f"Translated Value for {field}: {translated_text}")
+                        logger.debug(f"Translated {field}: {translated_text}")
+                        data[field] = translated_text
+                    else:
+                        logger.info(f"{field} is already in English. No translation needed.")
+                except Exception as e:
+                    logger.error(f"Error processing field {field}: {str(e)}")   
+
+        # Extract fields from the processed data
         company_info = data.get('company_info')
         content_purpose = data.get('content_purpose')
         desired_action = data.get('desired_action')
@@ -4048,7 +4289,6 @@ def sales_script_generator(request):
 
         logger.error("Failed to generate sales script.")
         return JsonResponse({'error': 'Failed to generate sales script. Please try again.'}, status=500)
-
     except json.JSONDecodeError:
         logger.error("Invalid JSON format received.")
         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
@@ -4317,7 +4557,289 @@ def create_presentation(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_presentation_english(request):
+    try:
+        # Handle the multipart form data
+        encrypted_content = request.POST.get('encrypted_content')
+        if not encrypted_content:
+            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+        # Decrypt the content
+        decrypted_content = decrypt_data(encrypted_content)
+
+        # Parse decrypted JSON data
+        data = json.loads(decrypted_content)
+
+        # Define the fields that need language detection and translation
+        fields_to_check = ['title', 'special_instructions']
+
+        # Define the Indian languages mapping
+        indian_languages = {
+            "English": "en",
+            "Hindi": "hi",
+            "Tamil": "ta",
+            "Telugu": "te",
+            "Marathi": "mr",
+            "Kannada": "kn",
+            "Bengali": "bn",
+            "Odia": "or",
+            "Assamese": "as",
+            "Punjabi": "pa",
+            "Malayalam": "ml",
+            "Gujarati": "gu",
+            "Urdu": "ur",
+            "Sanskrit": "sa",
+            "Nepali": "ne",
+            "Bodo": "brx",
+            "Maithili": "mai",
+            "Sindhi": "sd",
+            "Kashmiri": "ks",
+            "Konkani": "kok",
+            "Dogri": "doi",
+            "Goan Konkani": "gom",
+            "Santali": "sat",
+        }
+
+        # Translate non-English content
+        for field in fields_to_check:
+            value = data.get(field)
+            if value:
+                try:
+                    # Detect language of the field value
+                    detected_language, confidence = classify(value)
+                    language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+                    logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+
+                    # If detected language is not English, translate
+                    if detected_language != 'en':
+                        logger.info(f"Translating {field} from {language_name} to English.")
+                        translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
+                        logger.debug(f"Translated {field}: {translated_text}")
+                        data[field] = translated_text
+                    else:
+                        logger.info(f"{field} is already in English. No translation needed.")
+                except Exception as e:
+                    logger.error(f"Error processing field {field}: {str(e)}")
+
+        # Extract fields from the decrypted and processed data
+        title = data.get('title')
+        num_slides = data.get('num_slides')
+        special_instructions = data.get('special_instructions')
+        template_name = data.get('template_name', 'default')
+        document = request.FILES.get('document')
+
+        if not title or not num_slides:
+            return JsonResponse({'error': 'Title and number of slides are required.'}, status=400)
+
+        # Handle document content optionally
+        document_content = extract_document_content(document) if document else ""
+        word_count = len(document_content.split())
+        logger.debug(f"Word count: {word_count}")
+        if word_count > 2000:
+            return JsonResponse({'error': 'Document content exceeds the word limit of 2000 words.'}, status=413)
+
+        # Get template path
+        templates = get_templates()
+        template_path = templates.get(template_name, templates['default'])
+        output_path = "SmartAssistant_Presentation.pptx"
+
+        # Generate presentation with the provided data
+        prs = update_presentation_with_generated_content(
+            template_path, output_path, document_content, title, num_slides, special_instructions
+        )
+
+        # Save presentation to a BytesIO object
+        buffer = BytesIO()
+        prs.save(buffer)
+        buffer.seek(0)  # Rewind the buffer
+
+        # Return file response
+        response = FileResponse(buffer, as_attachment=True, filename='SmartOffice_Assistant_Presentation.pptx')
+        return response
+
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON format received.")
+        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+    
+
 #Encrypted API For generate blog Service
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def generate_blog_view(request):
+#     try:
+#         # Load and decode the request body
+#         body = request.body.decode('utf-8')
+#         logger.debug(f"Request body received: {body}")
+
+#         # Extract and decrypt the incoming payload
+#         data = json.loads(body)
+#         encrypted_content = data.get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning("No encrypted content found in the request.")
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         logger.debug(f"Encrypted content received: {encrypted_content}")
+#         decrypted_content = decrypt_data(encrypted_content)
+#         logger.debug(f"Decrypted content: {decrypted_content}")
+
+#         data = json.loads(decrypted_content)
+
+#         # Extract the required fields
+#         title = data.get('title')
+#         tone = data.get('tone')
+#         keywords = data.get('keywords', None)  # Optional
+
+#         # Ensure required fields are present
+#         if not title or not tone:
+#             return JsonResponse({"error": "Missing 'title' or 'tone'."}, status=400)
+
+#         # Call the generate_blog function
+#         blog_content = generate_blog(title, tone, keywords)
+
+#         # Encrypt the response content
+#         encrypted_response_content = encrypt_data({'blog_content': blog_content})
+
+#         # Return the encrypted blog content as a JSON response
+#         return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
+
+#     except json.JSONDecodeError:
+#         logger.error("Invalid JSON format received.")
+#         return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
+#     except ValueError as e:
+#         logger.error(f"ValueError occurred: {str(e)}")
+#         return JsonResponse({"error": str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f"An unexpected error occurred: {str(e)}")
+#         return JsonResponse({"error": str(e)}, status=500)
+
+#     # If not a POST request, return an error
+#     return JsonResponse({"error": "Only POST method is allowed."}, status=405)
+
+
+
+#Encrypted API For generate blog Service
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def generate_blog_view(request):
+#     try:
+#         # Load and decode the request body
+#         body = request.body.decode('utf-8')
+#         logger.debug(f"Request body received: {body}")
+
+#         # Extract and decrypt the incoming payload
+#         data = json.loads(body)
+#         encrypted_content = data.get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning("No encrypted content found in the request.")
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         logger.debug(f"Encrypted content received: {encrypted_content}")
+#         decrypted_content = decrypt_data(encrypted_content)
+#         logger.debug(f"Decrypted content: {decrypted_content}")
+
+#         # Parse the decrypted JSON
+#         data = json.loads(decrypted_content)
+
+#         # Define the Indian languages mapping
+#         indian_languages = {
+#             "English": "en",
+#             "Hindi": "hi",
+#             "Tamil": "ta",
+#             "Telugu": "te",
+#             "Marathi": "mr",
+#             "Kannada": "kn",
+#             "Bengali": "bn",
+#             "Odia": "or",
+#             "Assamese": "as",
+#             "Punjabi": "pa",
+#             "Malayalam": "ml",
+#             "Gujarati": "gu",
+#             "Urdu": "ur",
+#             "Sanskrit": "sa",
+#             "Nepali": "ne",
+#             "Bodo": "brx",
+#             "Maithili": "mai",
+#             "Sindhi": "sd",
+#             "Kashmiri": "ks",
+#             "Konkani": "kok",
+#             "Dogri": "doi",
+#             "Goan Konkani": "gom",
+#             "Santali": "sat",
+#         }
+
+#         # Fields that require language detection and potential translation
+#         fields_to_check = ['title', 'tone', 'keywords']
+
+#         # Translate only non-English content
+#         for field in fields_to_check:
+#             value = data.get(field)
+#             if value:
+#                 try:
+#                     # Detect language of the field value
+#                     detected_language, confidence = classify(value)
+#                     language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+#                     print(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+#                     print(f"Original Value: {value}")
+
+#                     logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+
+#                     # Translate if the detected language is not English
+#                     if detected_language != 'en':
+#                         print(f"Translating {field} from {language_name} to English.")
+#                         translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
+#                         print(f"Translated Value for {field}: {translated_text}")
+#                         logger.debug(f"Translated {field}: {translated_text}")
+#                         data[field] = translated_text
+#                     else:
+#                         print(f"{field} is already in English. No translation needed.")
+#                 except Exception as e:
+#                     print(f"Error processing field {field}: {str(e)}")
+#                     logger.error(f"Error processing field {field}: {str(e)}")
+
+#         logger.debug(f"Data after translation: {data}")
+
+#         # Extract the required fields
+#         title = data.get('title')
+#         tone = data.get('tone')
+#         keywords = data.get('keywords', None)  # Optional
+
+#         # Ensure required fields are present
+#         if not title or not tone:
+#             return JsonResponse({"error": "Missing 'title' or 'tone'."}, status=400)
+
+#         # Call the generate_blog function
+#         logger.info("Generating blog content...")
+#         blog_content = generate_blog(title, tone, keywords)
+
+#         if blog_content:
+#             logger.info("Blog content generated successfully.")
+#             encrypted_response_content = encrypt_data({'blog_content': blog_content})
+#             return JsonResponse({
+#                 'encrypted_content': encrypted_response_content,
+#                 'language': 'en'
+#             }, status=200)
+
+#         logger.error("Failed to generate blog content.")
+#         return JsonResponse({'error': 'Failed to generate blog content. Please try again.'}, status=500)
+
+#     except json.JSONDecodeError:
+#         logger.error("Invalid JSON format received.")
+#         return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
+#     except ValueError as e:
+#         logger.error(f"ValueError occurred: {str(e)}")
+#         return JsonResponse({"error": str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f"An unexpected error occurred: {str(e)}")
+#         return JsonResponse({"error": str(e)}, status=500)
+
+#     # If not a POST request, return an error
+#     return JsonResponse({"error": "Only POST method is allowed."}, status=405)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def generate_blog_view(request):
@@ -4337,25 +4859,92 @@ def generate_blog_view(request):
         decrypted_content = decrypt_data(encrypted_content)
         logger.debug(f"Decrypted content: {decrypted_content}")
 
+        # Parse the decrypted JSON
         data = json.loads(decrypted_content)
+
+        # Define the Indian languages mapping
+        indian_languages = {
+            "English": "en",
+            "Hindi": "hi",
+            "Tamil": "ta",
+            "Telugu": "te",
+            "Marathi": "mr",
+            "Kannada": "kn",
+            "Bengali": "bn",
+            "Odia": "or",
+            "Assamese": "as",
+            "Punjabi": "pa",
+            "Malayalam": "ml",
+            "Gujarati": "gu",
+            "Urdu": "ur",
+            "Sanskrit": "sa",
+            "Nepali": "ne",
+            "Bodo": "brx",
+            "Maithili": "mai",
+            "Sindhi": "sd",
+            "Kashmiri": "ks",
+            "Konkani": "kok",
+            "Dogri": "doi",
+            "Goan Konkani": "gom",
+            "Santali": "sat",
+        }
+
+        # Fields that require language detection and potential translation
+        fields_to_check = ['title', 'tone', 'keywords', 'customTone']
+
+        # Translate only non-English content
+        for field in fields_to_check:
+            value = data.get(field)
+            if value:
+                try:
+                    # Detect language of the field value
+                    detected_language, confidence = classify(value)
+                    language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+                    print(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+                    print(f"Original Value: {value}")
+
+                    logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+
+                    # Translate if the detected language is not English
+                    if detected_language != 'en':
+                        print(f"Translating {field} from {language_name} to English.")
+                        translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
+                        print(f"Translated Value for {field}: {translated_text}")
+                        logger.debug(f"Translated {field}: {translated_text}")
+                        data[field] = translated_text
+                    else:
+                        print(f"{field} is already in English. No translation needed.")
+                except Exception as e:
+                    print(f"Error processing field {field}: {str(e)}")
+                    logger.error(f"Error processing field {field}: {str(e)}")
+
+        logger.debug(f"Data after translation: {data}")
 
         # Extract the required fields
         title = data.get('title')
         tone = data.get('tone')
-        keywords = data.get('keywords', None)  # Optional
+        custom_tone = data.get('customTone')  # Extract the custom tone
+        keywords = data.get('keywords', None) 
+        print(keywords)
 
         # Ensure required fields are present
         if not title or not tone:
             return JsonResponse({"error": "Missing 'title' or 'tone'."}, status=400)
 
         # Call the generate_blog function
-        blog_content = generate_blog(title, tone, keywords)
+        logger.info("Generating blog content...")
+        blog_content = generate_blog(title, tone, custom_tone, keywords)
 
-        # Encrypt the response content
-        encrypted_response_content = encrypt_data({'blog_content': blog_content})
+        if blog_content:
+            logger.info("Blog content generated successfully.")
+            encrypted_response_content = encrypt_data({'blog_content': blog_content})
+            return JsonResponse({
+                'encrypted_content': encrypted_response_content,
+                'language': 'en'
+            }, status=200)
 
-        # Return the encrypted blog content as a JSON response
-        return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
+        logger.error("Failed to generate blog content.")
+        return JsonResponse({'error': 'Failed to generate blog content. Please try again.'}, status=500)
 
     except json.JSONDecodeError:
         logger.error("Invalid JSON format received.")
@@ -4369,6 +4958,52 @@ def generate_blog_view(request):
 
     # If not a POST request, return an error
     return JsonResponse({"error": "Only POST method is allowed."}, status=405)
+
+# #Encrypted API For rephrase Service
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def rephrasely_view(request):
+#     if request.method == 'POST':
+#         try:
+#             # Extract and decrypt the incoming payload
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             if not encrypted_content:
+#                 logger.warning('No encrypted content found in the request.')
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#             # Decrypt the content
+#             decrypted_content = decrypt_data(encrypted_content)
+#             data = json.loads(decrypted_content)
+#             logger.debug(f'Decrypted content: {data}')
+
+#             # Extract required fields
+#             text_to_rephrase = data.get('text_to_rephrase')
+#             tone = data.get('tone')
+#             target_audience = data.get('target_audience')
+#             num_words = data.get('num_words', "default")  # Optional, default is "default"
+
+#             # Call the rephrasely function
+#             rephrased_text = rephrasely(text_to_rephrase, tone, target_audience, num_words)
+
+#             # Encrypt the response content
+#             encrypted_response = encrypt_data({'rephrased_text': rephrased_text})
+#             logger.info('Rephrased content generated successfully.')
+
+#             # Return the encrypted response
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+#         except json.JSONDecodeError:
+#             logger.error('Invalid JSON format received.')
+#             return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#         except ValueError as e:
+#             logger.error(f'ValueError: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=400)
+#         except Exception as e:
+#             logger.error(f'Exception: {str(e)}')
+#             return JsonResponse({'error': str(e)}, status=500)
+
+#     logger.warning('Method not allowed.')
+#     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 
 #Encrypted API For rephrase Service
@@ -4423,7 +5058,7 @@ def rephrasely_view(request):
         }
 
         # Check and translate fields
-        fields_to_check = ['text_to_rephrase']
+        fields_to_check = ['text_to_rephrase', 'tone', 'target_audience']
         for field in fields_to_check:
             value = data.get(field)
             if value:
@@ -4431,8 +5066,6 @@ def rephrasely_view(request):
                     # Detect language
                     detected_language, confidence = classify(value)
                     language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
-                    logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
-                    logger.debug(f"Original Value: {value}")
 
                     # Translate if not English
                     if detected_language != 'en':
@@ -4475,10 +5108,6 @@ def rephrasely_view(request):
     except Exception as e:
         logger.error(f"An unexpected error occurred: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
-
-
-
-
 
 # List of greetings
 GREETING_MESSAGES = [
@@ -6102,56 +6731,6 @@ def empty_cart_yearly(request):
         return JsonResponse({"encrypted_content": encrypted_response}, status=500)
 
 
-# @csrf_exempt
-# def delete_user_account(request):
-#     if request.method == "DELETE":
-#         try:
-#             # Get the encrypted content from the request
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             if not encrypted_content:
-#                 return JsonResponse({"error": "No encrypted content found in the request."}, status=400)
-
-#             # Decrypt the request data
-#             decrypted_content = decrypt_data(encrypted_content)
-#             data = json.loads(decrypted_content)
-#             email = data.get('email')
-
-#             if not email:
-#                 return JsonResponse({"error": "Email is required"}, status=400)
-
-#             # Find the user based on the email
-#             try:
-#                 user = User.objects.get(email=email)
-#             except User.DoesNotExist:
-#                 encrypted_response = encrypt_data({"error": "User not found"})
-#                 return JsonResponse({"encrypted_content": encrypted_response}, status=404)
-
-#             # Delete associated records
-#             UserService.objects.filter(user=user).delete()  # Delete user services
-#             Profile.objects.filter(user=user).delete()      # Delete user profile
-#             Payment.objects.filter(email=email).delete()    # Delete payments associated with the user
-#             UserSession.objects.filter(user=user).delete()  # Delete user sessions
-#             EmailVerificationOTP.objects.filter(user=user).delete()  # Delete email verification OTPs
-#             TemporaryEmailVerificationOTP.objects.filter(email=email).delete()  # Delete temp email verifications
-#             Cart.objects.filter(email=email).delete()  # Delete the cart
-
-#             # Finally, delete the user
-#             user.delete()
-
-#             # Encrypt the success message
-#             encrypted_response = encrypt_data({"message": "User account and associated data deleted successfully"})
-#             return JsonResponse({"encrypted_content": encrypted_response}, status=200)
-
-#         except json.JSONDecodeError:
-#             encrypted_response = encrypt_data({"error": "Invalid JSON format. Please provide valid JSON data."})
-#             return JsonResponse({"encrypted_content": encrypted_response}, status=400)
-#         except Exception as e:
-#             encrypted_response = encrypt_data({"error": str(e)})
-#             return JsonResponse({"encrypted_content": encrypted_response}, status=500)
-
-#     encrypted_response = encrypt_data({"error": "Invalid request method"})
-#     return JsonResponse({"encrypted_content": encrypted_response}, status=400)
-
 @csrf_exempt
 def delete_user_account(request):
     if request.method == "DELETE":
@@ -7719,114 +8298,6 @@ semaphore = asyncio.Semaphore(10)
 from .email_llama3 import bhashini_translate
 
 
-# line_number = 1  # Initialize the line counter
-
-# @csrf_exempt
-# def translate_json_files_new(request):
-#     global line_number
-#     translated_json = {}
-#     error = None
-#     translate_to = ""
-#     indian_languages = {
-#         "English": "en",
-#         "Hindi": "hi",
-#         "Tamil": "ta",
-#         "Telugu": "te",
-#         "Marathi": "mr",
-#         "Kannada": "kn",
-#         "Bengali": "bn",
-#         "Odia": "or",
-#         "Assamese": "as",
-#         "Punjabi": "pa",
-#         "Malayalam": "ml",
-#         "Gujarati": "gu",
-#         "Urdu": "ur",
-#         "Sanskrit": "sa",
-#         "Nepali": "ne",
-#         "Bodo": "brx",
-#         "Maithili": "mai",
-#         "Sindhi": "sd",
-#         "Kashmiri": "ks", 
-#         "Konkani": "kok",  
-#         "Dogri" :"doi",
-#         "Goan Konkani": "gom",
-#         "Santali": "sat"
-#     }
-
-#     if request.method == 'POST':
-#         try:
-#             # Extract file and target language from the request
-#             json_file = request.FILES.get('file')
-#             translate_to = request.POST.get('translate_to')
-            
-#             if not json_file:
-#                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
-            
-#             if not translate_to:
-#                 return JsonResponse({'error': 'No target language provided.'}, status=400)
- 
-#             # Load the JSON file
-#             file_content = json_file.read().decode('utf-8')
-#             original_json = json.loads(file_content)
- 
-#             # Collect all string values for translation in one batch
-#             translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
-#             translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
- 
-#             # Use threading to parallelize translation calls for better performance
-#             async def translate_key_value(key, value, target_lang):
-#                 global line_number
-#                 async with semaphore:
-
-#                     try:
-#                         # Simulating translation
-#                         translation_result = bhashini_translate(value, target_lang)
-#                         print(f"Line {line_number}: {translation_result}")
-#                         line_number += 1  # Increment line number
-#                         translated_json[key] = translation_result["translated_content"]
-                        
-#                     except Exception as e:
-#                         print(f"Line {line_number}: Translation failed for key {key}. Retrying... Error: {str(e)}")
-#                         line_number += 1  # Increment line number
-#                         await asyncio.sleep(2)  # Async sleep for retry
-                        
-#                         try:
-#                             translation_result = bhashini_translate(value, target_lang)
-#                             translated_json[key] = translation_result["translated_content"]
-#                         except Exception as e:
-#                             translated_json[key] = f"Translation Error: {str(e)}"
- 
-
-#             async def trans_main(translation_tasks, translate_to):
-#                 # Create a list of async tasks for each translation
-#                 tasks = [translate_key_value(key, value, translate_to) for key, value in translation_tasks]
-                
-#                 # Run tasks concurrently with limited concurrency via semaphore
-#                 await asyncio.gather(*tasks)
-                
-#             asyncio.run(trans_main(translation_tasks, translate_to))
- 
-#             # Create the translated JSON file in memory
-#             translated_file_name = f"translated_{translate_to}.json"
-#             translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
-#             translated_file_name = f"translated_{translate_to}.json"
-#             zip_buffer = BytesIO()
-#             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
-#                 zip_archive.writestr(translated_file_name, translated_json_str)
-#             # Return the translated file as an attachment
-#             zip_buffer.seek(0)
-#             response = HttpResponse(zip_buffer, content_type='application/zip')
-#             response['Content-Disposition'] = 'attachment; filename="translated_sorted_files.zip"'
-#             return response
-
-#         except json.JSONDecodeError:
-#             error = "Invalid JSON file format."
-#             return JsonResponse({'error': error}, status=400)
-#         except Exception as e:
-#             error = f"Error during translation: {str(e)}"
-#             return JsonResponse({'error': error}, status=500)
-#     else:
-#         return JsonResponse({'error': 'Invalid request method'}, status=400)
 import json
 import asyncio
 import zipfile

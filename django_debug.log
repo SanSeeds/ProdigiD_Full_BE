@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 ERROR 2024-12-27 07:20:24,844 views Exception: 'GoogleTranslator' object has no attribute 'detect'
 ERROR 2024-12-27 07:20:24,851 log Internal Server Error: /offer_letter_generator/
 ERROR 2024-12-27 07:20:24,851 basehttp "POST /offer_letter_generator/ HTTP/1.1" 500 64
@@ -124,3 +125,49 @@ ERROR 2025-01-03 21:14:43,405 views Error: Document is empty or could not be rea
 ERROR 2025-01-03 21:14:43,408 log Internal Server Error: /summarize_document/
 ERROR 2025-01-03 21:14:43,411 basehttp "POST /summarize_document/ HTTP/1.1" 500 59
 ERROR 2025-01-03 21:14:43,411 basehttp "POST /summarize_document/ HTTP/1.1" 500 59
+=======
+ERROR 2025-01-06 06:49:34,902 views Exception: Request exception can happen due to an api connection error. Please check your connection and try again
+ERROR 2025-01-06 06:49:34,910 log Internal Server Error: /summarize_document/
+ERROR 2025-01-06 06:49:34,910 basehttp "POST /summarize_document/ HTTP/1.1" 500 116
+ERROR 2025-01-06 06:49:34,910 basehttp "POST /summarize_document/ HTTP/1.1" 500 116
+ERROR 2025-01-06 06:49:42,987 views Exception: Request exception can happen due to an api connection error. Please check your connection and try again
+ERROR 2025-01-06 06:49:42,988 log Internal Server Error: /summarize_document/
+ERROR 2025-01-06 06:49:42,988 basehttp "POST /summarize_document/ HTTP/1.1" 500 116
+ERROR 2025-01-06 06:49:42,988 basehttp "POST /summarize_document/ HTTP/1.1" 500 116
+ERROR 2025-01-06 06:50:17,798 views Exception: Request exception can happen due to an api connection error. Please check your connection and try again
+ERROR 2025-01-06 06:50:17,800 log Internal Server Error: /summarize_document/
+ERROR 2025-01-06 06:50:17,800 basehttp "POST /summarize_document/ HTTP/1.1" 500 116
+ERROR 2025-01-06 06:50:17,800 basehttp "POST /summarize_document/ HTTP/1.1" 500 116
+ERROR 2025-01-06 06:58:37,132 views Error: Could not detect language. Details: name 'detect_language' is not defined
+ERROR 2025-01-06 06:58:37,134 log Internal Server Error: /summarize_document/
+ERROR 2025-01-06 06:58:37,134 basehttp "POST /summarize_document/ HTTP/1.1" 500 93
+ERROR 2025-01-06 06:58:37,134 basehttp "POST /summarize_document/ HTTP/1.1" 500 93
+ERROR 2025-01-06 07:02:02,128 views Error: Could not translate document content. Details: Request exception can happen due to an api connection error. Please check your connection and try again
+ERROR 2025-01-06 07:02:02,128 log Internal Server Error: /summarize_document/
+ERROR 2025-01-06 07:02:02,128 basehttp "POST /summarize_document/ HTTP/1.1" 500 170
+ERROR 2025-01-06 07:02:02,128 basehttp "POST /summarize_document/ HTTP/1.1" 500 170
+ERROR 2025-01-06 07:11:07,041 views Exception: name 'classify' is not defined
+ERROR 2025-01-06 07:11:07,043 log Internal Server Error: /summarize_document/
+ERROR 2025-01-06 07:11:07,047 basehttp "POST /summarize_document/ HTTP/1.1" 500 43
+ERROR 2025-01-06 07:11:07,047 basehttp "POST /summarize_document/ HTTP/1.1" 500 43
+ERROR 2025-01-06 07:11:38,847 views Error: Could not translate document content. Details: Request exception can happen due to an api connection error. Please check your connection and try again
+ERROR 2025-01-06 07:11:38,851 log Internal Server Error: /summarize_document/
+ERROR 2025-01-06 07:11:38,851 basehttp "POST /summarize_document/ HTTP/1.1" 500 170
+ERROR 2025-01-06 07:11:38,851 basehttp "POST /summarize_document/ HTTP/1.1" 500 170
+ERROR 2025-01-06 07:17:24,529 views Exception: 'te'
+ERROR 2025-01-06 07:17:24,530 log Internal Server Error: /summarize_document/
+ERROR 2025-01-06 07:17:24,530 basehttp "POST /summarize_document/ HTTP/1.1" 500 17
+ERROR 2025-01-06 07:17:24,530 basehttp "POST /summarize_document/ HTTP/1.1" 500 17
+ERROR 2025-01-06 10:20:51,389 views Error processing field keywords: unsupported operand type(s) for +: 'int' and 'str'
+ERROR 2025-01-06 10:21:35,914 views Error processing field keywords: unsupported operand type(s) for +: 'int' and 'str'
+ERROR 2025-01-06 10:23:37,990 views Error processing field keywords: unsupported operand type(s) for +: 'int' and 'str'
+ERROR 2025-01-06 10:24:38,529 views Error processing field keywords: unsupported operand type(s) for +: 'int' and 'str'
+ERROR 2025-01-06 10:26:38,738 views Error processing field keywords: unsupported operand type(s) for +: 'int' and 'str'
+ERROR 2025-01-06 10:26:46,531 views Error processing field keywords: unsupported operand type(s) for +: 'int' and 'str'
+ERROR 2025-01-06 10:27:07,552 views Error processing field keywords: unsupported operand type(s) for +: 'int' and 'str'
+ERROR 2025-01-06 10:30:38,611 views Error processing field keywords: unsupported operand type(s) for +: 'int' and 'str'
+ERROR 2025-01-06 10:51:37,076 views Error processing field keywords: unsupported operand type(s) for +: 'int' and 'str'
+ERROR 2025-01-06 10:53:29,583 views Error processing field keywords: unsupported operand type(s) for +: 'int' and 'str'
+ERROR 2025-01-06 10:56:16,444 views Error processing field keywords: unsupported operand type(s) for +: 'int' and 'str'
+ERROR 2025-01-06 10:56:40,976 views Error processing field keywords: unsupported operand type(s) for +: 'int' and 'str'
+>>>>>>> 2c66bf8489218c4b0b01dc3400c561b54d1e78d1

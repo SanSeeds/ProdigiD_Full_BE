@@ -62,7 +62,7 @@ except Exception as e:
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 LOGGING = {
     'version': 1,
@@ -138,24 +138,50 @@ LOGGING = {
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '10.0.2.2', '192.168.1.100', '192.168.134.240', '192.168.241.240']
 
 DEFAULT_BACKGROUND_IMAGE_PATH = './core/static/ppt_bg.jpg'
-# SECURE_SSL_REDIRECT = True
+
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-
-# Security settings
+# Security Headers
 # SECURE_HSTS_SECONDS = 31536000  # 1 year in seconds
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to subdomains
-# SECURE_HSTS_PRELOAD = True  # Enable HSTS preload for browsers
-# SECURE_SSL_REDIRECT = True  # Redirect all HTTP traffic to HTTPS
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True  # Optionally, you can include the preload directive
 
-# # Other security headers
-# SECURE_BROWSER_XSS_FILTER = True
-# SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True  
+# SECURE_SSL_REDIRECT = True  
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  
 
 
+SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent MIME sniffing
+
+X_FRAME_OPTIONS = 'DENY'  # Prevent clickjacking
+X_CONTENT_TYPE_OPTIONS = 'nosniff'  # Prevent content type sniffing
+
+# Referrer Policy
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# Permissions Policy (for controlling feature access)
+PERMISSIONS_POLICY = {
+    "geolocation": ["Self"],
+    "microphone": ["Self"],
+    "camera": ["Self"],
+    "fullscreen": ["Self"],
+    "payment": ["Self"],   
+}
+
+# Content Security Policy
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'",)
+CSP_IMG_SRC = ("'self'",)
+CSP_CONNECT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'",)
+CSP_FONT_SRC = ("'self'",)
+CSP_FRAME_SRC = ("'self'",)
+CSP_BASE_URI = ("'self'",)
 
 
 # Application definition
@@ -176,9 +202,11 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'csp.middleware.CSPMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "django_permissions_policy.PermissionsPolicyMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',  # Ensure this is included
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -246,10 +274,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'prodigidusk.wsgi.application'
 
-SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
-SECURE_HSTS_SECONDS = 31536000  
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -392,7 +417,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 

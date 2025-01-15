@@ -23,6 +23,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 # from langchain_astradb import AstraDBVectorStore
 from langchain.indexes import VectorstoreIndexCreator
 from langchain_groq import ChatGroq
+import base64
 
 # from prodigidusk.settings import VECTOR_STORE
 
@@ -1002,29 +1003,81 @@ def update_presentation_with_generated_content(template_path, output_path,docume
     print(f"Presentation saved as '{output_path}'")
     return presentation
 
-def fetch_single_image(query, width, height): # Adjusted dimensions here
+# def fetch_single_image(query, width, height): # Adjusted dimensions here
+#     headers = {"Authorization": PEXELS_API_KEY}
+#     params = {"query": query, "per_page": 5}  # Request up to 5 images
+#     print("Code entered")
+#     response = requests.get(PEXELS_BASE_URL, headers=headers, params=params)
+#     print("response is",response)
+#     if response.status_code == 200:
+#         data = response.json()
+#         photos = data.get("photos", [])
+#         if photos:
+#             # Choose a random photo from the top 5
+#             random_photo = random.choice(photos)  
+#             print("Random photo is",random_photo)
+#             # Fetch the original URL and resize it using Pexels parameters
+#             original_url = random_photo['src']['landscape'] # or 'large2x', 'large', 'medium', 'small', etc.
+#             resized_url = f"{original_url}?auto=compress&cs=tinysrgb&h={height}&w={width}"
+#             return Image(url=resized_url)
+#         else:
+#             print("No images found for the given query.")
+#             return None
+#     else:
+#         print(f"Error: {response.status_code} - {response.text}")
+#         return None
+
+# def fetch_single_image(query, width, height): 
+#     headers = {"Authorization": PEXELS_API_KEY}
+#     params = {"query": query, "per_page": 5}  # Request up to 5 images
+#     response = requests.get(PEXELS_BASE_URL, headers=headers, params=params)
+#     if response.status_code == 200:
+#         data = response.json()
+#         photos = data.get("photos", [])
+#         if photos:
+#             random_photo = random.choice(photos)  # Ensure 'photos' is a list
+#             original_url = random_photo['src']['landscape']
+#             resized_url = f"{original_url}?auto=compress&cs=tinysrgb&h={height}&w={width}"
+#             return {"url": resized_url}
+#         else:
+#             print("No images found for the given query.")
+#             return None
+#     else:
+#         print(f"Error: {response.status_code} - {response.text}")
+#         return None
+    
+
+def fetch_single_image(query, width, height): 
     headers = {"Authorization": PEXELS_API_KEY}
-    params = {"query": query, "per_page": 5}  # Request up to 5 images
-    print("Code entered")
+    params = {"query": query, "per_page": 20}  # Request up to 5 images
     response = requests.get(PEXELS_BASE_URL, headers=headers, params=params)
-    print("response is",response)
     if response.status_code == 200:
         data = response.json()
         photos = data.get("photos", [])
         if photos:
-            # Choose a random photo from the top 5
-            random_photo = random.choice(photos)  
-            print("Random photo is",random_photo)
-            # Fetch the original URL and resize it using Pexels parameters
-            original_url = random_photo['src']['landscape'] # or 'large2x', 'large', 'medium', 'small', etc.
+            random_photo = random.choice(photos)  # Ensure 'photos' is a list
+            original_url = random_photo['src']['landscape']
             resized_url = f"{original_url}?auto=compress&cs=tinysrgb&h={height}&w={width}"
-            return Image(url=resized_url)
+
+            # Fetch the image data
+            image_response = requests.get(resized_url)
+            if image_response.status_code == 200:
+                image_data = base64.b64encode(image_response.content).decode('utf-8')  # Encode image as base64
+                return {
+                    "url": resized_url,
+                    "base64_image": image_data
+                }
+            else:
+                print(f"Error fetching image: {image_response.status_code}")
+                return None
         else:
             print("No images found for the given query.")
             return None
     else:
         print(f"Error: {response.status_code} - {response.text}")
         return None
+    
+
 
 def generate_blog(title, tone, custom_tone, keywords=None):
     # Ensure all fields are checked for inappropriate language
@@ -1059,20 +1112,9 @@ def generate_blog(title, tone, custom_tone, keywords=None):
         temperature=0.8
     )
     
-
-    image_query = f"{title} {' '.join(keywords) if keywords else ''}"
-    
-    # Fetch an image based on the title and keywords
-    image = fetch_single_image(image_query, 900, 500)
-    print("The image is generated:", image)
-    
-
-    if not image:
-        return "Error: Failed to fetch an image for the blog."
-    
     # Return the generated blog content
     # return chat_completion.choices[0].message.content
-    return chat_completion.choices[0].message.content, image
+    return chat_completion.choices[0].message.content
 
  
 

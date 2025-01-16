@@ -1719,7 +1719,7 @@ def update_user_services(request, email):
 
 
 #Encrypted API To get all user Services
-
+@require_GET
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def get_user_services(request, email):
@@ -4565,8 +4565,7 @@ def generate_blog_view(request):
 
         # Generate image
         logger.info("Fetching related image...")
-        # query = title if not keywords else f"{title}, {', '.join(keywords)}"
-        query = title
+        query = title + ","+ keywords if keywords else title
         image = fetch_single_image(query, width=800, height=600)
 
         if blog_content:
@@ -4595,6 +4594,67 @@ def generate_blog_view(request):
         logger.error(f"An unexpected error occurred: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
 
+@require_POST
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def regenerate_image(request):
+    try:
+        # Load and decode the request body
+        body = request.body.decode('utf-8')
+        logger.debug(f"Request body received: {body}")
+
+        # Extract and decrypt the incoming payload
+        data = json.loads(body)
+        encrypted_content = data.get('encrypted_content')
+        if not encrypted_content:
+            logger.warning("No encrypted content found in the request.")
+            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+        logger.debug(f"Encrypted content received: {encrypted_content}")
+        decrypted_content = decrypt_data(encrypted_content)
+        logger.debug(f"Decrypted content: {decrypted_content}")
+
+        # Parse the decrypted JSON
+        data = json.loads(decrypted_content)
+
+        # Extract title and keywords
+        title = data.get('title')
+        keywords = data.get('keywords')
+
+        # Ensure required fields are present
+        if not title:
+            return JsonResponse({"error": "Missing 'title' in the request."}, status=400)
+
+        # Generate the query string for the image
+        query = title + ("," + keywords if keywords else "")
+        logger.debug(f"Generated query for image: {query}")
+
+        # Fetch related image
+        logger.info("Fetching related image...")
+        image = fetch_single_image(query, width=800, height=600)
+
+        if image:
+            logger.info("Image fetched successfully.")
+            response_data = {
+                'imagebase64': image['base64_image'] if 'base64_image' in image else None
+            }
+            encrypted_response_content = encrypt_data(response_data)
+            return JsonResponse({
+                'encrypted_content': encrypted_response_content
+            }, status=200)
+
+        logger.error("Failed to fetch image.")
+        return JsonResponse({'error': 'Failed to fetch image. Please try again.'}, status=500)
+
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON format received.")
+        return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
+    except ValueError as e:
+        logger.error(f"ValueError occurred: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 #Encrypted API For rephrase Service

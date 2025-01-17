@@ -6421,7 +6421,7 @@ def delete_user_account(request):
             # Decrypt the request data
             decrypted_content = decrypt_data(encrypted_content)
             data = json.loads(decrypted_content)
-            email = data.get('email')
+            email = data.get('userEmail')
 
             if not email:
                 return JsonResponse({"error": "Email is required"}, status=400)

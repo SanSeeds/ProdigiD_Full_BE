@@ -81,7 +81,7 @@ urlpatterns = [
     path('sales_script_generator_android/', views.sales_script_generator_android, name='sales_script_generator_android'),
     path('rephrasely_view_android/', views.rephrasely_view_android, name='rephrasely_view_android'),
     path('generate_blog_view_android/', views.generate_blog_view_android, name='generate_blog_view_android'),
-    path('create_presentation_android/', views.create_presentation_android, name='create_presentation_android'),
+    # path('create_presentation_android/', views.create_presentation_android, name='create_presentation_android'),
     path('summarize_document_android/', views.summarize_document_android, name='summarize_document_android'),
     path('fix_null_values_in_translation/', views.fix_null_values_in_translation, name='fix_null_values_in_translation'),
 

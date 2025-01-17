@@ -18,3 +18,30 @@ ERROR 2025-01-13 17:38:35,604 views Internal server error: 'NoneType' object has
 ERROR 2025-01-13 17:38:35,610 log Internal Server Error: /signin/
 ERROR 2025-01-13 17:38:35,610 basehttp "POST /signin/ HTTP/1.1" 500 34
 ERROR 2025-01-13 17:38:35,610 basehttp "POST /signin/ HTTP/1.1" 500 34
+ERROR 2025-01-14 10:52:40,776 log Internal Server Error: /remove_service_yearly/
+ERROR 2025-01-14 10:52:40,778 basehttp "POST /remove_service_yearly/ HTTP/1.1" 500 51
+ERROR 2025-01-14 10:52:40,778 basehttp "POST /remove_service_yearly/ HTTP/1.1" 500 51
+ERROR 2025-01-14 16:12:27,362 views Unexpected error: User matching query does not exist.
+ERROR 2025-01-14 16:12:27,370 log Internal Server Error: /add_user/
+ERROR 2025-01-14 16:12:27,370 basehttp "POST /add_user/ HTTP/1.1" 500 48
+ERROR 2025-01-14 16:12:27,370 basehttp "POST /add_user/ HTTP/1.1" 500 48
+ERROR 2025-01-15 10:38:39,349 views An unexpected error occurred: 'module' object is not callable
+ERROR 2025-01-15 10:38:39,353 log Internal Server Error: /blog_generator/
+ERROR 2025-01-15 10:38:39,354 basehttp "POST /blog_generator/ HTTP/1.1" 500 44
+ERROR 2025-01-15 10:38:39,354 basehttp "POST /blog_generator/ HTTP/1.1" 500 44
+ERROR 2025-01-15 10:40:48,127 views An unexpected error occurred: name 'image' is not defined
+ERROR 2025-01-15 10:40:48,132 log Internal Server Error: /blog_generator/
+ERROR 2025-01-15 10:40:48,132 basehttp "POST /blog_generator/ HTTP/1.1" 500 40
+ERROR 2025-01-15 10:40:48,132 basehttp "POST /blog_generator/ HTTP/1.1" 500 40
+ERROR 2025-01-15 10:41:01,409 views An unexpected error occurred: name 'image' is not defined
+ERROR 2025-01-15 10:41:01,412 log Internal Server Error: /blog_generator/
+ERROR 2025-01-15 10:41:01,412 basehttp "POST /blog_generator/ HTTP/1.1" 500 40
+ERROR 2025-01-15 10:41:01,412 basehttp "POST /blog_generator/ HTTP/1.1" 500 40
+ERROR 2025-01-15 10:51:44,148 views An unexpected error occurred: 'module' object is not callable
+ERROR 2025-01-15 10:51:44,156 log Internal Server Error: /blog_generator/
+ERROR 2025-01-15 10:51:44,158 basehttp "POST /blog_generator/ HTTP/1.1" 500 44
+ERROR 2025-01-15 10:51:44,158 basehttp "POST /blog_generator/ HTTP/1.1" 500 44
+ERROR 2025-01-15 10:53:27,001 views An unexpected error occurred: 'dict' object has no attribute 'url'
+ERROR 2025-01-15 10:53:27,004 log Internal Server Error: /blog_generator/
+ERROR 2025-01-15 10:53:27,005 basehttp "POST /blog_generator/ HTTP/1.1" 500 49
+ERROR 2025-01-15 10:53:27,005 basehttp "POST /blog_generator/ HTTP/1.1" 500 49

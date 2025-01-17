@@ -122,26 +122,7 @@ class TemporaryEmailVerificationOTP(models.Model):
 
     def __str__(self):
         return f"OTP for {self.email} - {'Expired' if self.is_otp_expired() else 'Valid'}"
-    
-# class Payment(models.Model):
-#     order_id = models.CharField(max_length=255, unique=True)
-#     payment_id = models.CharField(max_length=255, null=True, blank=True)
-#     signature = models.CharField(max_length=255, null=True, blank=True)
-#     email = models.EmailField(null=True, blank=True)
-#     amount = models.DecimalField(max_digits=10, decimal_places=2)
-#     currency = models.CharField(max_length=10)
-#     payment_capture = models.BooleanField(default=False)
-#     created_at = models.DateTimeField(auto_now_add=True)  # When the record was created
-#     verified = models.BooleanField(default=False)
-    
-#     # New fields
-#     order_datetime = models.DateTimeField(null=True, blank=True)  # When the order was placed
-#     subscribed_services = models.JSONField(null=True, blank=True)  # Stores service details as a JSON object
-#     service = models.ForeignKey('UserService', on_delete=models.CASCADE, null=True, blank=True)
-
-#     def __str__(self):
-#         return f"Order {self.order_id} - {self.amount} {self.currency}"
-    
+        
 class Payment(models.Model):
     order_id = models.CharField(max_length=255, unique=True)
     payment_id = models.CharField(max_length=255, null=True, blank=True)
@@ -321,3 +302,31 @@ class GuestWordsCount(models.Model):
 
     def __str__(self):
         return self.email
+    
+
+class UserPasswordHistory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    email = models.EmailField()  # Store the email associated with the password
+    hashed_password = models.CharField(max_length=255)  # Store the hashed password
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Password history for {self.user.username} at {self.created_at}"
+
+    @classmethod
+    def get_recent_passwords(cls, user):
+        """ Get the last 5 hashed passwords for a user """
+        return cls.objects.filter(user=user).order_by('-created_at')[:5]
+
+    @classmethod
+    def store_password(cls, user, email, hashed_password):
+        """ Store a new password and ensure only the last 5 passwords are kept """
+        # Add the new password
+        new_password_entry = cls.objects.create(user=user, email=email, hashed_password=hashed_password)
+
+        # Keep only the latest 5 passwords for this email
+        recent_passwords = cls.objects.filter(user=user).order_by('-created_at')[:5]
+        if recent_passwords.count() > 5:
+            # Delete the oldest password entries, keeping only the most recent 5
+            cls.objects.filter(user=user).exclude(id__in=[p.id for p in recent_passwords]).delete()
+

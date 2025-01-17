@@ -23,12 +23,15 @@ urlpatterns = [
     path('change_password/', views.change_password, name='change_password'),
     path('send_otp/', views.send_otp, name='send_otp'),
     path('reset_password_with_otp/', views.reset_password_with_otp, name='reset_password_with_otp'),
+    path('regenerate_image/', views.regenerate_image, name='regenerate_image'),
+
 
     path('add_user/', views.add_user, name='add_user'),
     path('create_presentation/', views.create_presentation, name='create_presentation'),
     path('create_presentation_english/', views.create_presentation_english, name='create_presentation_english'),
     path('save_selected_services/', views.save_selected_services, name='save_selected_services'),
     path('get_user_services/<str:email>/', views.get_user_services, name='get_user_services'),
+
     path('update_services/', views.update_user_services, name='update_user_services'),
     path('logout_from_all_devices/', views.logout_from_all_devices, name='logout_from_all_devices'),
     path('check_session_status/', views.check_session_status, name='check_session_status'),
@@ -81,7 +84,7 @@ urlpatterns = [
     path('sales_script_generator_android/', views.sales_script_generator_android, name='sales_script_generator_android'),
     path('rephrasely_view_android/', views.rephrasely_view_android, name='rephrasely_view_android'),
     path('generate_blog_view_android/', views.generate_blog_view_android, name='generate_blog_view_android'),
-    path('create_presentation_android/', views.create_presentation_android, name='create_presentation_android'),
+    # path('create_presentation_android/', views.create_presentation_android, name='create_presentation_android'),
     path('summarize_document_android/', views.summarize_document_android, name='summarize_document_android'),
     path('fix_null_values_in_translation/', views.fix_null_values_in_translation, name='fix_null_values_in_translation'),
 

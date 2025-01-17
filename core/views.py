@@ -10,14 +10,14 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.http import FileResponse, HttpResponse, JsonResponse
 from gtts import gTTS
-from .email_llama3 import BHASHINI_API_KEY, BHASHINI_USER_ID, ask_question_chatbot, generate_blog, extract_document_content, generate_email, bhashini_translate,generate_bus_pro, generate_offer_letter, generate_summary, generate_content, generate_sales_script, get_templates, rephrasely, translate_multiple_texts, translate_with_retry, update_presentation_with_generated_content  
+from .email_llama3 import BHASHINI_API_KEY, BHASHINI_USER_ID, ask_question_chatbot, fetch_single_image, generate_blog, extract_document_content, generate_email, bhashini_translate,generate_bus_pro, generate_offer_letter, generate_summary, generate_content, generate_sales_script, get_templates, rephrasely, translate_multiple_texts, translate_with_retry, update_presentation_with_generated_content  
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from django.utils import timezone
 from rest_framework_api_key.permissions import HasAPIKey
 from django.conf import settings
 from datetime import date, datetime, timedelta
-from .models import Cart, EmailVerificationOTP, GuestLogin, GuestWordsCount, PasswordResetRequest, Payment, Profile, TemporaryEmailVerificationOTP, UserService, UserSession, YearlyCart
+from .models import Cart, EmailVerificationOTP, GuestLogin, GuestWordsCount, PasswordResetRequest, Payment, Profile, TemporaryEmailVerificationOTP, UserPasswordHistory, UserService, UserSession, YearlyCart
 from django.core.mail import send_mail
 from django.contrib.auth import update_session_auth_hash
 from django.views.decorators.csrf import csrf_exempt
@@ -76,6 +76,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.enums import TA_CENTER
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from django.views.decorators.http import require_GET, require_http_methods , require_POST
 # import googletrans 
 
 logger = logging.getLogger(__name__)
@@ -149,6 +150,7 @@ def guest_otp_expiry_time():
 
 @csrf_exempt
 @permission_classes([HasAPIKey])
+@require_POST
 def create_razorpay_order(request):
     if request.method == "POST":
         try:
@@ -209,6 +211,7 @@ def create_razorpay_order(request):
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 @csrf_exempt
+@require_POST
 def verify_payment(request):
     try:
         # Extract and decrypt the encrypted content from the request
@@ -341,6 +344,7 @@ def verify_payment(request):
 
 
 @csrf_exempt
+@require_POST
 def verify_payment_yearly(request):
     if request.method == "POST":
         try:
@@ -484,6 +488,7 @@ def verify_payment_yearly(request):
 from dateutil.relativedelta import relativedelta
 
 @csrf_exempt
+@require_POST
 def extend_service(request):
     if request.method == "POST":
         try:
@@ -640,6 +645,7 @@ def extend_service(request):
 
 
 @csrf_exempt
+@require_POST
 def extend_service_yearly(request):
     if request.method == "POST":
         try:
@@ -794,6 +800,7 @@ def extend_service_yearly(request):
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 @csrf_exempt
+@require_POST
 def generate_invoice(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -872,6 +879,7 @@ def generate_invoice(request):
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 @csrf_exempt
+@require_GET
 def invoice_details(request):
     if request.method == "GET":
         payment_id = request.GET.get('payment_id')  # Fetch payment_id from query parameters
@@ -924,8 +932,255 @@ def decrypt_data(encrypted_data):
     except Exception as e:
         raise ValueError(f"Decryption error: {e}")
 
+# @csrf_exempt
+# @permission_classes([HasAPIKey])
+# @require_POST
+# def add_user(request):
+#     if request.method == 'POST':
+#         try:
+#             # Load untrusted domains from the text file
+#             with open('./domains.txt', 'r') as file:
+#                 untrusted_domains = {line.strip().lower() for line in file}
+
+#             # Load and decode the request body
+#             body = request.body.decode('utf-8')
+#             logger.debug(f"Request body received: {body}")
+
+#             # Extract and decrypt the incoming payload
+#             data = json.loads(body)
+#             encrypted_content = data.get('encrypted_content')
+#             if not encrypted_content:
+#                 logger.warning("No encrypted content found in the request.")
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#             logger.debug(f"Encrypted content received: {encrypted_content}")
+#             decrypted_content = decrypt_data(encrypted_content)  # Decrypt the content using your custom decrypt_data function
+#             logger.debug(f"Decrypted content: {decrypted_content}")
+
+#             content = json.loads(decrypted_content)
+
+#             if not content:
+#                 logger.warning('No content found in the request.')
+#                 return JsonResponse({'error': 'No content found in the request.'}, status=400)
+
+#             # Extract required fields
+#             first_name = content.get('first_name')
+#             last_name = content.get('last_name')
+#             username = content.get('username')
+#             email = content.get('email')
+#             password = content.get('password')
+#             confirm_password = content.get('confirm_password')
+#             state = content.get('state')  # Extract the state field
+
+#             # Check if username and email are provided
+#             if not username:
+#                 return JsonResponse({'error': 'Username is required.'}, status=400)
+#             if not email:
+#                 return JsonResponse({'error': 'Email is required.'}, status=400)
+
+#             # Normalize username and email to lowercase
+#             username = username.lower()
+#             email = email.lower()
+
+#             # Extract domain from the email
+#             try:
+#                 email_domain = email.split('@')[1].lower()
+#             except IndexError:
+#                 return JsonResponse({'error': 'Invalid email format.'}, status=400)
+
+#             # Check if the email domain is in the untrusted list
+#             if email_domain in untrusted_domains:
+#                 return JsonResponse({
+#                     'error': 'It seems you are using an untrusted email domain service. Please try with another email.'}, 
+#                     status=400)
+
+#             # Check if passwords match
+#             if password != confirm_password:
+#                 return JsonResponse({'error': 'Passwords do not match.'}, status=400)
+
+#             # Check if username already exists
+#             if User.objects.filter(username=username).exists():
+#                 return JsonResponse({'error': 'Username already exists.'}, status=400)
+
+#             # Validate email
+#             try:
+#                 validate_email(email)
+#             except ValidationError:
+#                 return JsonResponse({'error': 'Invalid email address.'}, status=400)
+
+#             # Check if email already exists
+#             if User.objects.filter(email=email).exists():
+#                 return JsonResponse({'error': 'Email already exists.'}, status=400)
+
+#             # Check if state is provided
+#             if not state:
+#                 return JsonResponse({'error': 'State is required.'}, status=400)
+
+#             # Create user
+#             user = User.objects.create(
+#                 first_name=first_name,
+#                 last_name=last_name,
+#                 username=username,
+#                 email=email,
+#                 password=make_password(password),  # Hash the password
+#                 state = state
+#             )
+#             user.save()
+
+
+#             # Prepare the response
+#             response_data = {
+#                 'message': 'User created successfully',
+#                 'user_id': user.id,
+#                 'email': email
+#             }
+
+#             # Encrypt the response content
+#             encrypted_response_content = encrypt_data(response_data)  # Encrypt the response using your custom encrypt_data function
+
+#             # Return the encrypted response
+#             return JsonResponse({'encrypted_content': encrypted_response_content}, status=201)
+
+#         except json.JSONDecodeError:
+#             logger.error("Invalid JSON format in request")
+#             return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+#         except Exception as e:
+#             logger.error(f"Unexpected error: {str(e)}")
+#             return JsonResponse({'error': str(e)}, status=500)
+#     else:
+#         logger.error("Invalid request method")
+#         return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+# @csrf_exempt
+# @permission_classes([HasAPIKey])
+# @require_POST
+# def add_user(request):
+#     if request.method == 'POST':
+#         try:
+#             # Load untrusted domains from the text file
+#             with open('./domains.txt', 'r') as file:
+#                 untrusted_domains = {line.strip().lower() for line in file}
+
+#             # Load and decode the request body
+#             body = request.body.decode('utf-8')
+#             logger.debug(f"Request body received: {body}")
+
+#             # Extract and decrypt the incoming payload
+#             data = json.loads(body)
+#             encrypted_content = data.get('encrypted_content')
+#             if not encrypted_content:
+#                 logger.warning("No encrypted content found in the request.")
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#             logger.debug(f"Encrypted content received: {encrypted_content}")
+#             decrypted_content = decrypt_data(encrypted_content)  # Decrypt the content using your custom decrypt_data function
+#             logger.debug(f"Decrypted content: {decrypted_content}")
+
+#             content = json.loads(decrypted_content)
+
+#             if not content:
+#                 logger.warning('No content found in the request.')
+#                 return JsonResponse({'error': 'No content found in the request.'}, status=400)
+
+#             # Extract required fields
+#             first_name = content.get('first_name')
+#             last_name = content.get('last_name')
+#             username = content.get('username')
+#             email = content.get('email')
+#             password = content.get('password')
+#             confirm_password = content.get('confirm_password')
+#             state = content.get('state')  # Extract the state field
+
+#             # Check if username and email are provided
+#             if not username:
+#                 return JsonResponse({'error': 'Username is required.'}, status=400)
+#             if not email:
+#                 return JsonResponse({'error': 'Email is required.'}, status=400)
+
+#             # Normalize username and email to lowercase
+#             username = username.lower()
+#             email = email.lower()
+
+#             # Extract domain from the email
+#             try:
+#                 email_domain = email.split('@')[1].lower()
+#             except IndexError:
+#                 return JsonResponse({'error': 'Invalid email format.'}, status=400)
+
+#             # Check if the email domain is in the untrusted list
+#             if email_domain in untrusted_domains:
+#                 return JsonResponse({
+#                     'error': 'It seems you are using an untrusted email domain service. Please try with another email.'}, 
+#                     status=400)
+
+#             # Check if passwords match
+#             if password != confirm_password:
+#                 return JsonResponse({'error': 'Passwords do not match.'}, status=400)
+
+#             # Check if the password is the same as the email
+#             if password == email:
+#                 return JsonResponse({'error': 'Password cannot be the same as the email address.'}, status=400)
+            
+#             if password == username:
+#                 return JsonResponse({'error': 'Password cannot be the same as the username.'}, status=400)
+
+#             # Check if username already exists
+#             if User.objects.filter(username=username).exists():
+#                 return JsonResponse({'error': 'Username already exists.'}, status=400)
+
+#             # Validate email
+#             try:
+#                 validate_email(email)
+#             except ValidationError:
+#                 return JsonResponse({'error': 'Invalid email address.'}, status=400)
+
+#             # Check if email already exists
+#             if User.objects.filter(email=email).exists():
+#                 return JsonResponse({'error': 'Email already exists.'}, status=400)
+
+#             # Check if state is provided
+#             if not state:
+#                 return JsonResponse({'error': 'State is required.'}, status=400)
+
+#             # Create user
+#             user = User.objects.create(
+#                 first_name=first_name,
+#                 last_name=last_name,
+#                 username=username,
+#                 email=email,
+#                 password=make_password(password),  # Hash the password
+#                 state=state
+#             )
+#             user.save()
+
+#             # Prepare the response
+#             response_data = {
+#                 'message': 'User created successfully',
+#                 'user_id': user.id,
+#                 'email': email
+#             }
+
+#             # Encrypt the response content
+#             encrypted_response_content = encrypt_data(response_data)  # Encrypt the response using your custom encrypt_data function
+
+#             # Return the encrypted response
+#             return JsonResponse({'encrypted_content': encrypted_response_content}, status=201)
+
+#         except json.JSONDecodeError:
+#             logger.error("Invalid JSON format in request")
+#             return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+#         except Exception as e:
+#             logger.error(f"Unexpected error: {str(e)}")
+#             return JsonResponse({'error': str(e)}, status=500)
+#     else:
+#         logger.error("Invalid request method")
+#         return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+from django.contrib.auth.hashers import make_password, check_password
+
 @csrf_exempt
 @permission_classes([HasAPIKey])
+@require_POST
 def add_user(request):
     if request.method == 'POST':
         try:
@@ -989,6 +1244,13 @@ def add_user(request):
             if password != confirm_password:
                 return JsonResponse({'error': 'Passwords do not match.'}, status=400)
 
+            # Check if the password is the same as the email
+            if password == email:
+                return JsonResponse({'error': 'Password cannot be the same as the email address.'}, status=400)
+
+            if password == username:
+                return JsonResponse({'error': 'Password cannot be the same as the username.'}, status=400)
+
             # Check if username already exists
             if User.objects.filter(username=username).exists():
                 return JsonResponse({'error': 'Username already exists.'}, status=400)
@@ -1001,7 +1263,12 @@ def add_user(request):
 
             # Check if email already exists
             if User.objects.filter(email=email).exists():
-                return JsonResponse({'error': 'Email already exists.'}, status=400)
+                user = User.objects.get(email=email)
+                # Check if the password matches any of the last 5 passwords for this email
+                recent_passwords = UserPasswordHistory.get_recent_passwords(user)
+                for recent_password in recent_passwords:
+                    if check_password(password, recent_password.hashed_password):  # Check if the password matches any of the recent passwords
+                        return JsonResponse({'error': 'New password cannot be the same as any of the last 5 passwords.'}, status=400)
 
             # Check if state is provided
             if not state:
@@ -1014,10 +1281,12 @@ def add_user(request):
                 username=username,
                 email=email,
                 password=make_password(password),  # Hash the password
-                state = state
+                state=state
             )
             user.save()
 
+            # Store the new hashed password in the history table
+            UserPasswordHistory.store_password(user, email, make_password(password))
 
             # Prepare the response
             response_data = {
@@ -1042,8 +1311,10 @@ def add_user(request):
         logger.error("Invalid request method")
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+
 @csrf_exempt
 @permission_classes([HasAPIKey])
+@require_POST
 def send_email_verification_otp(request):
     if request.method == 'POST':
         try:
@@ -1157,6 +1428,7 @@ The ProdigiDesk Team
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def fetch_filtered_payments(request):
@@ -1226,6 +1498,7 @@ def fetch_filtered_payments(request):
 
 # Backend OTP Verification API
 @csrf_exempt
+@require_POST
 def otp_verify(request):
     if request.method == 'POST':
         try:
@@ -1276,6 +1549,7 @@ def otp_verify(request):
 
 
 @csrf_exempt
+@require_POST
 def send_feedback(request):
     if request.method == 'POST':
         try:
@@ -1338,6 +1612,7 @@ def send_feedback(request):
 
 
 @csrf_exempt
+@require_POST
 def save_selected_services(request):
     if request.method == "POST":
         try:
@@ -1403,7 +1678,8 @@ def save_selected_services(request):
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 
-@csrf_exempt  
+@csrf_exempt
+@require_POST
 def update_user_services(request, email):
     if request.method == "POST":
         # Retrieve the user and their services
@@ -1443,6 +1719,9 @@ def update_user_services(request, email):
 
 
 #Encrypted API To get all user Services
+@require_GET
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, HasAPIKey])
 def get_user_services(request, email):
     if request.method == "GET":
         try:
@@ -1511,12 +1790,14 @@ def get_user_services(request, email):
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 
+
 def generate_otp():
     return ''.join(random.choices('0123456789', k=6))
 
 
 # Encrypted API to send OTP for Password Reset
 @csrf_exempt
+@require_POST
 def send_otp(request):
     if request.method == 'POST':
         try:
@@ -1601,6 +1882,86 @@ The ProdigiDesk Team
     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
 
 
+# @csrf_exempt
+# @api_view(['POST'])
+# @permission_classes([])
+# def reset_password_with_otp(request):
+#     if request.method == 'POST':
+#         try:
+#             # Extract and decrypt the incoming payload
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             logger.debug(f"Encrypted content received: {encrypted_content}")
+
+#             if not encrypted_content:
+#                 logger.warning('No encrypted content found in the request.')
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#             decrypted_content = decrypt_data(encrypted_content)
+#             logger.debug(f"Decrypted content: {decrypted_content}")
+#             data = json.loads(decrypted_content)
+
+#             email = data.get('email')
+#             otp = data.get('otp')
+#             new_password = data.get('new_password')
+#             confirm_new_password = data.get('confirm_new_password')
+
+#             logger.debug(f"Received password reset request for email: {email} with OTP: {otp}")
+
+#             try:
+#                 user = User.objects.get(email=email)
+#             except User.DoesNotExist:
+#                 logger.warning(f"Email does not exist: {email}")
+#                 encrypted_response = encrypt_data({'error': 'Email does not exist'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=404)
+
+#             # Verify OTP
+#             try:
+#                 reset_request = PasswordResetRequest.objects.get(user=user, otp=otp)
+#                 if reset_request.expiry_time < timezone.now():
+#                     logger.warning(f"OTP expired for user {user.username}")
+#                     encrypted_response = encrypt_data({'error': 'OTP expired'})
+#                     return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+#             except PasswordResetRequest.DoesNotExist:
+#                 logger.warning(f"Invalid OTP for user {user.username}")
+#                 encrypted_response = encrypt_data({'error': 'Invalid OTP'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
+#             # Ensure new password is not the same as the current password
+#             if user.check_password(new_password):
+#                 logger.warning(f"User {user.username} tried to use the same new password as the current password.")
+#                 encrypted_response = encrypt_data({'error': 'New password cannot be the same as the current password.'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
+#             # Check if new passwords match
+#             if new_password != confirm_new_password:
+#                 logger.warning(f"User {user.username} provided non-matching new passwords.")
+#                 encrypted_response = encrypt_data({'error': 'New passwords do not match.'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
+#             # Update password
+#             user.set_password(new_password)
+#             user.save()
+#             logger.info(f"User {user.username} successfully reset their password.")
+
+#             # Remove the OTP request after successful password reset
+#             reset_request.delete()
+
+#             encrypted_response = encrypt_data({'success': 'Password reset successfully'})
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+#         except json.JSONDecodeError:
+#             logger.error("Invalid JSON format in request")
+#             encrypted_response = encrypt_data({'error': 'Invalid JSON format'})
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+#         except Exception as e:
+#             logger.error(f"Unexpected error: {str(e)}")
+#             encrypted_response = encrypt_data({'error': str(e)})
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=500)
+
+#     logger.error("Invalid request method")
+#     encrypted_response = encrypt_data({'error': 'Invalid request method'})
+#     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
+
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([])
@@ -1645,22 +2006,33 @@ def reset_password_with_otp(request):
                 encrypted_response = encrypt_data({'error': 'Invalid OTP'})
                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
 
+            # Ensure new passwords match
+            if new_password != confirm_new_password:
+                logger.warning(f"User {user.username} provided non-matching new passwords.")
+                encrypted_response = encrypt_data({'error': 'New passwords do not match.'})
+                return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
             # Ensure new password is not the same as the current password
             if user.check_password(new_password):
                 logger.warning(f"User {user.username} tried to use the same new password as the current password.")
                 encrypted_response = encrypt_data({'error': 'New password cannot be the same as the current password.'})
                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
 
-            # Check if new passwords match
-            if new_password != confirm_new_password:
-                logger.warning(f"User {user.username} provided non-matching new passwords.")
-                encrypted_response = encrypt_data({'error': 'New passwords do not match.'})
-                return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+            # Check if the new password matches any of the last 5 passwords
+            recent_passwords = UserPasswordHistory.get_recent_passwords(user)
+            for recent_password in recent_passwords:
+                if check_password(new_password, recent_password.hashed_password):
+                    logger.warning(f"User {user.username} tried to use a password from their last 5 passwords.")
+                    encrypted_response = encrypt_data({'error': 'New password cannot match any of the last 5 passwords.'})
+                    return JsonResponse({'encrypted_content': encrypted_response}, status=400)
 
             # Update password
             user.set_password(new_password)
             user.save()
             logger.info(f"User {user.username} successfully reset their password.")
+
+            # Store the new hashed password in the password history
+            UserPasswordHistory.store_password(user, email, make_password(new_password))
 
             # Remove the OTP request after successful password reset
             reset_request.delete()
@@ -1684,6 +2056,7 @@ def reset_password_with_otp(request):
 
 #Encrypted API to Sign the user in
 @csrf_exempt
+@require_POST
 def signin(request):
     if request.method == 'POST':
         try:
@@ -1761,6 +2134,7 @@ def signin(request):
 
 #Encrypted API to check session status of the user
 @csrf_exempt
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def check_session_status(request):
@@ -1823,6 +2197,7 @@ def check_session_status(request):
 
 #Encrypted API to logout the user from all devices
 @csrf_exempt
+@require_POST
 def logout_from_all_devices(request):
     if request.method == 'POST':
         try:
@@ -1927,6 +2302,7 @@ def logout_from_all_devices(request):
 
 
 @csrf_exempt
+@require_POST
 def session_logout(request):
     if request.method == 'POST':
         try:
@@ -1959,7 +2335,86 @@ def session_logout(request):
 
 
 #Encrypted API to Reset the user's password
+# @csrf_exempt
+# @require_POST
+# def reset_password(request):
+#     if request.method == 'POST':
+#         try:
+#             # Extract and decrypt the incoming payload
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             logger.debug(f"Encrypted content received: {encrypted_content}")
+
+#             if not encrypted_content:
+#                 logger.warning('No encrypted content found in the request.')
+#                 encrypted_response = encrypt_data({'error': 'No encrypted content found in the request.'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
+#             decrypted_content = decrypt_data(encrypted_content)
+#             logger.debug(f"Decrypted content: {decrypted_content}")
+#             data = json.loads(decrypted_content)
+            
+#             email = data.get('email')
+#             otp = data.get('otp')
+#             new_password = data.get('new_password')
+#             confirm_password = data.get('confirm_password')
+
+#             if not all([email, otp, new_password, confirm_password]):
+#                 logger.warning('All fields are required')
+#                 encrypted_response = encrypt_data({'error': 'All fields are required'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
+#             if new_password != confirm_password:
+#                 logger.warning('Passwords do not match')
+#                 encrypted_response = encrypt_data({'error': 'Passwords do not match'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
+#             try:
+#                 user = User.objects.get(email=email)
+#                 logger.info(f'User found: {user.username}')
+#             except User.DoesNotExist:
+#                 logger.warning(f'User with email {email} does not exist')
+#                 encrypted_response = encrypt_data({'error': 'User with this email does not exist'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=404)
+
+#             try:
+#                 password_reset_request = PasswordResetRequest.objects.get(user=user, otp=otp)
+#                 logger.info('Password reset request found')
+#             except PasswordResetRequest.DoesNotExist:
+#                 logger.warning('Invalid OTP')
+#                 encrypted_response = encrypt_data({'error': 'Invalid OTP'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
+#             if password_reset_request.expiry_time < timezone.now():
+#                 logger.warning('OTP has expired')
+#                 encrypted_response = encrypt_data({'error': 'OTP has expired'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
+#             user.set_password(new_password)
+#             user.save()
+#             logger.info(f'Password for user {user.username} reset successfully')
+
+#             password_reset_request.delete()
+#             logger.info('Password reset request deleted')
+
+#             encrypted_response = encrypt_data({'success': 'Password reset successfully'})
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+#         except json.JSONDecodeError:
+#             logger.error('Invalid JSON format in request')
+#             encrypted_response = encrypt_data({'error': 'Invalid JSON format'})
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+#         except Exception as e:
+#             logger.error(f"Unexpected error: {str(e)}")
+#             encrypted_response = encrypt_data({'error': str(e)})
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=500)
+
+#     else:
+#         logger.error('Invalid request method')
+#         encrypted_response = encrypt_data({'error': 'Invalid request method'})
+#         return JsonResponse({'encrypted_content': encrypted_response}, status=405)
+
 @csrf_exempt
+@require_POST
 def reset_password(request):
     if request.method == 'POST':
         try:
@@ -2012,9 +2467,21 @@ def reset_password(request):
                 encrypted_response = encrypt_data({'error': 'OTP has expired'})
                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
 
+            # Check if the new password matches any of the last 5 passwords
+            recent_passwords = UserPasswordHistory.get_recent_passwords(user)
+            for recent_password in recent_passwords:
+                if check_password(new_password, recent_password.hashed_password):  # Compare the hashed passwords
+                    logger.warning('New password matches one of the last 5 passwords')
+                    encrypted_response = encrypt_data({'error': 'New password cannot match any of the last 5 passwords'})
+                    return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
+            # Reset the password
             user.set_password(new_password)
             user.save()
             logger.info(f'Password for user {user.username} reset successfully')
+
+            # Store the new hashed password in the password history
+            UserPasswordHistory.store_password(user, email, make_password(new_password))
 
             password_reset_request.delete()
             logger.info('Password reset request deleted')
@@ -2036,6 +2503,8 @@ def reset_password(request):
         encrypted_response = encrypt_data({'error': 'Invalid request method'})
         return JsonResponse({'encrypted_content': encrypted_response}, status=405)
 
+
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def email_generator(request):
@@ -2167,6 +2636,7 @@ def email_generator(request):
             logger.error(f'Error processing request: {e}')
             return JsonResponse({'error': 'An error occurred while processing the request.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def translate_content(request):
@@ -2248,6 +2718,7 @@ SUPPORTED_LANGUAGES = {
 
 }
 
+@require_POST
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -2323,7 +2794,7 @@ MAX_WORKERS = 50  # Number of threads for concurrent processing
 RETRY_LIMIT = 1000  # Maximum retries for translation API
 MAX_SENTENCES_PER_CHUNK = 30  # Number of sentences to process in a single chunk
 
-
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def translate_content_formatted(request):
@@ -2403,6 +2874,7 @@ def translate_content_formatted(request):
 import concurrent.futures
 
 @csrf_exempt
+@require_POST
 def translate(request):
     if request.method != 'POST':
         logger.warning('Invalid request method')
@@ -2462,6 +2934,7 @@ def translate(request):
 
 
 @csrf_exempt
+@require_POST
 def translate_android(request):
     if request.method != 'POST':
         logger.warning('Invalid request method')
@@ -2532,6 +3005,7 @@ SUPPORTED_LANGUAGES = {
 
 
 @csrf_exempt
+@require_POST
 def translate_international(request):
     if request.method != 'POST':
         logger.warning('Invalid request method')
@@ -2605,7 +3079,7 @@ def translate_international(request):
 
     return JsonResponse({'encrypted_content': encrypted_response}, status=200)
 
-
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def business_proposal_generator(request):
@@ -2730,6 +3204,7 @@ def business_proposal_generator(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 #Encrypted API For Offer Letter Service
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def offer_letter_generator(request):
@@ -2850,6 +3325,7 @@ def offer_letter_generator(request):
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 
+@require_http_methods(["POST", "GET"])
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def profile(request):
@@ -2926,107 +3402,173 @@ from django.contrib.auth.models import User
 from rest_framework.decorators import api_view, permission_classes
 from django.core.exceptions import ObjectDoesNotExist
 
-
+@require_GET
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def profile_info(request):
-    try:
-        # Get the encrypted content from the query parameter
-        encrypted_content = request.GET.get('encrypted_content')
-        if not encrypted_content:
-            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-        
-        # Decrypt the content to get the original data
-        decrypted_content = decrypt_data(encrypted_content)
-        data = json.loads(decrypted_content)
-        
-        # Extract email from decrypted data
-        email = data.get('email')
-        if not email:
-            return JsonResponse({'error': 'Email parameter is required.'}, status=400)
+    if request.method == 'GET':
+        try:
+            # Get the encrypted content from the query parameter
+            encrypted_content = request.GET.get('encrypted_content')
+            if not encrypted_content:
+                return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+            
+            # Decrypt the content to get the original data
+            decrypted_content = decrypt_data(encrypted_content)
+            data = json.loads(decrypted_content)
+            
+            # Extract email from decrypted data
+            email = data.get('email')
+            if not email:
+                return JsonResponse({'error': 'Email parameter is required.'}, status=400)
 
-        # Fetch the user based on the provided email
-        user = User.objects.get(email=email)
+            # Fetch the user based on the provided email
+            user = User.objects.get(email=email)
 
-        # Get the user's subscribed services
-        user_service = UserService.objects.get(user=user)
+            # Get the user's subscribed services
+            user_service = UserService.objects.get(user=user)
 
-        # Get all payments made by the user
-        payments = Payment.objects.filter(email=user.email)
+            # Get all payments made by the user
+            payments = Payment.objects.filter(email=user.email)
 
-        # Prepare the payment details
-        payment_info = []
-        for payment in payments:
-            payment_info.append({
-                'order_id': payment.order_id,
-                'payment_id': payment.payment_id,
-                'amount': str(payment.amount),
-                'currency': payment.currency,
-                'created_at': payment.created_at.isoformat(),  # Convert to ISO string
-                'verified': payment.verified,
-            })
+            # Prepare the payment details
+            payment_info = []
+            for payment in payments:
+                payment_info.append({
+                    'order_id': payment.order_id,
+                    'payment_id': payment.payment_id,
+                    'amount': str(payment.amount),
+                    'currency': payment.currency,
+                    'created_at': payment.created_at.isoformat(),  # Convert to ISO string
+                    'verified': payment.verified,
+                })
 
-        # Prepare the response data with date fields converted to ISO format
-        response_data = {
-            'user_info': {
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'email': user.email,
-                'last_login': user.last_login.isoformat() if user.last_login else None,
-                'username': user.username,
-                'date_joined': user.date_joined.isoformat(),
-                'state': user.state
-            },
-            'services': {
-                'email_service': user_service.email_service,
-                'offer_letter_service': user_service.offer_letter_service,
-                'business_proposal_service': user_service.business_proposal_service,
-                'sales_script_service': user_service.sales_script_service,
-                'content_generation_service': user_service.content_generation_service,
-                'summarize_service': user_service.summarize_service,
-                'ppt_generation_service': user_service.ppt_generation_service,
-                'blog_generation_service': user_service.blog_generation_service,
-                'rephrasely_service': user_service.rephrasely_service,
-                'service_start_dates': {
-                    'email_service_start': user_service.email_end_date.isoformat() if user_service.email_end_date else None,
-                    'offer_letter_service_start': user_service.offer_letter_end_date.isoformat() if user_service.offer_letter_end_date else None,
-                    'business_proposal_service_start': user_service.business_proposal_end_date.isoformat() if user_service.business_proposal_end_date else None,
-                    'sales_script_service_start': user_service.sales_script_end_date.isoformat() if user_service.sales_script_end_date else None,
-                    'content_generation_service_start': user_service.content_generation_end_date.isoformat() if user_service.content_generation_end_date else None,
-                    'summarize_service_start': user_service.summarize_end_date.isoformat() if user_service.summarize_end_date else None,
-                    'ppt_generation_service_start': user_service.ppt_generation_end_date.isoformat() if user_service.ppt_generation_end_date else None,
-                    'blog_generation_service_start': user_service.blog_generation_end_date.isoformat() if user_service.blog_generation_end_date else None,
-                    'rephrasely_service_start': user_service.rephrasely_end_date.isoformat() if user_service.rephrasely_end_date else None,
+            # Prepare the response data with date fields converted to ISO format
+            response_data = {
+                'user_info': {
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'email': user.email,
+                    'last_login': user.last_login.isoformat() if user.last_login else None,
+                    'username': user.username,
+                    'date_joined': user.date_joined.isoformat(),
+                    'state': user.state
                 },
-                'service_end_dates': {
-                    'email_service_end': user_service.email_end_date.isoformat() if user_service.email_end_date else None,
-                    'offer_letter_service_end': user_service.offer_letter_end_date.isoformat() if user_service.offer_letter_end_date else None,
-                    'business_proposal_service_end': user_service.business_proposal_end_date.isoformat() if user_service.business_proposal_end_date else None,
-                    'sales_script_service_end': user_service.sales_script_end_date.isoformat() if user_service.sales_script_end_date else None,
-                    'content_generation_service_end': user_service.content_generation_end_date.isoformat() if user_service.content_generation_end_date else None,
-                    'summarize_service_end': user_service.summarize_end_date.isoformat() if user_service.summarize_end_date else None,
-                    'ppt_generation_service_end': user_service.ppt_generation_end_date.isoformat() if user_service.ppt_generation_end_date else None,
-                    'blog_generation_service_end': user_service.blog_generation_end_date.isoformat() if user_service.blog_generation_end_date else None,
-                    'rephrasely_service_end': user_service.rephrasely_end_date.isoformat() if user_service.rephrasely_end_date else None,
+                'services': {
+                    'email_service': user_service.email_service,
+                    'offer_letter_service': user_service.offer_letter_service,
+                    'business_proposal_service': user_service.business_proposal_service,
+                    'sales_script_service': user_service.sales_script_service,
+                    'content_generation_service': user_service.content_generation_service,
+                    'summarize_service': user_service.summarize_service,
+                    'ppt_generation_service': user_service.ppt_generation_service,
+                    'blog_generation_service': user_service.blog_generation_service,
+                    'rephrasely_service': user_service.rephrasely_service,
+                    'service_start_dates': {
+                        'email_service_start': user_service.email_end_date.isoformat() if user_service.email_end_date else None,
+                        'offer_letter_service_start': user_service.offer_letter_end_date.isoformat() if user_service.offer_letter_end_date else None,
+                        'business_proposal_service_start': user_service.business_proposal_end_date.isoformat() if user_service.business_proposal_end_date else None,
+                        'sales_script_service_start': user_service.sales_script_end_date.isoformat() if user_service.sales_script_end_date else None,
+                        'content_generation_service_start': user_service.content_generation_end_date.isoformat() if user_service.content_generation_end_date else None,
+                        'summarize_service_start': user_service.summarize_end_date.isoformat() if user_service.summarize_end_date else None,
+                        'ppt_generation_service_start': user_service.ppt_generation_end_date.isoformat() if user_service.ppt_generation_end_date else None,
+                        'blog_generation_service_start': user_service.blog_generation_end_date.isoformat() if user_service.blog_generation_end_date else None,
+                        'rephrasely_service_start': user_service.rephrasely_end_date.isoformat() if user_service.rephrasely_end_date else None,
+                    },
+                    'service_end_dates': {
+                        'email_service_end': user_service.email_end_date.isoformat() if user_service.email_end_date else None,
+                        'offer_letter_service_end': user_service.offer_letter_end_date.isoformat() if user_service.offer_letter_end_date else None,
+                        'business_proposal_service_end': user_service.business_proposal_end_date.isoformat() if user_service.business_proposal_end_date else None,
+                        'sales_script_service_end': user_service.sales_script_end_date.isoformat() if user_service.sales_script_end_date else None,
+                        'content_generation_service_end': user_service.content_generation_end_date.isoformat() if user_service.content_generation_end_date else None,
+                        'summarize_service_end': user_service.summarize_end_date.isoformat() if user_service.summarize_end_date else None,
+                        'ppt_generation_service_end': user_service.ppt_generation_end_date.isoformat() if user_service.ppt_generation_end_date else None,
+                        'blog_generation_service_end': user_service.blog_generation_end_date.isoformat() if user_service.blog_generation_end_date else None,
+                        'rephrasely_service_end': user_service.rephrasely_end_date.isoformat() if user_service.rephrasely_end_date else None,
+                    },
                 },
-            },
-            'payments': payment_info,
-        }
+                'payments': payment_info,
+            }
 
-        # Encrypt the response data
-        encrypted_response = encrypt_data(response_data)
-        return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+            # Encrypt the response data
+            encrypted_response = encrypt_data(response_data)
+            return JsonResponse({'encrypted_content': encrypted_response}, status=200)
 
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-    except ObjectDoesNotExist:
-        return JsonResponse({'error': 'User not found.'}, status=404)
-    except UserService.DoesNotExist:
-        return JsonResponse({'error': 'User services not found.'}, status=404)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+        except ObjectDoesNotExist:
+            return JsonResponse({'error': 'User not found.'}, status=404)
+        except UserService.DoesNotExist:
+            return JsonResponse({'error': 'User services not found.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+# @csrf_exempt
+# @require_POST
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated, HasAPIKey])
+# def change_password(request):
+#     if request.method == 'POST':
+#         try:
+#             # Decrypt incoming request body
+#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#             if not encrypted_content:
+#                 logger.warning('No encrypted content found in the request.')
+#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#             decrypted_content = decrypt_data(encrypted_content)
+#             data = json.loads(decrypted_content)
+#             logger.debug(f"Decrypted content: {data}")
+
+#             current_password = data.get('current_password')
+#             new_password = data.get('new_password')
+#             confirm_new_password = data.get('confirm_new_password')
+
+#             # Validate the current password
+#             if not request.user.check_password(current_password):
+#                 logger.warning(f"User {request.user.username} provided incorrect current password.")
+#                 encrypted_response = encrypt_data({'error': 'Current password is incorrect.'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
+#             # Check if new passwords match
+#             if new_password != confirm_new_password:
+#                 logger.warning(f"User {request.user.username} provided non-matching new passwords.")
+#                 encrypted_response = encrypt_data({'error': 'New passwords do not match.'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
+#             # Prevent using the same new password as the current password
+#             if new_password == current_password:
+#                 logger.warning(f"User {request.user.username} attempted to use the same new password as the current password.")
+#                 encrypted_response = encrypt_data({'error': 'New password cannot be the same as the current password.'})
+#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
+#             # Update password
+#             request.user.set_password(new_password)
+#             request.user.save()
+
+#             # Keep the user logged in after password change
+#             update_session_auth_hash(request, request.user)
+#             logger.info(f"User {request.user.username} successfully changed their password.")
+
+#             encrypted_response = encrypt_data({'message': 'Password changed successfully.'})
+#             return JsonResponse({'encrypted_content': encrypted_response})
+
+#         except json.JSONDecodeError:
+#             logger.error("Invalid JSON received.")
+#             encrypted_response = encrypt_data({'error': 'Invalid JSON.'})
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
+#         except Exception as e:
+#             logger.error(f'Internal server error: {str(e)}')
+#             encrypted_response = encrypt_data({'error': 'Internal server error.'})
+#             return JsonResponse({'encrypted_content': encrypted_response}, status=500)
+
+#     logger.error("Invalid request method used.")
+#     encrypted_response = encrypt_data({'error': 'Invalid request method.'})
+#     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
 
 @csrf_exempt
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def change_password(request):
@@ -3064,9 +3606,20 @@ def change_password(request):
                 encrypted_response = encrypt_data({'error': 'New password cannot be the same as the current password.'})
                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
 
+            # Check if the new password matches any of the last 5 passwords
+            recent_passwords = UserPasswordHistory.get_recent_passwords(request.user)
+            for recent_password in recent_passwords:
+                if check_password(new_password, recent_password.hashed_password):
+                    logger.warning(f"User {request.user.username} tried to use a password from their last 5 passwords.")
+                    encrypted_response = encrypt_data({'error': 'New password cannot match any of the last 5 passwords.'})
+                    return JsonResponse({'encrypted_content': encrypted_response}, status=400)
+
             # Update password
             request.user.set_password(new_password)
             request.user.save()
+
+            # Store the new hashed password in the password history
+            UserPasswordHistory.store_password(request.user, request.user.email, make_password(new_password))
 
             # Keep the user logged in after password change
             update_session_auth_hash(request, request.user)
@@ -3089,7 +3642,7 @@ def change_password(request):
     encrypted_response = encrypt_data({'error': 'Invalid request method.'})
     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
 
-
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def summarize_document(request):
@@ -3225,6 +3778,7 @@ def summarize_document(request):
 
 
 #Encrypted API For contnet generation Service
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def content_generator(request):
@@ -3360,6 +3914,7 @@ from langid import classify
 from deep_translator import GoogleTranslator
 
 #With Language Detection and Translation using Google Translate API
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def sales_script_generator(request):
@@ -3496,7 +4051,7 @@ def sales_script_generator(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_view(request):
@@ -3517,7 +4072,7 @@ def logout_view(request):
         logger.error(f"Error during logout: {str(e)}")
         return JsonResponse({'error': 'An error occurred during logout.'}, status=500)
 
-
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_presentation(request):
@@ -3574,7 +4129,7 @@ def create_presentation(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_presentation_english(request):
@@ -3684,7 +4239,244 @@ def create_presentation_english(request):
         logger.error(f"An unexpected error occurred: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
     
+# @require_POST
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def generate_blog_view(request):
+#     try:
+#         # Load and decode the request body
+#         body = request.body.decode('utf-8')
+#         logger.debug(f"Request body received: {body}")
 
+#         # Extract and decrypt the incoming payload
+#         data = json.loads(body)
+#         encrypted_content = data.get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning("No encrypted content found in the request.")
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         logger.debug(f"Encrypted content received: {encrypted_content}")
+#         decrypted_content = decrypt_data(encrypted_content)
+#         logger.debug(f"Decrypted content: {decrypted_content}")
+
+#         # Parse the decrypted JSON
+#         data = json.loads(decrypted_content)
+
+#         # Define the Indian languages mapping
+#         indian_languages = {
+#             "English": "en",
+#             "Hindi": "hi",
+#             "Tamil": "ta",
+#             "Telugu": "te",
+#             "Marathi": "mr",
+#             "Kannada": "kn",
+#             "Bengali": "bn",
+#             "Odia": "or",
+#             "Assamese": "as",
+#             "Punjabi": "pa",
+#             "Malayalam": "ml",
+#             "Gujarati": "gu",
+#             "Urdu": "ur",
+#             "Sanskrit": "sa",
+#             "Nepali": "ne",
+#             "Bodo": "brx",
+#             "Maithili": "mai",
+#             "Sindhi": "sd",
+#             "Kashmiri": "ks",
+#             "Konkani": "kok",
+#             "Dogri": "doi",
+#             "Goan Konkani": "gom",
+#             "Santali": "sat",
+#         }
+
+#         # Fields that require language detection and potential translation
+#         fields_to_check = ['title', 'tone', 'keywords', 'customTone']
+
+#         # Translate only non-English content
+#         for field in fields_to_check:
+#             value = data.get(field)
+#             if value:
+#                 try:
+#                     # Detect language of the field value
+#                     detected_language, confidence = classify(value)
+#                     language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+#                     logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+
+#                     # Translate if the detected language is not English
+#                     if detected_language != 'en':
+#                         translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
+#                         logger.debug(f"Translated {field}: {translated_text}")
+#                         data[field] = translated_text
+#                     else:
+#                         print(f"{field} is already in English. No translation needed.")
+#                 except Exception as e:
+#                     print(f"Error processing field {field}: {str(e)}")
+#                     logger.error(f"Error processing field {field}: {str(e)}")
+
+#         logger.debug(f"Data after translation: {data}")
+
+#         # Extract the required fields
+#         title = data.get('title')
+#         tone = data.get('tone')
+#         custom_tone = data.get('customTone')  # Extract the custom tone
+#         keywords = data.get('keywords', None) 
+
+#         # Ensure required fields are present
+#         if not title or not tone:
+#             return JsonResponse({"error": "Missing 'title' or 'tone'."}, status=400)
+
+#         # Call the generate_blog function
+#         logger.info("Generating blog content...")
+
+#         blog_content = generate_blog(title, tone, custom_tone, keywords)
+
+
+#         if blog_content:
+#             logger.info("Blog content generated successfully.")
+#             encrypted_response_content = encrypt_data({'blog_content': blog_content})
+#             return JsonResponse({
+#                 'encrypted_content': encrypted_response_content,
+#                 'language': 'en'
+#             }, status=200)
+
+#         logger.error("Failed to generate blog content.")
+#         return JsonResponse({'error': 'Failed to generate blog content. Please try again.'}, status=500)
+
+#     except json.JSONDecodeError:
+#         logger.error("Invalid JSON format received.")
+#         return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
+#     except ValueError as e:
+#         logger.error(f"ValueError occurred: {str(e)}")
+#         return JsonResponse({"error": str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f"An unexpected error occurred: {str(e)}")
+#         return JsonResponse({"error": str(e)}, status=500)
+
+#     # If not a POST request, return an error
+#     return JsonResponse({"error": "Only POST method is allowed."}, status=405)
+
+# @require_POST
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def generate_blog_view(request):
+#     try:
+#         # Load and decode the request body
+#         body = request.body.decode('utf-8')
+#         logger.debug(f"Request body received: {body}")
+
+#         # Extract and decrypt the incoming payload
+#         data = json.loads(body)
+#         encrypted_content = data.get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning("No encrypted content found in the request.")
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         logger.debug(f"Encrypted content received: {encrypted_content}")
+#         decrypted_content = decrypt_data(encrypted_content)
+#         logger.debug(f"Decrypted content: {decrypted_content}")
+
+#         # Parse the decrypted JSON
+#         data = json.loads(decrypted_content)
+
+#         # Define the Indian languages mapping
+#         indian_languages = {
+#             "English": "en",
+#             "Hindi": "hi",
+#             "Tamil": "ta",
+#             "Telugu": "te",
+#             "Marathi": "mr",
+#             "Kannada": "kn",
+#             "Bengali": "bn",
+#             "Odia": "or",
+#             "Assamese": "as",
+#             "Punjabi": "pa",
+#             "Malayalam": "ml",
+#             "Gujarati": "gu",
+#             "Urdu": "ur",
+#             "Sanskrit": "sa",
+#             "Nepali": "ne",
+#             "Bodo": "brx",
+#             "Maithili": "mai",
+#             "Sindhi": "sd",
+#             "Kashmiri": "ks",
+#             "Konkani": "kok",
+#             "Dogri": "doi",
+#             "Goan Konkani": "gom",
+#             "Santali": "sat",
+#         }
+
+
+#         # Fields that require language detection and potential translation
+#         fields_to_check = ['title', 'tone', 'keywords', 'customTone']
+
+#         # Translate only non-English content
+#         for field in fields_to_check:
+#             value = data.get(field)
+#             if value:
+#                 try:
+#                     # Detect language of the field value
+#                     detected_language, confidence = classify(value)
+#                     language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+#                     logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+
+#                     # Translate if the detected language is not English
+#                     if detected_language != 'en':
+#                         translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
+#                         logger.debug(f"Translated {field}: {translated_text}")
+#                         data[field] = translated_text
+#                 except Exception as e:
+#                     logger.error(f"Error processing field {field}: {str(e)}")
+
+#         logger.debug(f"Data after translation: {data}")
+
+#         # Extract the required fields
+#         title = data.get('title')
+#         tone = data.get('tone')
+#         custom_tone = data.get('customTone')  # Extract the custom tone
+#         keywords = data.get('keywords', None) 
+
+#         # Ensure required fields are present
+#         if not title or not tone:
+#             return JsonResponse({"error": "Missing 'title' or 'tone'."}, status=400)
+
+#         # Generate blog content
+#         logger.info("Generating blog content...")
+#         blog_content = generate_blog(title, tone, custom_tone, keywords)
+
+#         # Generate image
+#         logger.info("Fetching related image...")
+#         query = title if not keywords else f"{title}, {', '.join(keywords)}"
+#         image = fetch_single_image(query, width=800, height=600)
+#         print(image)
+#         if blog_content:
+#             logger.info("Blog content generated successfully.")
+#             response_data = {
+#                 'blog_content': blog_content,
+#                 'image_url': image['url'] if image and 'url' in image else None
+#             }
+#             encrypted_response_content = encrypt_data(response_data)
+#             return JsonResponse({
+#                 'encrypted_content': encrypted_response_content,
+#                 'language': 'en'
+#             }, status=200)
+
+#         logger.error("Failed to generate blog content.")
+#         return JsonResponse({'error': 'Failed to generate blog content. Please try again.'}, status=500)
+
+#     except json.JSONDecodeError:
+#         logger.error("Invalid JSON format received.")
+#         return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
+#     except ValueError as e:
+#         logger.error(f"ValueError occurred: {str(e)}")
+#         return JsonResponse({"error": str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f"An unexpected error occurred: {str(e)}")
+#         return JsonResponse({"error": str(e)}, status=500)
+
+#     # If not a POST request, return an error
+#     return JsonResponse({"error": "Only POST method is allowed."}, status=405)
+
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def generate_blog_view(request):
@@ -3745,22 +4537,14 @@ def generate_blog_view(request):
                     # Detect language of the field value
                     detected_language, confidence = classify(value)
                     language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
-                    print(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
-                    print(f"Original Value: {value}")
-
                     logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
 
                     # Translate if the detected language is not English
                     if detected_language != 'en':
-                        print(f"Translating {field} from {language_name} to English.")
                         translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
-                        print(f"Translated Value for {field}: {translated_text}")
                         logger.debug(f"Translated {field}: {translated_text}")
                         data[field] = translated_text
-                    else:
-                        print(f"{field} is already in English. No translation needed.")
                 except Exception as e:
-                    print(f"Error processing field {field}: {str(e)}")
                     logger.error(f"Error processing field {field}: {str(e)}")
 
         logger.debug(f"Data after translation: {data}")
@@ -3769,20 +4553,29 @@ def generate_blog_view(request):
         title = data.get('title')
         tone = data.get('tone')
         custom_tone = data.get('customTone')  # Extract the custom tone
-        keywords = data.get('keywords', None) 
-        print(keywords)
+        keywords = data.get('keywords', None)
 
         # Ensure required fields are present
         if not title or not tone:
             return JsonResponse({"error": "Missing 'title' or 'tone'."}, status=400)
 
-        # Call the generate_blog function
+        # Generate blog content
         logger.info("Generating blog content...")
         blog_content = generate_blog(title, tone, custom_tone, keywords)
 
+        # Generate image
+        logger.info("Fetching related image...")
+        query = title + ","+ keywords if keywords else title
+        image = fetch_single_image(query, width=800, height=600)
+
         if blog_content:
             logger.info("Blog content generated successfully.")
-            encrypted_response_content = encrypt_data({'blog_content': blog_content})
+            response_data = {
+                'blog_content': blog_content,
+                'image_url': image['url'] if image and 'url' in image else None,
+                'image_base64': image['base64_image'] if image and 'base64_image' in image else None
+            }
+            encrypted_response_content = encrypt_data(response_data)
             return JsonResponse({
                 'encrypted_content': encrypted_response_content,
                 'language': 'en'
@@ -3801,12 +4594,71 @@ def generate_blog_view(request):
         logger.error(f"An unexpected error occurred: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
 
-    # If not a POST request, return an error
-    return JsonResponse({"error": "Only POST method is allowed."}, status=405)
+@require_POST
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def regenerate_image(request):
+    try:
+        # Load and decode the request body
+        body = request.body.decode('utf-8')
+        logger.debug(f"Request body received: {body}")
 
+        # Extract and decrypt the incoming payload
+        data = json.loads(body)
+        encrypted_content = data.get('encrypted_content')
+        if not encrypted_content:
+            logger.warning("No encrypted content found in the request.")
+            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+        logger.debug(f"Encrypted content received: {encrypted_content}")
+        decrypted_content = decrypt_data(encrypted_content)
+        logger.debug(f"Decrypted content: {decrypted_content}")
+
+        # Parse the decrypted JSON
+        data = json.loads(decrypted_content)
+
+        # Extract title and keywords
+        title = data.get('title')
+        keywords = data.get('keywords')
+
+        # Ensure required fields are present
+        if not title:
+            return JsonResponse({"error": "Missing 'title' in the request."}, status=400)
+
+        # Generate the query string for the image
+        query = title + ("," + keywords if keywords else "")
+        logger.debug(f"Generated query for image: {query}")
+
+        # Fetch related image
+        logger.info("Fetching related image...")
+        image = fetch_single_image(query, width=800, height=600)
+
+        if image:
+            logger.info("Image fetched successfully.")
+            response_data = {
+                'imagebase64': image['base64_image'] if 'base64_image' in image else None
+            }
+            encrypted_response_content = encrypt_data(response_data)
+            return JsonResponse({
+                'encrypted_content': encrypted_response_content
+            }, status=200)
+
+        logger.error("Failed to fetch image.")
+        return JsonResponse({'error': 'Failed to fetch image. Please try again.'}, status=500)
+
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON format received.")
+        return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
+    except ValueError as e:
+        logger.error(f"ValueError occurred: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 #Encrypted API For rephrase Service
+@require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def rephrasely_view(request):
@@ -3924,6 +4776,8 @@ GREETING_MESSAGES = [
 ]
 
 
+
+require_http_methods(["GET", "POST"])
 @api_view(['GET', 'POST'])
 @permission_classes([])  
 def chatbot_view(request):
@@ -4261,6 +5115,7 @@ def offer_letter_generator_guest(request):
 
 
 @csrf_exempt
+@require_POST
 def sales_script_generator_guest(request):
     if request.method == 'POST':
         try:
@@ -4362,6 +5217,7 @@ def sales_script_generator_guest(request):
 
 
 @csrf_exempt
+@require_POST
 def summarize_document_guest(request):
     if request.method == 'POST':
         try:
@@ -4428,6 +5284,7 @@ def summarize_document_guest(request):
 
 
 @csrf_exempt
+@require_POST
 def content_generator_guest(request):
     try:
         # Load and decode the request body
@@ -4526,6 +5383,7 @@ def content_generator_guest(request):
     logger.error("Method not allowed.")
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
+@require_POST
 @csrf_exempt
 def rephrasely_view_guest(request):
     if request.method == 'POST':
@@ -4602,6 +5460,7 @@ def rephrasely_view_guest(request):
 
 
 @csrf_exempt
+@require_POST
 def generate_blog_view_guest(request):
     try:
         # Load and decode the request body
@@ -4682,6 +5541,7 @@ def generate_blog_view_guest(request):
     return JsonResponse({"error": "Only POST method is allowed."}, status=405)
 
 @csrf_exempt
+@require_POST
 def translate_content_guest(request):
     translated_content = None
     error = None
@@ -4742,6 +5602,7 @@ def translate_content_guest(request):
 
 
 @csrf_exempt
+@require_POST
 def guest_send_otp(request):
     if request.method == 'POST':
         try:
@@ -4849,6 +5710,7 @@ The ProdigiDesk Team
 
 
 @csrf_exempt
+@require_POST
 def guest_validate_otp(request):
     if request.method == 'POST':
         try:
@@ -4898,6 +5760,7 @@ def guest_validate_otp(request):
 
 
 @csrf_exempt
+@require_GET
 def get_word_count(request):
     if request.method == 'GET':
         try:
@@ -4941,6 +5804,7 @@ def get_word_count(request):
 
 
 @csrf_exempt
+@require_http_methods(["PUT"])
 def create_cart(request):
     if request.method == 'PUT':  # Changed to PUT method for updating
         try:
@@ -5005,6 +5869,7 @@ def create_cart(request):
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 @csrf_exempt
+@require_http_methods(["PUT"])
 def create_cart_yearly(request):
     if request.method == 'PUT':  # Changed to PUT method for updating
         try:
@@ -5065,6 +5930,7 @@ def create_cart_yearly(request):
     return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 @csrf_exempt
+@require_POST
 def remove_service(request):
     if request.method == "POST":
         try:
@@ -5125,6 +5991,7 @@ def remove_service(request):
         return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
 @csrf_exempt
+@require_POST
 def remove_service_yearly(request):
     if request.method == "POST":
         try:
@@ -5185,6 +6052,7 @@ def remove_service_yearly(request):
         return JsonResponse({"error": "Invalid request method"}, status=405)
 
 @csrf_exempt
+@require_POST
 def get_cart(request):
     if request.method == 'POST':
         try:
@@ -5326,6 +6194,7 @@ def get_cart(request):
 
 
 @csrf_exempt
+@require_POST
 def get_cart_yearly(request):
     try:
         # Step 1: Decrypt the incoming payload
@@ -5406,6 +6275,7 @@ def get_cart_yearly(request):
 
 
 @csrf_exempt
+@require_POST
 def empty_cart(request):
     try:
         # Retrieve and decrypt the incoming encrypted content
@@ -5473,6 +6343,7 @@ def empty_cart(request):
 
 
 @csrf_exempt
+@require_POST
 def empty_cart_yearly(request):
     try:
         # Get the encrypted content from the request
@@ -5536,6 +6407,7 @@ def empty_cart_yearly(request):
 
 
 @csrf_exempt
+@require_http_methods(["DELETE"])
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated,HasAPIKey])
 def delete_user_account(request):
@@ -5549,7 +6421,7 @@ def delete_user_account(request):
             # Decrypt the request data
             decrypted_content = decrypt_data(encrypted_content)
             data = json.loads(decrypted_content)
-            email = data.get('email')
+            email = data.get('userEmail')
 
             if not email:
                 return JsonResponse({"error": "Email is required"}, status=400)
@@ -5618,6 +6490,7 @@ The ProdigiDesk Team
 
 #Mobile App API's
 @csrf_exempt
+@require_POST
 def signin_android(request):
     if request.method == 'POST':
         try:
@@ -5687,6 +6560,7 @@ def signin_android(request):
 
 
 @csrf_exempt
+@require_POST
 def create_razorpay_order_android(request):
     if request.method == "POST":
         try:
@@ -5863,6 +6737,7 @@ def verify_payment_android(request):
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 @csrf_exempt
+@require_POST
 def verify_payment_yearly_android(request):
     if request.method == "POST":
         try:
@@ -5993,6 +6868,7 @@ def verify_payment_yearly_android(request):
 
 
 @csrf_exempt
+@require_POST
 def add_user_android(request):
     if request.method == 'POST':
         try:
@@ -6116,6 +6992,7 @@ def logout_view_android(request):
 
 
 @csrf_exempt
+@require_POST
 def send_email_verification_otp_android(request):
     if request.method == 'POST':
         try:
@@ -6216,6 +7093,7 @@ The ProdigiDesk Team
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 @csrf_exempt
+@require_POST
 def otp_verify_android(request):
     if request.method == 'POST':
         try:
@@ -6254,6 +7132,7 @@ def otp_verify_android(request):
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 @csrf_exempt
+@require_POST
 def check_session_status_android(request):
     if request.method == 'POST':
         try:
@@ -6698,84 +7577,85 @@ def generate_blog_view_android(request):
     # If not a POST request, return an error
     return JsonResponse({"error": "Only POST method is allowed."}, status=405)
 
+# @csrf_exempt
+# def create_presentation_android(request):
+#     try:
+#         # Handle the multipart form data
+#         content = request.POST.get('content')
+#         if not content:
+#             return JsonResponse({'error': 'No content found in the request.'}, status=400)
+
+#         # Parse JSON data
+#         data = json.loads(content)
+
+#         # Extract fields from the data
+#         title = data.get('title')
+#         num_slides = data.get('num_slides')
+#         bg_image_path = request.FILES.get('background_image')  # bg_image as a file
+#         document = request.FILES.get('document')  # document as a file
+
+#         print(f"Title: {title}, Number of Slides: {num_slides}, Background Image: {bg_image_path}, Document: {document}")
+
+#         if not title or not num_slides:
+#             return JsonResponse({'error': 'Title and number of slides are required.'}, status=400)
+
+#         # Handle document content optionally
+#         document_content = extract_document_content(document) if document else ""
+
+#         # Generate presentation logic
+#         prs = Presentation()
+#         slide_titles = generate_slide_titles(document_content, num_slides, None, title)
+#         slide_titles = slide_titles.replace('[', '').replace(']', '').replace('"', '').split(',')
+
+#         slide_contents = {}
+#         error_messages = []
+
+#         # Function to generate slide content in a separate thread
+#         def generate_and_store_slide_content(slide_title):
+#             try:
+#                 content = generate_slide_content(document_content, slide_title, None).replace("*", '').split('\n')
+#                 current_content = [point.strip() for point in content if len(point.strip()) > 0]
+#                 if len(current_content) > 4:
+#                     current_content = current_content[:4]  # Limit to only 4 points
+#                 slide_contents[slide_title] = current_content
+#             except Exception as e:
+#                 error_messages.append(f"Error generating content for '{slide_title}': {str(e)}")
+
+#         # Start threads for generating slide content
+#         threads = []
+#         for st in slide_titles:
+#             thread = Thread(target=generate_and_store_slide_content, args=(st.strip(),))
+#             thread.start()
+#             threads.append(thread)
+
+#         # Wait for all threads to finish
+#         for thread in threads:
+#             thread.join()
+
+#         # Check for any errors that occurred during content generation
+#         if error_messages:
+#             return JsonResponse({'error': error_messages}, status=500)
+
+#         # Add slides to the presentation
+#         for slide_title, slide_content in slide_contents.items():
+#             add_slide(prs, slide_title, slide_content, bg_image_path)
+
+#         # Save presentation to a BytesIO object
+#         buffer = BytesIO()
+#         prs.save(buffer)
+#         buffer.seek(0)  # Rewind the buffer
+
+#         # Return file response
+#         response = FileResponse(buffer, as_attachment=True, filename='SmartOffice_Assistant_Presentation.pptx')
+#         return response
+
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
+
 @csrf_exempt
-def create_presentation_android(request):
-    try:
-        # Handle the multipart form data
-        content = request.POST.get('content')
-        if not content:
-            return JsonResponse({'error': 'No content found in the request.'}, status=400)
-
-        # Parse JSON data
-        data = json.loads(content)
-
-        # Extract fields from the data
-        title = data.get('title')
-        num_slides = data.get('num_slides')
-        bg_image_path = request.FILES.get('background_image')  # bg_image as a file
-        document = request.FILES.get('document')  # document as a file
-
-        print(f"Title: {title}, Number of Slides: {num_slides}, Background Image: {bg_image_path}, Document: {document}")
-
-        if not title or not num_slides:
-            return JsonResponse({'error': 'Title and number of slides are required.'}, status=400)
-
-        # Handle document content optionally
-        document_content = extract_document_content(document) if document else ""
-
-        # Generate presentation logic
-        prs = Presentation()
-        slide_titles = generate_slide_titles(document_content, num_slides, None, title)
-        slide_titles = slide_titles.replace('[', '').replace(']', '').replace('"', '').split(',')
-
-        slide_contents = {}
-        error_messages = []
-
-        # Function to generate slide content in a separate thread
-        def generate_and_store_slide_content(slide_title):
-            try:
-                content = generate_slide_content(document_content, slide_title, None).replace("*", '').split('\n')
-                current_content = [point.strip() for point in content if len(point.strip()) > 0]
-                if len(current_content) > 4:
-                    current_content = current_content[:4]  # Limit to only 4 points
-                slide_contents[slide_title] = current_content
-            except Exception as e:
-                error_messages.append(f"Error generating content for '{slide_title}': {str(e)}")
-
-        # Start threads for generating slide content
-        threads = []
-        for st in slide_titles:
-            thread = Thread(target=generate_and_store_slide_content, args=(st.strip(),))
-            thread.start()
-            threads.append(thread)
-
-        # Wait for all threads to finish
-        for thread in threads:
-            thread.join()
-
-        # Check for any errors that occurred during content generation
-        if error_messages:
-            return JsonResponse({'error': error_messages}, status=500)
-
-        # Add slides to the presentation
-        for slide_title, slide_content in slide_contents.items():
-            add_slide(prs, slide_title, slide_content, bg_image_path)
-
-        # Save presentation to a BytesIO object
-        buffer = BytesIO()
-        prs.save(buffer)
-        buffer.seek(0)  # Rewind the buffer
-
-        # Return file response
-        response = FileResponse(buffer, as_attachment=True, filename='SmartOffice_Assistant_Presentation.pptx')
-        return response
-
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-@csrf_exempt
+@require_GET
 def get_user_services_android(request, email):
     if request.method == "GET":
         try:
@@ -6841,6 +7721,7 @@ def get_user_services_android(request, email):
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 @csrf_exempt
+@require_POST
 def rephrasely_view_android(request):
     if request.method == 'POST':
         try:

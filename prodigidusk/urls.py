@@ -23,6 +23,8 @@ urlpatterns = [
     path('change_password/', views.change_password, name='change_password'),
     path('send_otp/', views.send_otp, name='send_otp'),
     path('reset_password_with_otp/', views.reset_password_with_otp, name='reset_password_with_otp'),
+    path('regenerate_image/', views.regenerate_image, name='regenerate_image'),
+
 
     path('add_user/', views.add_user, name='add_user'),
     path('create_presentation/', views.create_presentation, name='create_presentation'),

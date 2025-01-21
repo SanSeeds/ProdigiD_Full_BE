@@ -1719,7 +1719,7 @@ def update_user_services(request, email):
 
 
 #Encrypted API To get all user Services
-
+@require_GET
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, HasAPIKey])
 def get_user_services(request, email):
@@ -3642,6 +3642,142 @@ def change_password(request):
     encrypted_response = encrypt_data({'error': 'Invalid request method.'})
     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
 
+#old summarizer api
+# @require_POST
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated, HasAPIKey])
+# def summarize_document(request):    
+#     try:
+#         # Extract encrypted content from request.POST
+#         encrypted_content = request.POST.get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning('No encrypted content found in the request.')
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         # Decrypt the JSON payload
+#         decrypted_content = decrypt_data(encrypted_content)
+#         data = json.loads(decrypted_content)
+#         print(data)
+#         logger.debug(f'Decrypted content: {data}')
+
+#         # Define Indian languages mapping
+#         indian_languages = {
+#             "English": "en",
+#             "Hindi": "hi",
+#             "Tamil": "ta",
+#             "Telugu": "te",
+#             "Marathi": "mr",
+#             "Kannada": "kn",
+#             "Bengali": "bn",
+#             "Odia": "or",
+#             "Assamese": "as",
+#             "Punjabi": "pa",
+#             "Malayalam": "ml",
+#             "Gujarati": "gu",
+#             "Urdu": "ur",
+#             "Sanskrit": "sa",
+#             "Nepali": "ne",
+#             "Bodo": "brx",
+#             "Maithili": "mai",
+#             "Sindhi": "sd",
+#             "Kashmiri": "ks",
+#             "Konkani": "kok",
+#             "Dogri": "doi",
+#             "Goan Konkani": "gom",
+#             "Santali": "sat",
+#         }
+
+#         # Fields to check for language detection and translation
+#         fields_to_check = [
+#             'documentContext', 'mainSubject', 'summaryPurpose', 'lengthDetail',
+#             'importantElements', 'audience', 'tone', 'format', 'additionalInstructions'
+#         ]
+
+#         # Translate only non-English content
+#         for field in fields_to_check:
+#             value = data.get(field)
+#             if value:
+#                 try:
+#                     # Detect language
+#                     detected_language, confidence = classify(value)
+#                     language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+#                     logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+#                     logger.debug(f"Original Value: {value}")
+
+#                     # Translate if not English
+#                     if detected_language != 'en':
+#                         logger.info(f"Translating {field} from {language_name} to English.")
+#                         translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
+#                         logger.debug(f"Translated {field}: {translated_text}")
+#                         data[field] = translated_text
+#                     else:
+#                         logger.info(f"{field} is already in English. No translation needed.")
+#                 except Exception as e:
+#                     logger.error(f"Error processing field {field}: {str(e)}")
+
+#         # Extract form fields from decrypted data
+#         document_context = data.get('documentContext')
+#         main_subject = data.get('mainSubject')
+#         summary_purpose = data.get('summaryPurpose')
+#         length_detail = data.get('lengthDetail')
+#         important_elements = data.get('importantElements')
+#         audience = data.get('audience')
+#         tone = data.get('tone')
+#         format_ = data.get('format')
+#         additional_instructions = data.get('additionalInstructions')
+
+#         # Extract the uploaded file or text from request
+#         document_file = request.FILES.get('documentFile')
+        
+#         text = data.get('text')
+
+#         # Ensure we have either documentFile or text
+#         if not document_file and not text:
+#             logger.warning('No document file or text provided.')
+#             return JsonResponse({'error': 'No document file or text provided.'}, status=400)
+
+#         # If documentFile is provided, use it for summarization
+#         if document_file:
+#             logger.info('Using uploaded document file for summarization.')
+#             summary = generate_summary(
+#                 document_context, main_subject, summary_purpose, length_detail,
+#                 important_elements, audience, tone, format_, additional_instructions, document_file
+#             )
+
+#         # If only text is provided, use it for summarization
+#         elif text:
+#             logger.info('Using provided text for summarization.')
+#             summary = generate_summary(
+#                 document_context, main_subject, summary_purpose, length_detail,
+#                 important_elements, audience, tone, format_, additional_instructions, text=text
+#             )
+
+#         # Handle specific error scenarios from generate_summary
+#         if summary.startswith("Error:"):
+#             if "Uploaded file too large" in summary:
+#                 logger.warning(summary)
+#                 return JsonResponse({'error': summary}, status=413)
+#             else:
+#                 logger.error(summary)
+#                 return JsonResponse({'error': summary}, status=500)
+
+#         # Encrypt the response content
+#         encrypted_response = encrypt_data({'summary': summary})
+#         logger.info('Summary generated and encrypted successfully.')
+
+#         return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+#     except json.JSONDecodeError:
+#         logger.error('Invalid JSON format received.')
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         logger.error(f'ValueError: {str(e)}')
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f'Exception: {str(e)}')
+#         return JsonResponse({'error': str(e)}, status=500)
+
+#new summarizer api -2
 @require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
@@ -3656,7 +3792,7 @@ def summarize_document(request):
         # Decrypt the JSON payload
         decrypted_content = decrypt_data(encrypted_content)
         data = json.loads(decrypted_content)
-        print(data)
+        print(decrypted_content);
         logger.debug(f'Decrypted content: {data}')
 
         # Define Indian languages mapping
@@ -3689,7 +3825,8 @@ def summarize_document(request):
         # Fields to check for language detection and translation
         fields_to_check = [
             'documentContext', 'mainSubject', 'summaryPurpose', 'lengthDetail',
-            'importantElements', 'audience', 'tone', 'format', 'additionalInstructions'
+            'importantElements', 'audience', 'tone', 'format', 'additionalInstructions','otherDocumentContext',
+            'otherMainSubject', 'otherPurpose', 'otherLengthDetail', 'otherFormat'
         ]
 
         # Translate only non-English content
@@ -3716,18 +3853,37 @@ def summarize_document(request):
 
         # Extract form fields from decrypted data
         document_context = data.get('documentContext')
+        if document_context == "Other":
+            document_context = data.get('otherDocumentContext')
+        else:
+            document_context = document_context
         main_subject = data.get('mainSubject')
+        if(main_subject == "Other"):
+            main_subject = data.get('otherMainSubject')
+        else:
+            main_subject = main_subject
         summary_purpose = data.get('summaryPurpose')
+        if(summary_purpose == "Other"):
+            summary_purpose = data.get('otherPurpose')
+        else:
+            summary_purpose = summary_purpose
         length_detail = data.get('lengthDetail')
+        if(length_detail == "Other"):
+            length_detail = data.get('otherLengthDetail')
+        else:
+            length_detail = length_detail
         important_elements = data.get('importantElements')
         audience = data.get('audience')
         tone = data.get('tone')
         format_ = data.get('format')
+        if(format_ == "Other"):
+            format_ = data.get('otherFormat')
+        else:
+            format_ = format_
         additional_instructions = data.get('additionalInstructions')
 
         # Extract the uploaded file or text from request
         document_file = request.FILES.get('documentFile')
-        
         text = data.get('text')
 
         # Ensure we have either documentFile or text
@@ -3776,6 +3932,7 @@ def summarize_document(request):
         logger.error(f'Exception: {str(e)}')
         return JsonResponse({'error': str(e)}, status=500)
 
+    
 
 #Encrypted API For contnet generation Service
 @require_POST
@@ -4565,7 +4722,6 @@ def generate_blog_view(request):
 
         # Generate image
         logger.info("Fetching related image...")
-        # query = title if not keywords else f"{title}, {', '.join(keywords)}"
         query = title + ","+ keywords if keywords else title
         image = fetch_single_image(query, width=800, height=600)
 
@@ -4595,6 +4751,67 @@ def generate_blog_view(request):
         logger.error(f"An unexpected error occurred: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
 
+@require_POST
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def regenerate_image(request):
+    try:
+        # Load and decode the request body
+        body = request.body.decode('utf-8')
+        logger.debug(f"Request body received: {body}")
+
+        # Extract and decrypt the incoming payload
+        data = json.loads(body)
+        encrypted_content = data.get('encrypted_content')
+        if not encrypted_content:
+            logger.warning("No encrypted content found in the request.")
+            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+        logger.debug(f"Encrypted content received: {encrypted_content}")
+        decrypted_content = decrypt_data(encrypted_content)
+        logger.debug(f"Decrypted content: {decrypted_content}")
+
+        # Parse the decrypted JSON
+        data = json.loads(decrypted_content)
+
+        # Extract title and keywords
+        title = data.get('title')
+        keywords = data.get('keywords')
+
+        # Ensure required fields are present
+        if not title:
+            return JsonResponse({"error": "Missing 'title' in the request."}, status=400)
+
+        # Generate the query string for the image
+        query = title + ("," + keywords if keywords else "")
+        logger.debug(f"Generated query for image: {query}")
+
+        # Fetch related image
+        logger.info("Fetching related image...")
+        image = fetch_single_image(query, width=800, height=600)
+
+        if image:
+            logger.info("Image fetched successfully.")
+            response_data = {
+                'imagebase64': image['base64_image'] if 'base64_image' in image else None
+            }
+            encrypted_response_content = encrypt_data(response_data)
+            return JsonResponse({
+                'encrypted_content': encrypted_response_content
+            }, status=200)
+
+        logger.error("Failed to fetch image.")
+        return JsonResponse({'error': 'Failed to fetch image. Please try again.'}, status=500)
+
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON format received.")
+        return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
+    except ValueError as e:
+        logger.error(f"ValueError occurred: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 #Encrypted API For rephrase Service

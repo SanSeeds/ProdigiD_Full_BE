@@ -1112,7 +1112,7 @@ def update_presentation_with_generated_content(template_path, output_path,docume
 
 def fetch_single_image(query, width, height): 
     headers = {"Authorization": PEXELS_API_KEY}
-    params = {"query": query, "per_page": 20}  # Request up to 5 images
+    params = {"query": query, "per_page": 10}  # Request up to 5 images
     response = requests.get(PEXELS_BASE_URL, headers=headers, params=params)
     if response.status_code == 200:
         data = response.json()

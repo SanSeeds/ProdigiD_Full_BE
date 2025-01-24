@@ -62,7 +62,7 @@ except Exception as e:
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 LOGGING = {
     'version': 1,
@@ -203,18 +203,17 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware', 
     'csp.middleware.CSPMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     "django_permissions_policy.PermissionsPolicyMiddleware",
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',  # Ensure this is included
+    'django.middleware.csrf.CsrfViewMiddleware', 
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'core.api_logging_middleware.APILoggingMiddleware',
-    'drf_api_logger.middleware.api_logger_middleware.APILoggerMiddleware', # Add here
+    'drf_api_logger.middleware.api_logger_middleware.APILoggerMiddleware', 
 ]
 
 DRF_API_LOGGER_DATABASE = True  # Default to False
@@ -300,6 +299,17 @@ DATABASES = {
 #         'USER': 'postgres',
 #         'PASSWORD': '1766',
 #         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'test',
+#         'USER': 'postgres',
+#         'PASSWORD': '1766',
+#         'HOST': 'db',
 #         'PORT': '5432',
 #     }
 # }

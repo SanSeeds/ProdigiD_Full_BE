@@ -1482,7 +1482,14 @@ def update_user_services(request, email):
 def get_user_services(request, email):
     if request.method == "GET":
         try:
+             # Get the authenticated user from the token
+            authenticated_user = request.user
+
+            # Convert the email to lowercase and validate it matches the authenticated user
             email = email.lower()
+            if authenticated_user.email.lower() != email:
+                return JsonResponse({"error": "You are not authorized to access this user's services."}, status=403)
+
             user = get_object_or_404(User, email=email)
             user_services = get_object_or_404(UserService, user=user)
 
@@ -2009,13 +2016,16 @@ def logout_from_all_devices(request):
 
 #Only Comment out this code when you want access tokens for testing (in case of postman)
 # @csrf_exempt
+# @require_POST
 # def signin(request):
 #     if request.method == 'POST':
 #         try:
-#             data = json.loads(request.body.decode('utf-8'))
-#             login_input = data.get('login_input').lower()
-#             password = data.get('password')
-            
+#             content = json.loads(request.body.decode('utf-8'))
+
+#             login_input = content.get('login_input').lower()
+#             password = content.get('password')
+#             logout_from_all = content.get('logout_from_all', False)  # Check if the checkbox is set
+
 #             if not login_input or not password:
 #                 logger.warning('Login input and password are required')
 #                 return JsonResponse({'error': 'Login input and password are required'}, status=400)
@@ -2029,21 +2039,37 @@ def logout_from_all_devices(request):
 #                 logger.warning('Username or email not found')
 #                 return JsonResponse({'error': 'Username or email not found'}, status=401)
 
+#             # Check if the user has an active session
+#             if logout_from_all:
+#                 # Mark all previous sessions as inactive
+#                 UserSession.objects.filter(user=user, active=True).update(active=False)
+
+#             active_session = UserSession.objects.filter(user=user, active=True).first()
+#             if active_session and not logout_from_all:
+#                 logger.warning('User already logged in with an active session')
+#                 return JsonResponse({'error': 'User already logged in'}, status=403)
+
 #             user = authenticate(request, username=user.username, password=password)
 #             if user is not None:
 #                 login(request, user)
-#                 # Generate JWT tokens or similar mechanism for authentication
-#                 # For example, using Django Rest Framework JWT or similar library
-#                 # Here, `RefreshToken` is just a placeholder
 #                 refresh = RefreshToken.for_user(user)
 #                 logger.info(f'User {user.username} authenticated successfully')
 
-#                 return JsonResponse({
+#                 # Create a new session
+#                 session_id = get_random_string(length=32)
+#                 UserSession.objects.create(user=user, session_id=session_id, email=user.email, active=True)  # Include email here
+
+#                 logger.debug(f'Session created with ID: {session_id}')
+
+#                 response = {
 #                     'success': 'User authenticated',
 #                     'access': str(refresh.access_token),
 #                     'refresh': str(refresh),
-#                     'user_id': user.id  # Include user ID in the response
-#                 }, status=200)
+#                     'user_id': user.id,
+#                     'session_id': session_id  # Include session_id in the response
+#                 }
+
+#                 return JsonResponse(response, status=200)
 #             else:
 #                 logger.warning('Password not correct')
 #                 return JsonResponse({'error': 'Password not correct'}, status=401)
@@ -2056,7 +2082,6 @@ def logout_from_all_devices(request):
 #     else:
 #         logger.error('Invalid request method')
 #         return JsonResponse({'error': 'Invalid request method'}, status=405)
-
 
 @csrf_exempt
 @require_POST
@@ -7879,57 +7904,126 @@ indian_languages = {
 }
 
 
+# @csrf_exempt
+# def translate_json_files_new(request):
+#     global line_number
+#     translated_json = {}
+#     if request.method == 'POST':
+#         try:
+#             json_file = request.FILES.get('file')
+#             translate_to = request.POST.get('translate_to')
+
+#             if not json_file:
+#                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
+
+#             if not translate_to:
+#                 return JsonResponse({'error': 'No target language provided.'}, status=400)
+
+#             file_content = json_file.read().decode('utf-8')
+#             original_json = json.loads(file_content)
+
+#             translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
+#             translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
+
+#             async def translate_key_value(key, value, target_lang):
+#                 global line_number
+#                 try:
+#                     print(f"Line {line_number}: Translating key '{key}' with value '{value}'")
+#                     translation_result = bhashini_translate(value, target_lang)
+#                     translated_json[key] = translation_result["translated_content"]
+#                     print(f"Line {line_number}: Translated value '{translated_json[key]}'")
+#                     line_number += 1
+#                 except Exception as e:
+#                     print(f"Line {line_number}: Error translating key '{key}' - {str(e)}")
+#                     translated_json[key] = f"Translation Error: {str(e)}"
+
+#             async def trans_main(translation_tasks, translate_to):
+#                 tasks = [translate_key_value(key, value, translate_to) for key, value in translation_tasks]
+#                 await asyncio.gather(*tasks)
+
+#             asyncio.run(trans_main(translation_tasks, translate_to))
+
+#             # Sort the keys alphabetically
+#             translated_json = dict(sorted(translated_json.items()))
+
+#             translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
+#             translated_file_name = f"translated_{translate_to}.json"
+#             zip_buffer = BytesIO()
+#             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
+#                 zip_archive.writestr(translated_file_name, translated_json_str)
+
+#             zip_buffer.seek(0)
+#             response = HttpResponse(zip_buffer, content_type='application/zip')
+#             response['Content-Disposition'] = 'attachment; filename="translated_sorted_files.zip"'
+#             return response
+
+#         except json.JSONDecodeError:
+#             return JsonResponse({'error': 'Invalid JSON file format.'}, status=400)
+#         except Exception as e:
+#             return JsonResponse({'error': f'Error during translation: {str(e)}'}, status=500)
+#     else:
+#         return JsonResponse({'error': 'Invalid request method'}, status=400)
+
 @csrf_exempt
 def translate_json_files_new(request):
     global line_number
-    translated_json = {}
     if request.method == 'POST':
         try:
             json_file = request.FILES.get('file')
-            translate_to = request.POST.get('translate_to')
+            target_languages = request.POST.getlist('translate_to')
 
             if not json_file:
                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
 
-            if not translate_to:
-                return JsonResponse({'error': 'No target language provided.'}, status=400)
+            if not target_languages:
+                return JsonResponse({'error': 'No target languages provided.'}, status=400)
 
             file_content = json_file.read().decode('utf-8')
             original_json = json.loads(file_content)
 
-            translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
-            translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
+            response_files = []
 
-            async def translate_key_value(key, value, target_lang):
-                global line_number
-                try:
-                    print(f"Line {line_number}: Translating key '{key}' with value '{value}'")
-                    translation_result = bhashini_translate(value, target_lang)
-                    translated_json[key] = translation_result["translated_content"]
-                    print(f"Line {line_number}: Translated value '{translated_json[key]}'")
-                    line_number += 1
-                except Exception as e:
-                    print(f"Line {line_number}: Error translating key '{key}' - {str(e)}")
-                    translated_json[key] = f"Translation Error: {str(e)}"
+            for language in target_languages:
+                translated_json = {}
+                translation_tasks = [
+                    (key, value) for key, value in original_json.items() if isinstance(value, str)
+                ]
+                translated_json = {
+                    key: value for key, value in original_json.items() if not isinstance(value, str)
+                }
 
-            async def trans_main(translation_tasks, translate_to):
-                tasks = [translate_key_value(key, value, translate_to) for key, value in translation_tasks]
-                await asyncio.gather(*tasks)
+                async def translate_key_value(key, value, target_lang):
+                    global line_number
+                    try:
+                        print(f"Line {line_number}: Translating key '{key}' with value '{value}'")
+                        translation_result = bhashini_translate(value, target_lang)
+                        translated_json[key] = translation_result["translated_content"]
+                        print(f"Line {line_number}: Translated value '{translated_json[key]}'")
+                        line_number += 1
+                    except Exception as e:
+                        print(f"Line {line_number}: Error translating key '{key}' - {str(e)}")
+                        translated_json[key] = f"Translation Error: {str(e)}"
 
-            asyncio.run(trans_main(translation_tasks, translate_to))
+                async def trans_main(translation_tasks, translate_to):
+                    tasks = [translate_key_value(key, value, translate_to) for key, value in translation_tasks]
+                    await asyncio.gather(*tasks)
 
-            # Sort the keys alphabetically
-            translated_json = dict(sorted(translated_json.items()))
+                asyncio.run(trans_main(translation_tasks, language))
 
-            translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
-            translated_file_name = f"translated_{translate_to}.json"
+                # Sort and save
+                translated_json = dict(sorted(translated_json.items()))
+                translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
+                translated_file_name = f"translated_{language}.json"
+                response_files.append((translated_file_name, translated_json_str))
+
             zip_buffer = BytesIO()
             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
-                zip_archive.writestr(translated_file_name, translated_json_str)
+                for file_name, file_content in response_files:
+                    zip_archive.writestr(file_name, file_content)
 
             zip_buffer.seek(0)
             response = HttpResponse(zip_buffer, content_type='application/zip')
-            response['Content-Disposition'] = 'attachment; filename="translated_sorted_files.zip"'
+            response['Content-Disposition'] = 'attachment; filename="translated_files.zip"'
             return response
 
         except json.JSONDecodeError:
@@ -7938,6 +8032,7 @@ def translate_json_files_new(request):
             return JsonResponse({'error': f'Error during translation: {str(e)}'}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
+
 
 @csrf_exempt
 def fix_null_values_in_translation(request):

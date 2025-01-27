@@ -7964,6 +7964,77 @@ indian_languages = {
 #     else:
 #         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+# @csrf_exempt
+# def translate_json_files_new(request):
+#     global line_number
+#     if request.method == 'POST':
+#         try:
+#             json_file = request.FILES.get('file')
+#             target_languages = request.POST.getlist('translate_to')
+
+#             if not json_file:
+#                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
+
+#             if not target_languages:
+#                 return JsonResponse({'error': 'No target languages provided.'}, status=400)
+
+#             file_content = json_file.read().decode('utf-8')
+#             original_json = json.loads(file_content)
+
+#             response_files = []
+
+#             for language in target_languages:
+#                 translated_json = {}
+#                 translation_tasks = [
+#                     (key, value) for key, value in original_json.items() if isinstance(value, str)
+#                 ]
+#                 translated_json = {
+#                     key: value for key, value in original_json.items() if not isinstance(value, str)
+#                 }
+
+#                 async def translate_key_value(key, value, target_lang):
+#                     global line_number
+#                     try:
+#                         print(f"Line {line_number}: Translating key '{key}' with value '{value}'")
+#                         translation_result = bhashini_translate(value, target_lang)
+#                         translated_json[key] = translation_result["translated_content"]
+#                         print(f"Line {line_number}: Translated value '{translated_json[key]}'")
+#                         line_number += 1
+#                     except Exception as e:
+#                         print(f"Line {line_number}: Error translating key '{key}' - {str(e)}")
+#                         translated_json[key] = f"Translation Error: {str(e)}"
+
+#                 async def trans_main(translation_tasks, translate_to):
+#                     tasks = [translate_key_value(key, value, translate_to) for key, value in translation_tasks]
+#                     await asyncio.gather(*tasks)
+
+#                 asyncio.run(trans_main(translation_tasks, language))
+
+#                 # Sort and save
+#                 translated_json = dict(sorted(translated_json.items()))
+#                 translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
+#                 translated_file_name = f"translated_{language}.json"
+#                 response_files.append((translated_file_name, translated_json_str))
+
+#             zip_buffer = BytesIO()
+#             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
+#                 for file_name, file_content in response_files:
+#                     zip_archive.writestr(file_name, file_content)
+
+#             zip_buffer.seek(0)
+#             response = HttpResponse(zip_buffer, content_type='application/zip')
+#             response['Content-Disposition'] = 'attachment; filename="translated_files.zip"'
+#             return response
+
+#         except json.JSONDecodeError:
+#             return JsonResponse({'error': 'Invalid JSON file format.'}, status=400)
+#         except Exception as e:
+#             return JsonResponse({'error': f'Error during translation: {str(e)}'}, status=500)
+#     else:
+#         return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+import re
+# Leaves anything between {{}}
 @csrf_exempt
 def translate_json_files_new(request):
     global line_number
@@ -7995,9 +8066,23 @@ def translate_json_files_new(request):
                 async def translate_key_value(key, value, target_lang):
                     global line_number
                     try:
-                        print(f"Line {line_number}: Translating key '{key}' with value '{value}'")
-                        translation_result = bhashini_translate(value, target_lang)
-                        translated_json[key] = translation_result["translated_content"]
+                        pattern = r'{{(.*?)}}'
+                        parts_to_translate = re.split(pattern, value)  
+
+                        translated_parts = []
+                        for i, part in enumerate(parts_to_translate):
+                            if i % 2 == 0: 
+                                if part.strip(): 
+                                    translation_result = bhashini_translate(part, target_lang)
+                                    translated_parts.append(translation_result["translated_content"])
+                                else:
+                                    translated_parts.append(part)  
+                            else:
+                                translated_parts.append("{{" + part + "}}") 
+
+                        reconstructed_value = ''.join(translated_parts)
+
+                        translated_json[key] = reconstructed_value
                         print(f"Line {line_number}: Translated value '{translated_json[key]}'")
                         line_number += 1
                     except Exception as e:

@@ -49,7 +49,7 @@ def sanitize_input(input_str):
 MAX_SENTENCES_PER_CHUNK = 30  # Number of sentences to process in a single chunk
 MAX_WORKERS = 50  # Number of threads for concurrent processing
 RETRY_LIMIT = 1000  # Maximum retries for translation API
-PEXELS_API_KEY = "iqy3drEfoM2c89oQV0MnN4g7OnXjrrJ0femqQmZu2r0OsXvvNr8s9hFl"
+PEXELS_API_KEY = "WjL9jZR3XAwZOE1zt7laoApHMSKfYwuDmUQVbKEaYRglJg18FcfrtiG8"
 PEXELS_BASE_URL = "https://api.pexels.com/v1/search"
  
 # Function to translate a single sentence
@@ -127,34 +127,6 @@ def translate_with_retry(sentence, to_code, retries=RETRY_LIMIT):
             return result
     raise ValueError(f"Failed to translate sentence after {retries} attempts: {sentence}")
 
-
-# def generate_email(purpose='Request Information', num_words=100, subject=None, rephrase=False, to=None, tone='Formal', keywords=None, contextual_background=None, call_to_action=None, additional_details=None, priority_level='Low', closing_remarks=None):
-#     # Ensure all fields are checked for inappropriate language
-#     fields_to_check = [purpose, subject, keywords, contextual_background, call_to_action, additional_details, closing_remarks]
-#     if any(contains_inappropriate_language(str(field)) for field in fields_to_check if field is not None):
-#         return "Error: Input contains inappropriate language."
-    
-#     prompt = f"Generate an email of maximum {num_words} words and subject: {subject}, to {to}, maintain a {tone} tone, using the following keywords {', '.join(keywords)}, given the following inputs:"
-#     prompt += f"\nPurpose of the mail is {purpose}," if purpose else ""
-#     prompt += f"\nConsider the contextual background {contextual_background}," if contextual_background else ""
-#     prompt += f"\nWith an expectation of {call_to_action}," if call_to_action else ""
-#     prompt += f"\nIncorporate the following additional details: {additional_details}." if additional_details else ""
-#     prompt += f"\nThe mail is of {priority_level} priority." if priority_level else ""
-#     prompt += f"\nIncorporate the closing remarks {closing_remarks}." if closing_remarks else ""
-    
-#     # Check if rephrasing is enabled
-#     prompt += "\nRephrase the subject line" if rephrase else ""
-    
-#     prompt += "\nDo not include any additional commentary or information beyond the email content itself."
-    
-#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-#     chat_completion = client.chat.completions.create(
-#         messages=[{"role": "user", "content": prompt}],
-#         model="llama-3.3-70b-versatile",
-#     )
-    
-#     return chat_completion.choices[0].message.content
-
 def generate_email(purpose='Request Information', num_words=100, subject=None, rephrase=False, to=None, tone='Formal', keywords=None, contextual_background=None, call_to_action=None, additional_details=None, priority_level='Low', closing_remarks=None):
     # Ensure all fields are checked for inappropriate language
     fields_to_check = [purpose, subject, keywords, contextual_background, call_to_action, additional_details, closing_remarks]
@@ -197,51 +169,6 @@ def generate_email(purpose='Request Information', num_words=100, subject=None, r
 
     return chat_completion.choices[0].message.content 
 
-# def generate_bus_pro(business_intro, proposal_objective, num_words, scope_of_work, project_phases, expected_outcomes, tech_innovations, target_audience, budget_info, timeline, benefits, closing_remarks):
-#     # Collect all fields to check for inappropriate language
-#     fields_to_check = [business_intro, proposal_objective, scope_of_work, project_phases, expected_outcomes, tech_innovations, target_audience, budget_info, timeline, benefits, closing_remarks]
-    
-#     # Check if any field contains inappropriate language
-#     if any(contains_inappropriate_language(str(field)) for field in fields_to_check if field is not None):
-#         return "Error: Input contains inappropriate language."
-    
-#     # Sanitize input (if needed)
-#     sanitized_fields = [sanitize_input(str(field)) if field else '' for field in fields_to_check]
-
-#     # Reconstruct the prompt with sanitized input
-#     prompt = f"Generate a business proposal of maximum {num_words} words, given the following inputs: "
-#     if sanitized_fields[0]:
-#         prompt += f"Our business details are {sanitized_fields[0]}, "
-#     if sanitized_fields[1]:
-#         prompt += f"and the purpose of this proposal is {sanitized_fields[1]}, "
-#     if sanitized_fields[2]:
-#         prompt += f"Define the scope of work as {sanitized_fields[2]}. "
-#     if sanitized_fields[3]:
-#         prompt += f"The project will be done in the following phases: {sanitized_fields[3]}. "
-#     if sanitized_fields[4]:
-#         prompt += f"Reprise the client of these expected outcomes: {sanitized_fields[4]}. "
-#     if sanitized_fields[5]:
-#         prompt += f"Mention our following technologies and innovative approaches: {sanitized_fields[5]}. "
-#     if sanitized_fields[6]:
-#         prompt += f"Bear in mind that the target audience is: {sanitized_fields[6]}. "
-#     if sanitized_fields[7]:
-#         prompt += f"Incorporate this budget info: {sanitized_fields[7]}. "
-#     if sanitized_fields[8]:
-#         prompt += f"The timelines we hope to stick to are: {sanitized_fields[8]}. "
-#     if sanitized_fields[9]:
-#         prompt += f"Incorporate into the proposal the following benefits: {sanitized_fields[9]}. "
-#     if sanitized_fields[10]:
-#         prompt += f"Incorporate the following closing remarks: {sanitized_fields[10]}. "
-
-#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-#     chat_completion = client.chat.completions.create(
-#         messages=[{"role": "user", "content": prompt}],
-#         model="llama-3.3-70b-versatile",
-
-#     )
-
-#     return chat_completion.choices[0].message.content
-
 def generate_bus_pro(business_intro, proposal_objective, num_words, scope_of_work, project_phases, expected_outcomes, tech_innovations, target_audience, budget_info, timeline, benefits, closing_remarks):
     # Collect all fields to check for inappropriate language
     fields_to_check = [business_intro, proposal_objective, scope_of_work, project_phases, expected_outcomes, tech_innovations, target_audience, budget_info, timeline, benefits, closing_remarks]
@@ -255,7 +182,7 @@ def generate_bus_pro(business_intro, proposal_objective, num_words, scope_of_wor
 
     # Reconstruct the prompt with sanitized input
     
-    prompt = f"Write a professional business proposal of up to {num_words} words with the following structure:\n\n"
+    prompt = f"Write a professional business proposal with a well-structured format. The proposal must strictly contain at least {num_words} words and may exceed slightly to ensure coherence and completeness. Follow this structure:\n\n"
 
     # Add inputs into the prompt
     if sanitized_fields[0]:
@@ -297,78 +224,6 @@ def generate_bus_pro(business_intro, proposal_objective, num_words, scope_of_wor
     )
 
     return chat_completion.choices[0].message.content
-
-
-# def generate_offer_letter(company_details, candidate_name, position_title, department, status, location,
-#                           start_date, compensation_benefits, work_hours, terms, acceptance_deadline,
-#                           contact_info, documents_needed, closing_remarks):
-#     # Collect all fields to check for inappropriate language
-#     fields_to_check = [
-#         company_details, candidate_name, position_title, department, status, location,
-#         start_date, compensation_benefits, work_hours, terms, acceptance_deadline,
-#         contact_info, documents_needed, closing_remarks
-#     ]
-    
-#     # Check if any field contains inappropriate language
-#     inappropriate_key = None
-#     inappropriate_value = None
-#     for value in fields_to_check:
-#         if value and contains_inappropriate_language(value):
-#             inappropriate_key = value
-#             inappropriate_value = value
-#             break
-
-#     if inappropriate_key:
-#         return f"This type of language is not allowed in the input: {inappropriate_value}"
-
-#     # Sanitize input fields
-#     sanitized_fields = [sanitize_input(str(field)) if field else '' for field in fields_to_check]
-
-#     # Build the prompt with sanitized inputs
-#     prompt = "Generate an offer letter given the following inputs: "
-#     if sanitized_fields[0]:
-#         prompt += f"\nOur business details are {sanitized_fields[0]}, "
-#     if sanitized_fields[1]:
-#         prompt += f"\nCandidate name is {sanitized_fields[1]}, "
-#     if sanitized_fields[2]:
-#         prompt += f"\nfor the position of {sanitized_fields[2]}, "
-#     if sanitized_fields[3]:
-#         prompt += f"\nin the department: {sanitized_fields[3]}, "
-#     if sanitized_fields[4]:
-#         prompt += f"\nas a {sanitized_fields[4]} employee. "
-#     if sanitized_fields[5]:
-#         prompt += f"\nExpected to work from: {sanitized_fields[5]}. "
-#     if sanitized_fields[6]:
-#         prompt += f"\nCandidate to join on {sanitized_fields[6]}. "
-#     if sanitized_fields[7]:
-#         prompt += f"\nCandidate will receive the following compensation and benefits: {sanitized_fields[7]}. "
-#     if sanitized_fields[8]:
-#         prompt += f"\nExpected working hours: {sanitized_fields[8]}. "
-#     if sanitized_fields[9]:
-#         prompt += f"\nFollowing are the terms of the offer: {sanitized_fields[9]}. "
-#     if sanitized_fields[10]:
-#         prompt += f"\nThe last day for accepting the offer is: {sanitized_fields[10]}. "
-#     if sanitized_fields[11]:
-#         prompt += f"\nIn case of any queries contact: {sanitized_fields[11]}. "
-#     if sanitized_fields[12]:
-#         prompt += f"\nFollowing documents to be produced on the day of joining: {sanitized_fields[12]}. "
-#     if sanitized_fields[13]:
-#         prompt += f"\nIncorporate the following closing remarks in the offer letter: {sanitized_fields[13]}. "
-
-#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-
-#     chat_completion = client.chat.completions.create(
-#         messages=[
-#             {
-#                 "role": "user",
-#                 "content": prompt,
-#             }
-#         ],
-#         model="llama-3.3-70b-versatile",
-
-#     )
-
-#     return chat_completion.choices[0].message.content
 
 
 def generate_offer_letter(company_details, candidate_name, position_title, department, status, location,
@@ -476,7 +331,6 @@ indian_languages = {
     "Santali": "sat",
 }
 
-
 def generate_summary(document_context, main_subject, summary_purpose, length_detail, important_elements, audience, tone, format, additional_instructions, document_file=None, text=None):
     # Check for document content source
     if document_file:
@@ -581,85 +435,6 @@ def generate_summary(document_context, main_subject, summary_purpose, length_det
 
 
 # Function to generate content based on provided parameters
-# def generate_content(company_info, content_purpose, desired_action, topic_details, keywords, audience_profile, format_structure, num_words, seo_keywords, references):
-#     inputs = {
-#         "company_info": company_info,
-#         "content_purpose": content_purpose,
-#         "desired_action": desired_action,
-#         "topic_details": topic_details,
-#         "keywords": keywords,
-#         "audience_profile": audience_profile,
-#         "format_structure": format_structure,
-#         "seo_keywords": seo_keywords,
-#         "references": references
-#     }
-
-#     # Check if any input parameter contains inappropriate words
-#     inappropriate_key = None
-#     inappropriate_value = None
-#     for key, value in inputs.items():
-#         if value and contains_inappropriate_language(value):
-#             inappropriate_key = key
-#             inappropriate_value = value
-#             break
-
-#     if inappropriate_key:
-#         return f"This type of language is not allowed in {inappropriate_key}: '{inappropriate_value}'."
-
-#     # Sanitize input fields
-#     sanitized_inputs = {key: sanitize_input(value) if value else '' for key, value in inputs.items()}
-
-#     # Construct the prompt for content generation
-#     prompt = f"Generate high-quality, engaging content of maximum {num_words} words with the following details:\n"
-
-#     if sanitized_inputs['company_info']:
-#         prompt += f"Company Information: {sanitized_inputs['company_info']}\n"
-#     if sanitized_inputs['content_purpose']:
-#         prompt += f"Purpose of Content: {sanitized_inputs['content_purpose']}\n"
-#     if sanitized_inputs['desired_action']:
-#         prompt += f"Desired Action: {sanitized_inputs['desired_action']}\n"
-#     if sanitized_inputs['topic_details']:
-#         prompt += f"Topic Details: {sanitized_inputs['topic_details']}\n"
-#     if sanitized_inputs['keywords']:
-#         prompt += f"Keywords: {sanitized_inputs['keywords']}\n"
-#     if sanitized_inputs['audience_profile']:
-#         prompt += f"Audience Profile: {sanitized_inputs['audience_profile']}\n"
-#     if sanitized_inputs['format_structure']:
-#         prompt += f"Format and Structure: {sanitized_inputs['format_structure']}\n"
-#     if sanitized_inputs['seo_keywords']:
-#         prompt += f"SEO Keywords: {sanitized_inputs['seo_keywords']}\n"
-#     if sanitized_inputs['references']:
-#         prompt += f"References to Cite: {sanitized_inputs['references']}\n"
-
-#     # Additional instructions for the content creation
-#     prompt += (
-#         "\nInstructions:\n"
-#         "- Ensure the content is engaging, informative, and relevant to the specified audience.\n"
-#         "- Highlight the benefits and unique aspects of the topic to capture the audience's interest.\n"
-#         "- Use a professional tone and clear language to communicate effectively.\n"
-#         "- Incorporate the provided keywords naturally and strategically for SEO optimization.\n"
-#         "- Maintain accuracy and avoid any hallucinations or false information.\n"
-#         "- Adhere to the specified format and structure to meet the content requirements.\n"
-#     )
-
-#     # Generate content using Groq API
-#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-
-#     chat_completion = client.chat.completions.create(
-#         messages=[
-#             {
-#                 "role": "user",
-#                 "content": prompt,
-#             }
-#         ],
-#         model="llama-3.3-70b-versatile",
-
-#     )
-
-#     return chat_completion.choices[0].message.content
-
-
-# Function to generate content based on provided parameters
 def generate_content(company_info, content_purpose, desired_action, topic_details, keywords, audience_profile, format_structure, num_words, seo_keywords, references):
     inputs = {
         "company_info": company_info,
@@ -738,66 +513,6 @@ def generate_content(company_info, content_purpose, desired_action, topic_detail
     )
 
     return chat_completion.choices[0].message.content
-
-
-# def generate_sales_script(company_details, num_words, product_descriptions, features_benefits, pricing_info, promotions, target_audience, sales_objectives,
-#                           competitive_advantage, compliance):
-#     inputs = {
-#         "Company Details": company_details,
-#         "Product Descriptions": product_descriptions,
-#         "Features and Benefits": features_benefits,
-#         "Pricing Info": pricing_info,
-#         "Promotions": promotions,
-#         "Target Audience": target_audience,
-#         "Sales Objectives": sales_objectives,
-#         "Competitive Advantage": competitive_advantage,
-#         "Compliance": compliance,
-#         "Number Of Words": num_words
-#     }
-
-#     # Check if any input parameter contains inappropriate words
-#     inappropriate_key = None
-#     inappropriate_value = None
-#     for key, value in inputs.items():
-#         if value and contains_inappropriate_language(value):
-#             inappropriate_key = key
-#             inappropriate_value = value
-#             break
-
-#     if inappropriate_key:
-#         return f"This type of language is not allowed in {inappropriate_key}: {inappropriate_value}"
-
-#     # Sanitize input fields
-#     sanitized_inputs = {key: sanitize_input(value) if value else '' for key, value in inputs.items()}
-
-#     # Build the prompt for generating the sales script
-#     prompt = f"Generate a sales script of maximum {sanitized_inputs['Number Of Words']} words, given the following inputs: "
-#     for key, value in sanitized_inputs.items():
-#         if key != 'Number Of Words' and value:
-#             prompt += f"\n- {key}: {value}"
-
-#     prompt += (
-#         "\n\nInstructions:\n"
-#         "- Ensure the script is professional and persuasive.\n"
-#         "- Avoid any hallucinations or fabricated information. Use only the provided details.\n"
-#         "- Maintain accuracy and factual integrity throughout the script.\n"
-#         "- Avoid using any inappropriate words or foul language."
-#     )
-
-#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-
-#     chat_completion = client.chat.completions.create(
-#         messages=[
-#             {
-#                 "role": "user",
-#                 "content": prompt,
-#             }
-#         ],
-#         model="llama-3.3-70b-versatile",
-
-#     )
-
-#     return chat_completion.choices[0].message.content
 
 def generate_sales_script(company_details, num_words, product_descriptions, features_benefits, pricing_info, promotions, target_audience, sales_objectives,
                           competitive_advantage, compliance):
@@ -1027,8 +742,6 @@ def generate_presentation_content(document_content, num_slides, special_instruct
          print(f"Generated content: {generated_content}")
          raise ValueError(f"Failed to parse Groq response as JSON: {e}")
 
-
-
 def update_presentation_with_generated_content(template_path, output_path,document_content,title,num_slides,special_instructions):
     """
     Update the PowerPoint presentation with the generated titles and content.
@@ -1066,50 +779,6 @@ def update_presentation_with_generated_content(template_path, output_path,docume
     print(f"Presentation saved as '{output_path}'")
     return presentation
 
-# def fetch_single_image(query, width, height): # Adjusted dimensions here
-#     headers = {"Authorization": PEXELS_API_KEY}
-#     params = {"query": query, "per_page": 5}  # Request up to 5 images
-#     print("Code entered")
-#     response = requests.get(PEXELS_BASE_URL, headers=headers, params=params)
-#     print("response is",response)
-#     if response.status_code == 200:
-#         data = response.json()
-#         photos = data.get("photos", [])
-#         if photos:
-#             # Choose a random photo from the top 5
-#             random_photo = random.choice(photos)  
-#             print("Random photo is",random_photo)
-#             # Fetch the original URL and resize it using Pexels parameters
-#             original_url = random_photo['src']['landscape'] # or 'large2x', 'large', 'medium', 'small', etc.
-#             resized_url = f"{original_url}?auto=compress&cs=tinysrgb&h={height}&w={width}"
-#             return Image(url=resized_url)
-#         else:
-#             print("No images found for the given query.")
-#             return None
-#     else:
-#         print(f"Error: {response.status_code} - {response.text}")
-#         return None
-
-# def fetch_single_image(query, width, height): 
-#     headers = {"Authorization": PEXELS_API_KEY}
-#     params = {"query": query, "per_page": 5}  # Request up to 5 images
-#     response = requests.get(PEXELS_BASE_URL, headers=headers, params=params)
-#     if response.status_code == 200:
-#         data = response.json()
-#         photos = data.get("photos", [])
-#         if photos:
-#             random_photo = random.choice(photos)  # Ensure 'photos' is a list
-#             original_url = random_photo['src']['landscape']
-#             resized_url = f"{original_url}?auto=compress&cs=tinysrgb&h={height}&w={width}"
-#             return {"url": resized_url}
-#         else:
-#             print("No images found for the given query.")
-#             return None
-#     else:
-#         print(f"Error: {response.status_code} - {response.text}")
-#         return None
-    
-
 def fetch_single_image(query, width, height): 
     headers = {"Authorization": PEXELS_API_KEY}
     params = {"query": query, "per_page": 10}  # Request up to 5 images
@@ -1140,14 +809,38 @@ def fetch_single_image(query, width, height):
         print(f"Error: {response.status_code} - {response.text}")
         return None
     
-
-
 def generate_blog(title, tone, custom_tone, keywords=None):
     # Ensure all fields are checked for inappropriate language
     fields_to_check = [title, keywords]
     if any(contains_inappropriate_language(str(field)) for field in fields_to_check if field is not None):
         return "Error: Input contains inappropriate language."
+    print(keywords)
     
+
+    # Create the prompt for the blog generation
+    # prompt = (
+    #     f"As a professional blog generator with extensive experience in the field, create a compelling blog post "
+    #     f"with a maximum of {1000} words. The title of the blog is '{title}' and it should be written in a "
+    #     f"{tone} tone with a custom tone of '{custom_tone}' and appropriate side headings."
+    # )
+    # prompt += (
+    #     "\n\nMake sure to introduce the topic engagingly and provide valuable insights throughout the blog. "
+    #     "Include relevant examples or case studies to illustrate key points."
+    # )
+
+    # if keywords:
+    #     prompt += (
+    #         f"\n\nIncorporate the following keywords: {', '.join(keywords)}. Ensure that the keywords are naturally "
+    #         "integrated into the content to enhance readability and SEO."
+    #     )
+
+    # prompt += (
+    #     "\n\nConclude the blog with a strong closing statement that summarizes the key points."
+    #   #  "\n\nAlso, include a call-to-action or thought-provoking idea to engage the reader."
+    #     "\n\nEnsure that the content is informative, easy to understand, and engaging. Avoid jargon and ensure that "
+    #     "the blog flows logically from one section to the next."
+    # )
+     
 
 
     prompt = (
@@ -1163,24 +856,18 @@ def generate_blog(title, tone, custom_tone, keywords=None):
         f"- Use persuasive language, real-world examples, and credible data where appropriate to enhance the content's appeal and trustworthiness.\n"
         f"- Conclude with a thought-provoking summary or call to action that encourages further engagement (e.g., sharing the blog, visiting a website, or purchasing a product).\n"
         f"- Maintain a tone that matches the provided tone style, keeping the target audience in mind.\n\n"
-        f"The blog should be comprehensive, well-researched, and between 800-1200 words to maximize its impact and commercial value."
-        )
-    
+        f"The blog should be comprehensive, well-researched, and strictly ensuring in a range of 900-1100 words  to maximize its impact and commercial value."
+
+    )
     # Call the Groq API to generate the blog
     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
         model="llama-3.3-70b-versatile",
-        temperature=0.8
     )
-    
+
     # Return the generated blog content
-    # return chat_completion.choices[0].message.content
     return chat_completion.choices[0].message.content
-
- 
-
 
 def rephrasely(text_to_rephrase, tone, target_audience, num_words="default"):
     # Ensure input text is checked for inappropriate language
@@ -1210,7 +897,6 @@ def rephrasely(text_to_rephrase, tone, target_audience, num_words="default"):
     # Extract and return the rephrased content
     return  chat_completion.choices[0].message.content
     
-
 def ask_question_chatbot(question):
 
     llm = ChatGroq(model="Llama3-70b-8192", groq_api_key=GROQ_SECRET_ACCESS_KEY)
@@ -1248,8 +934,6 @@ Your key features include:Comprehensive Query Handling: You can handle a wide ra
     result = chain.invoke(question)
 
     return result
-
-
 
 def extract_document_content(file):
     if file is None:
@@ -1300,8 +984,6 @@ def extract_document_content(file):
         raise ValueError("Unsupported file type: .ppt files need to be converted to .pptx.")
     else:
         raise ValueError("Unsupported file type")
-
-
 
 import requests
 from typing import List, Dict

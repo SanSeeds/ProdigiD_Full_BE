@@ -152,6 +152,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True  
+
 # SECURE_SSL_REDIRECT = True  
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  
 
@@ -202,9 +203,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', 
     'csp.middleware.CSPMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     "django_permissions_policy.PermissionsPolicyMiddleware",
     'django.middleware.common.CommonMiddleware',
@@ -220,11 +221,11 @@ DRF_API_LOGGER_DATABASE = True  # Default to False
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173", "https://prodigidesk.ai","http://localhost:3000", 
+    "http://localhost:5173", "https://prodigidesk.ai","http://localhost:3000","https://www.prodigidesk.ai"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173","https://prodigidesk.ai" 
+    "http://localhost:5173","https://prodigidesk.ai"  ,"https://www.prodigidesk.ai"
 ]
 
 

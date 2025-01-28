@@ -932,249 +932,6 @@ def decrypt_data(encrypted_data):
     except Exception as e:
         raise ValueError(f"Decryption error: {e}")
 
-# @csrf_exempt
-# @permission_classes([HasAPIKey])
-# @require_POST
-# def add_user(request):
-#     if request.method == 'POST':
-#         try:
-#             # Load untrusted domains from the text file
-#             with open('./domains.txt', 'r') as file:
-#                 untrusted_domains = {line.strip().lower() for line in file}
-
-#             # Load and decode the request body
-#             body = request.body.decode('utf-8')
-#             logger.debug(f"Request body received: {body}")
-
-#             # Extract and decrypt the incoming payload
-#             data = json.loads(body)
-#             encrypted_content = data.get('encrypted_content')
-#             if not encrypted_content:
-#                 logger.warning("No encrypted content found in the request.")
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             logger.debug(f"Encrypted content received: {encrypted_content}")
-#             decrypted_content = decrypt_data(encrypted_content)  # Decrypt the content using your custom decrypt_data function
-#             logger.debug(f"Decrypted content: {decrypted_content}")
-
-#             content = json.loads(decrypted_content)
-
-#             if not content:
-#                 logger.warning('No content found in the request.')
-#                 return JsonResponse({'error': 'No content found in the request.'}, status=400)
-
-#             # Extract required fields
-#             first_name = content.get('first_name')
-#             last_name = content.get('last_name')
-#             username = content.get('username')
-#             email = content.get('email')
-#             password = content.get('password')
-#             confirm_password = content.get('confirm_password')
-#             state = content.get('state')  # Extract the state field
-
-#             # Check if username and email are provided
-#             if not username:
-#                 return JsonResponse({'error': 'Username is required.'}, status=400)
-#             if not email:
-#                 return JsonResponse({'error': 'Email is required.'}, status=400)
-
-#             # Normalize username and email to lowercase
-#             username = username.lower()
-#             email = email.lower()
-
-#             # Extract domain from the email
-#             try:
-#                 email_domain = email.split('@')[1].lower()
-#             except IndexError:
-#                 return JsonResponse({'error': 'Invalid email format.'}, status=400)
-
-#             # Check if the email domain is in the untrusted list
-#             if email_domain in untrusted_domains:
-#                 return JsonResponse({
-#                     'error': 'It seems you are using an untrusted email domain service. Please try with another email.'}, 
-#                     status=400)
-
-#             # Check if passwords match
-#             if password != confirm_password:
-#                 return JsonResponse({'error': 'Passwords do not match.'}, status=400)
-
-#             # Check if username already exists
-#             if User.objects.filter(username=username).exists():
-#                 return JsonResponse({'error': 'Username already exists.'}, status=400)
-
-#             # Validate email
-#             try:
-#                 validate_email(email)
-#             except ValidationError:
-#                 return JsonResponse({'error': 'Invalid email address.'}, status=400)
-
-#             # Check if email already exists
-#             if User.objects.filter(email=email).exists():
-#                 return JsonResponse({'error': 'Email already exists.'}, status=400)
-
-#             # Check if state is provided
-#             if not state:
-#                 return JsonResponse({'error': 'State is required.'}, status=400)
-
-#             # Create user
-#             user = User.objects.create(
-#                 first_name=first_name,
-#                 last_name=last_name,
-#                 username=username,
-#                 email=email,
-#                 password=make_password(password),  # Hash the password
-#                 state = state
-#             )
-#             user.save()
-
-
-#             # Prepare the response
-#             response_data = {
-#                 'message': 'User created successfully',
-#                 'user_id': user.id,
-#                 'email': email
-#             }
-
-#             # Encrypt the response content
-#             encrypted_response_content = encrypt_data(response_data)  # Encrypt the response using your custom encrypt_data function
-
-#             # Return the encrypted response
-#             return JsonResponse({'encrypted_content': encrypted_response_content}, status=201)
-
-#         except json.JSONDecodeError:
-#             logger.error("Invalid JSON format in request")
-#             return JsonResponse({'error': 'Invalid JSON format'}, status=400)
-#         except Exception as e:
-#             logger.error(f"Unexpected error: {str(e)}")
-#             return JsonResponse({'error': str(e)}, status=500)
-#     else:
-#         logger.error("Invalid request method")
-#         return JsonResponse({'error': 'Invalid request method'}, status=405)
-
-# @csrf_exempt
-# @permission_classes([HasAPIKey])
-# @require_POST
-# def add_user(request):
-#     if request.method == 'POST':
-#         try:
-#             # Load untrusted domains from the text file
-#             with open('./domains.txt', 'r') as file:
-#                 untrusted_domains = {line.strip().lower() for line in file}
-
-#             # Load and decode the request body
-#             body = request.body.decode('utf-8')
-#             logger.debug(f"Request body received: {body}")
-
-#             # Extract and decrypt the incoming payload
-#             data = json.loads(body)
-#             encrypted_content = data.get('encrypted_content')
-#             if not encrypted_content:
-#                 logger.warning("No encrypted content found in the request.")
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             logger.debug(f"Encrypted content received: {encrypted_content}")
-#             decrypted_content = decrypt_data(encrypted_content)  # Decrypt the content using your custom decrypt_data function
-#             logger.debug(f"Decrypted content: {decrypted_content}")
-
-#             content = json.loads(decrypted_content)
-
-#             if not content:
-#                 logger.warning('No content found in the request.')
-#                 return JsonResponse({'error': 'No content found in the request.'}, status=400)
-
-#             # Extract required fields
-#             first_name = content.get('first_name')
-#             last_name = content.get('last_name')
-#             username = content.get('username')
-#             email = content.get('email')
-#             password = content.get('password')
-#             confirm_password = content.get('confirm_password')
-#             state = content.get('state')  # Extract the state field
-
-#             # Check if username and email are provided
-#             if not username:
-#                 return JsonResponse({'error': 'Username is required.'}, status=400)
-#             if not email:
-#                 return JsonResponse({'error': 'Email is required.'}, status=400)
-
-#             # Normalize username and email to lowercase
-#             username = username.lower()
-#             email = email.lower()
-
-#             # Extract domain from the email
-#             try:
-#                 email_domain = email.split('@')[1].lower()
-#             except IndexError:
-#                 return JsonResponse({'error': 'Invalid email format.'}, status=400)
-
-#             # Check if the email domain is in the untrusted list
-#             if email_domain in untrusted_domains:
-#                 return JsonResponse({
-#                     'error': 'It seems you are using an untrusted email domain service. Please try with another email.'}, 
-#                     status=400)
-
-#             # Check if passwords match
-#             if password != confirm_password:
-#                 return JsonResponse({'error': 'Passwords do not match.'}, status=400)
-
-#             # Check if the password is the same as the email
-#             if password == email:
-#                 return JsonResponse({'error': 'Password cannot be the same as the email address.'}, status=400)
-            
-#             if password == username:
-#                 return JsonResponse({'error': 'Password cannot be the same as the username.'}, status=400)
-
-#             # Check if username already exists
-#             if User.objects.filter(username=username).exists():
-#                 return JsonResponse({'error': 'Username already exists.'}, status=400)
-
-#             # Validate email
-#             try:
-#                 validate_email(email)
-#             except ValidationError:
-#                 return JsonResponse({'error': 'Invalid email address.'}, status=400)
-
-#             # Check if email already exists
-#             if User.objects.filter(email=email).exists():
-#                 return JsonResponse({'error': 'Email already exists.'}, status=400)
-
-#             # Check if state is provided
-#             if not state:
-#                 return JsonResponse({'error': 'State is required.'}, status=400)
-
-#             # Create user
-#             user = User.objects.create(
-#                 first_name=first_name,
-#                 last_name=last_name,
-#                 username=username,
-#                 email=email,
-#                 password=make_password(password),  # Hash the password
-#                 state=state
-#             )
-#             user.save()
-
-#             # Prepare the response
-#             response_data = {
-#                 'message': 'User created successfully',
-#                 'user_id': user.id,
-#                 'email': email
-#             }
-
-#             # Encrypt the response content
-#             encrypted_response_content = encrypt_data(response_data)  # Encrypt the response using your custom encrypt_data function
-
-#             # Return the encrypted response
-#             return JsonResponse({'encrypted_content': encrypted_response_content}, status=201)
-
-#         except json.JSONDecodeError:
-#             logger.error("Invalid JSON format in request")
-#             return JsonResponse({'error': 'Invalid JSON format'}, status=400)
-#         except Exception as e:
-#             logger.error(f"Unexpected error: {str(e)}")
-#             return JsonResponse({'error': str(e)}, status=500)
-#     else:
-#         logger.error("Invalid request method")
-#         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 from django.contrib.auth.hashers import make_password, check_password
 
@@ -3642,6 +3399,140 @@ def change_password(request):
     encrypted_response = encrypt_data({'error': 'Invalid request method.'})
     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
 
+# @require_POST
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated, HasAPIKey])
+# def summarize_document(request):
+#     try:
+#         # Extract encrypted content from request.POST
+#         encrypted_content = request.POST.get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning('No encrypted content found in the request.')
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         # Decrypt the JSON payload
+#         decrypted_content = decrypt_data(encrypted_content)
+#         data = json.loads(decrypted_content)
+#         logger.debug(f'Decrypted content: {data}')
+
+#         # Define Indian languages mapping
+#         indian_languages = {
+#             "English": "en",
+#             "Hindi": "hi",
+#             "Tamil": "ta",
+#             "Telugu": "te",
+#             "Marathi": "mr",
+#             "Kannada": "kn",
+#             "Bengali": "bn",
+#             "Odia": "or",
+#             "Assamese": "as",
+#             "Punjabi": "pa",
+#             "Malayalam": "ml",
+#             "Gujarati": "gu",
+#             "Urdu": "ur",
+#             "Sanskrit": "sa",
+#             "Nepali": "ne",
+#             "Bodo": "brx",
+#             "Maithili": "mai",
+#             "Sindhi": "sd",
+#             "Kashmiri": "ks",
+#             "Konkani": "kok",
+#             "Dogri": "doi",
+#             "Goan Konkani": "gom",
+#             "Santali": "sat",
+#         }
+
+#         # Fields to check for language detection and translation
+#         fields_to_check = [
+#             'documentContext', 'mainSubject', 'summaryPurpose', 'lengthDetail',
+#             'importantElements', 'audience', 'tone', 'format', 'additionalInstructions', 'text'
+#         ]
+
+#         # Translate only non-English content
+#         for field in fields_to_check:
+#             value = data.get(field)
+#             if value:
+#                 try:
+#                     # Detect language
+#                     detected_language, confidence = classify(value)
+#                     language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+#                     logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+#                     logger.debug(f"Original Value: {value}")
+
+#                     # Translate if not English
+#                     if detected_language != 'en':
+#                         logger.info(f"Translating {field} from {language_name} to English.")
+#                         translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
+#                         logger.debug(f"Translated {field}: {translated_text}")
+#                         data[field] = translated_text
+#                     else:
+#                         logger.info(f"{field} is already in English. No translation needed.")
+#                 except Exception as e:
+#                     logger.error(f"Error processing field {field}: {str(e)}")
+
+#         # Extract form fields from decrypted data
+#         document_context = data.get('documentContext')
+#         main_subject = data.get('mainSubject')
+#         summary_purpose = data.get('summaryPurpose')
+#         length_detail = data.get('lengthDetail')
+#         important_elements = data.get('importantElements')
+#         audience = data.get('audience')
+#         tone = data.get('tone')
+#         format_ = data.get('format')
+#         additional_instructions = data.get('additionalInstructions')
+
+#         # Extract the uploaded file or text from request
+#         document_file = request.FILES.get('documentFile')
+        
+#         text = data.get('text')
+
+#         # Ensure we have either documentFile or text
+#         if not document_file and not text:
+#             logger.warning('No document file or text provided.')
+#             return JsonResponse({'error': 'No document file or text provided.'}, status=400)
+
+#         # If documentFile is provided, use it for summarization
+#         if document_file:
+#             logger.info('Using uploaded document file for summarization.')
+#             summary = generate_summary(
+#                 document_context, main_subject, summary_purpose, length_detail,
+#                 important_elements, audience, tone, format_, additional_instructions, document_file
+#             )
+
+#         # If only text is provided, use it for summarization
+#         elif text:
+#             logger.info('Using provided text for summarization.')
+#             summary = generate_summary(
+#                 document_context, main_subject, summary_purpose, length_detail,
+#                 important_elements, audience, tone, format_, additional_instructions, text=text
+#             )
+
+#         # Handle specific error scenarios from generate_summary
+#         if summary.startswith("Error:"):
+#             if "Uploaded file too large" in summary:
+#                 logger.warning(summary)
+#                 return JsonResponse({'error': summary}, status=413)
+#             else:
+#                 logger.error(summary)
+#                 return JsonResponse({'error': summary}, status=500)
+
+#         # Encrypt the response content
+#         encrypted_response = encrypt_data({'summary': summary})
+#         logger.info('Summary generated and encrypted successfully.')
+
+#         return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+#     except json.JSONDecodeError:
+#         logger.error('Invalid JSON format received.')
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         logger.error(f'ValueError: {str(e)}')
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f'Exception: {str(e)}')
+#         return JsonResponse({'error': str(e)}, status=500)
+
+
 @require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, HasAPIKey])
@@ -3652,13 +3543,13 @@ def summarize_document(request):
         if not encrypted_content:
             logger.warning('No encrypted content found in the request.')
             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
+ 
         # Decrypt the JSON payload
         decrypted_content = decrypt_data(encrypted_content)
         data = json.loads(decrypted_content)
-        print(data)
+        print(decrypted_content);
         logger.debug(f'Decrypted content: {data}')
-
+ 
         # Define Indian languages mapping
         indian_languages = {
             "English": "en",
@@ -3685,13 +3576,14 @@ def summarize_document(request):
             "Goan Konkani": "gom",
             "Santali": "sat",
         }
-
+ 
         # Fields to check for language detection and translation
         fields_to_check = [
             'documentContext', 'mainSubject', 'summaryPurpose', 'lengthDetail',
-            'importantElements', 'audience', 'tone', 'format', 'additionalInstructions'
+            'importantElements', 'audience', 'tone', 'format', 'additionalInstructions','otherDocumentContext',
+            'otherMainSubject', 'otherPurpose', 'otherLengthDetail', 'otherFormat', 'customTone'
         ]
-
+ 
         # Translate only non-English content
         for field in fields_to_check:
             value = data.get(field)
@@ -3702,7 +3594,7 @@ def summarize_document(request):
                     language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
                     logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
                     logger.debug(f"Original Value: {value}")
-
+ 
                     # Translate if not English
                     if detected_language != 'en':
                         logger.info(f"Translating {field} from {language_name} to English.")
@@ -3713,28 +3605,51 @@ def summarize_document(request):
                         logger.info(f"{field} is already in English. No translation needed.")
                 except Exception as e:
                     logger.error(f"Error processing field {field}: {str(e)}")
-
+ 
         # Extract form fields from decrypted data
         document_context = data.get('documentContext')
+        if document_context == "Other":
+            document_context = data.get('otherDocumentContext')
+        else:
+            document_context = document_context
         main_subject = data.get('mainSubject')
+        if(main_subject == "Other"):
+            main_subject = data.get('otherMainSubject')
+        else:
+            main_subject = main_subject
         summary_purpose = data.get('summaryPurpose')
+        if(summary_purpose == "Other"):
+            summary_purpose = data.get('otherPurpose')
+        else:
+            summary_purpose = summary_purpose
         length_detail = data.get('lengthDetail')
+        if(length_detail == "Other"):
+            length_detail = data.get('otherLengthDetail')
+        else:
+            length_detail = length_detail
         important_elements = data.get('importantElements')
         audience = data.get('audience')
         tone = data.get('tone')
+        if(tone == "Other"):
+            tone = data.get('customTone')
+        else:
+            tone = tone
         format_ = data.get('format')
+        if(format_ == "Other"):
+            format_ = data.get('otherFormat')
+        else:
+            format_ = format_
         additional_instructions = data.get('additionalInstructions')
-
+ 
         # Extract the uploaded file or text from request
         document_file = request.FILES.get('documentFile')
-        
         text = data.get('text')
-
+ 
         # Ensure we have either documentFile or text
         if not document_file and not text:
             logger.warning('No document file or text provided.')
             return JsonResponse({'error': 'No document file or text provided.'}, status=400)
-
+ 
         # If documentFile is provided, use it for summarization
         if document_file:
             logger.info('Using uploaded document file for summarization.')
@@ -3742,7 +3657,7 @@ def summarize_document(request):
                 document_context, main_subject, summary_purpose, length_detail,
                 important_elements, audience, tone, format_, additional_instructions, document_file
             )
-
+ 
         # If only text is provided, use it for summarization
         elif text:
             logger.info('Using provided text for summarization.')
@@ -3750,7 +3665,7 @@ def summarize_document(request):
                 document_context, main_subject, summary_purpose, length_detail,
                 important_elements, audience, tone, format_, additional_instructions, text=text
             )
-
+ 
         # Handle specific error scenarios from generate_summary
         if summary.startswith("Error:"):
             if "Uploaded file too large" in summary:
@@ -3759,13 +3674,13 @@ def summarize_document(request):
             else:
                 logger.error(summary)
                 return JsonResponse({'error': summary}, status=500)
-
+ 
         # Encrypt the response content
         encrypted_response = encrypt_data({'summary': summary})
         logger.info('Summary generated and encrypted successfully.')
-
+ 
         return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
+ 
     except json.JSONDecodeError:
         logger.error('Invalid JSON format received.')
         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
@@ -3775,7 +3690,6 @@ def summarize_document(request):
     except Exception as e:
         logger.error(f'Exception: {str(e)}')
         return JsonResponse({'error': str(e)}, status=500)
-
 
 #Encrypted API For contnet generation Service
 @require_POST
@@ -4612,6 +4526,7 @@ def regenerate_image(request):
 
         logger.debug(f"Encrypted content received: {encrypted_content}")
         decrypted_content = decrypt_data(encrypted_content)
+        print(decrypted_content)
         logger.debug(f"Decrypted content: {decrypted_content}")
 
         # Parse the decrypted JSON
@@ -6421,7 +6336,7 @@ def delete_user_account(request):
             # Decrypt the request data
             decrypted_content = decrypt_data(encrypted_content)
             data = json.loads(decrypted_content)
-            email = data.get('email')
+            email = data.get('userEmail')
 
             if not email:
                 return JsonResponse({"error": "Email is required"}, status=400)
@@ -7967,63 +7882,72 @@ indian_languages = {
 @csrf_exempt
 def translate_json_files_new(request):
     global line_number
-    translated_json = {}
     if request.method == 'POST':
         try:
             json_file = request.FILES.get('file')
-            translate_to = request.POST.get('translate_to')
-
+            target_languages = request.POST.getlist('translate_to')
+ 
             if not json_file:
                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
-
-            if not translate_to:
-                return JsonResponse({'error': 'No target language provided.'}, status=400)
-
+ 
+            if not target_languages:
+                return JsonResponse({'error': 'No target languages provided.'}, status=400)
+ 
             file_content = json_file.read().decode('utf-8')
             original_json = json.loads(file_content)
-
-            translation_tasks = [(key, value) for key, value in original_json.items() if isinstance(value, str)]
-            translated_json = {key: value for key, value in original_json.items() if not isinstance(value, str)}
-
-            async def translate_key_value(key, value, target_lang):
-                global line_number
-                try:
-                    print(f"Line {line_number}: Translating key '{key}' with value '{value}'")
-                    translation_result = bhashini_translate(value, target_lang)
-                    translated_json[key] = translation_result["translated_content"]
-                    print(f"Line {line_number}: Translated value '{translated_json[key]}'")
-                    line_number += 1
-                except Exception as e:
-                    print(f"Line {line_number}: Error translating key '{key}' - {str(e)}")
-                    translated_json[key] = f"Translation Error: {str(e)}"
-
-            async def trans_main(translation_tasks, translate_to):
-                tasks = [translate_key_value(key, value, translate_to) for key, value in translation_tasks]
-                await asyncio.gather(*tasks)
-
-            asyncio.run(trans_main(translation_tasks, translate_to))
-
-            # Sort the keys alphabetically
-            translated_json = dict(sorted(translated_json.items()))
-
-            translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
-            translated_file_name = f"translated_{translate_to}.json"
+ 
+            response_files = []
+ 
+            for language in target_languages:
+                translated_json = {}
+                translation_tasks = [
+                    (key, value) for key, value in original_json.items() if isinstance(value, str)
+                ]
+                translated_json = {
+                    key: value for key, value in original_json.items() if not isinstance(value, str)
+                }
+ 
+                async def translate_key_value(key, value, target_lang):
+                    global line_number
+                    try:
+                        print(f"Line {line_number}: Translating key '{key}' with value '{value}'")
+                        translation_result = bhashini_translate(value, target_lang)
+                        translated_json[key] = translation_result["translated_content"]
+                        print(f"Line {line_number}: Translated value '{translated_json[key]}'")
+                        line_number += 1
+                    except Exception as e:
+                        print(f"Line {line_number}: Error translating key '{key}' - {str(e)}")
+                        translated_json[key] = f"Translation Error: {str(e)}"
+ 
+                async def trans_main(translation_tasks, translate_to):
+                    tasks = [translate_key_value(key, value, translate_to) for key, value in translation_tasks]
+                    await asyncio.gather(*tasks)
+ 
+                asyncio.run(trans_main(translation_tasks, language))
+ 
+                # Sort and save
+                translated_json = dict(sorted(translated_json.items()))
+                translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
+                translated_file_name = f"translated_{language}.json"
+                response_files.append((translated_file_name, translated_json_str))
+ 
             zip_buffer = BytesIO()
             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
-                zip_archive.writestr(translated_file_name, translated_json_str)
-
+                for file_name, file_content in response_files:
+                    zip_archive.writestr(file_name, file_content)
+ 
             zip_buffer.seek(0)
             response = HttpResponse(zip_buffer, content_type='application/zip')
-            response['Content-Disposition'] = 'attachment; filename="translated_sorted_files.zip"'
+            response['Content-Disposition'] = 'attachment; filename="translated_files.zip"'
             return response
-
+ 
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON file format.'}, status=400)
         except Exception as e:
             return JsonResponse({'error': f'Error during translation: {str(e)}'}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
-
+ 
 @csrf_exempt
 def fix_null_values_in_translation(request):
     global line_number

@@ -2576,6 +2576,83 @@ MAX_WORKERS = 50  # Number of threads for concurrent processing
 RETRY_LIMIT = 1000  # Maximum retries for translation API
 MAX_SENTENCES_PER_CHUNK = 30  # Number of sentences to process in a single chunk
 
+# @require_POST
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def translate_content_formatted(request):
+#     if request.method != 'POST':
+#         return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+#     try:
+#         # Extract and decrypt the incoming payload
+#         encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
+#         if not encrypted_content:
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         decrypted_content = decrypt_data(encrypted_content)
+#         data = json.loads(decrypted_content)
+
+#         generated_content = data.get('generated_content')
+#         language = data.get('language')
+
+#         if not generated_content or not language:
+#             return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
+
+#         # Initialize the translated content list
+#         translated_paragraphs = []
+
+#         # Break content into paragraphs or smaller chunks
+#         paragraphs = generated_content.split('\n\n')  # Split by paragraphs
+
+#         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+#             futures = []
+#             for paragraph in paragraphs:
+#                 sentences = paragraph.split('. ')  # Split paragraph into sentences
+#                 chunked_sentences = [
+#                     sentences[i:i + MAX_SENTENCES_PER_CHUNK]
+#                     for i in range(0, len(sentences), MAX_SENTENCES_PER_CHUNK)
+#                 ]
+
+#                 for chunk in chunked_sentences:
+#                     futures.append(
+#                         executor.submit(
+#                             lambda c: '. '.join([translate_with_retry(s, language) for s in c]),
+#                             chunk
+#                         )
+#                     )
+
+#             # Process completed translations
+#             for future in as_completed(futures):
+#                 try:
+#                     translated_paragraphs.append(future.result())
+#                 except ValueError as e:
+#                     return JsonResponse({'error': str(e)}, status=500)
+
+#         # Combine the translated paragraphs back into the full content
+#         translated_content = '\n\n'.join(translated_paragraphs)
+
+#         # Log the translated content
+#         logger.info(f'Translated content: {translated_content}')
+
+#         # Encrypt the response content
+#         encrypted_response = encrypt_data({
+#             'generated_content': generated_content,
+#             'translated_content': translated_content,
+#             'selected_language': language
+#         })
+
+#         return JsonResponse({'encrypted_content': encrypted_response}, status=200)
+
+#     except json.JSONDecodeError:
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f"Unexpected error: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=500)
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 @require_POST
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -2599,14 +2676,14 @@ def translate_content_formatted(request):
             return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
 
         # Initialize the translated content list
-        translated_paragraphs = []
-
-        # Break content into paragraphs or smaller chunks
         paragraphs = generated_content.split('\n\n')  # Split by paragraphs
+        translated_paragraphs = [None] * len(paragraphs)  # Placeholder list for preserving order
 
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            futures = []
-            for paragraph in paragraphs:
+            futures = {}
+
+            # Schedule tasks with indices for preserving order
+            for idx, paragraph in enumerate(paragraphs):
                 sentences = paragraph.split('. ')  # Split paragraph into sentences
                 chunked_sentences = [
                     sentences[i:i + MAX_SENTENCES_PER_CHUNK]
@@ -2614,19 +2691,28 @@ def translate_content_formatted(request):
                 ]
 
                 for chunk in chunked_sentences:
-                    futures.append(
-                        executor.submit(
-                            lambda c: '. '.join([translate_with_retry(s, language) for s in c]),
-                            chunk
-                        )
+                    future = executor.submit(
+                        lambda c: '. '.join([translate_with_retry(s, language) for s in c]),
+                        chunk
                     )
+                    futures[future] = (idx, chunk)  # Associate future with index and chunk
 
             # Process completed translations
             for future in as_completed(futures):
                 try:
-                    translated_paragraphs.append(future.result())
+                    idx, chunk = futures[future]
+                    translated_chunk = future.result()
+                    if translated_paragraphs[idx] is None:
+                        translated_paragraphs[idx] = []
+                    translated_paragraphs[idx].append(translated_chunk)
                 except ValueError as e:
                     return JsonResponse({'error': str(e)}, status=500)
+
+        # Combine chunks back into paragraphs
+        translated_paragraphs = [
+            '\n\n'.join(chunks) if chunks else ''
+            for chunks in translated_paragraphs
+        ]
 
         # Combine the translated paragraphs back into the full content
         translated_content = '\n\n'.join(translated_paragraphs)
@@ -2650,6 +2736,7 @@ def translate_content_formatted(request):
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
+
 
 
 
@@ -4177,243 +4264,6 @@ def create_presentation_english(request):
     except Exception as e:
         logger.error(f"An unexpected error occurred: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
-    
-# @require_POST
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def generate_blog_view(request):
-#     try:
-#         # Load and decode the request body
-#         body = request.body.decode('utf-8')
-#         logger.debug(f"Request body received: {body}")
-
-#         # Extract and decrypt the incoming payload
-#         data = json.loads(body)
-#         encrypted_content = data.get('encrypted_content')
-#         if not encrypted_content:
-#             logger.warning("No encrypted content found in the request.")
-#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#         logger.debug(f"Encrypted content received: {encrypted_content}")
-#         decrypted_content = decrypt_data(encrypted_content)
-#         logger.debug(f"Decrypted content: {decrypted_content}")
-
-#         # Parse the decrypted JSON
-#         data = json.loads(decrypted_content)
-
-#         # Define the Indian languages mapping
-#         indian_languages = {
-#             "English": "en",
-#             "Hindi": "hi",
-#             "Tamil": "ta",
-#             "Telugu": "te",
-#             "Marathi": "mr",
-#             "Kannada": "kn",
-#             "Bengali": "bn",
-#             "Odia": "or",
-#             "Assamese": "as",
-#             "Punjabi": "pa",
-#             "Malayalam": "ml",
-#             "Gujarati": "gu",
-#             "Urdu": "ur",
-#             "Sanskrit": "sa",
-#             "Nepali": "ne",
-#             "Bodo": "brx",
-#             "Maithili": "mai",
-#             "Sindhi": "sd",
-#             "Kashmiri": "ks",
-#             "Konkani": "kok",
-#             "Dogri": "doi",
-#             "Goan Konkani": "gom",
-#             "Santali": "sat",
-#         }
-
-#         # Fields that require language detection and potential translation
-#         fields_to_check = ['title', 'tone', 'keywords', 'customTone']
-
-#         # Translate only non-English content
-#         for field in fields_to_check:
-#             value = data.get(field)
-#             if value:
-#                 try:
-#                     # Detect language of the field value
-#                     detected_language, confidence = classify(value)
-#                     language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
-#                     logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
-
-#                     # Translate if the detected language is not English
-#                     if detected_language != 'en':
-#                         translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
-#                         logger.debug(f"Translated {field}: {translated_text}")
-#                         data[field] = translated_text
-#                     else:
-#                         print(f"{field} is already in English. No translation needed.")
-#                 except Exception as e:
-#                     print(f"Error processing field {field}: {str(e)}")
-#                     logger.error(f"Error processing field {field}: {str(e)}")
-
-#         logger.debug(f"Data after translation: {data}")
-
-#         # Extract the required fields
-#         title = data.get('title')
-#         tone = data.get('tone')
-#         custom_tone = data.get('customTone')  # Extract the custom tone
-#         keywords = data.get('keywords', None) 
-
-#         # Ensure required fields are present
-#         if not title or not tone:
-#             return JsonResponse({"error": "Missing 'title' or 'tone'."}, status=400)
-
-#         # Call the generate_blog function
-#         logger.info("Generating blog content...")
-
-#         blog_content = generate_blog(title, tone, custom_tone, keywords)
-
-
-#         if blog_content:
-#             logger.info("Blog content generated successfully.")
-#             encrypted_response_content = encrypt_data({'blog_content': blog_content})
-#             return JsonResponse({
-#                 'encrypted_content': encrypted_response_content,
-#                 'language': 'en'
-#             }, status=200)
-
-#         logger.error("Failed to generate blog content.")
-#         return JsonResponse({'error': 'Failed to generate blog content. Please try again.'}, status=500)
-
-#     except json.JSONDecodeError:
-#         logger.error("Invalid JSON format received.")
-#         return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
-#     except ValueError as e:
-#         logger.error(f"ValueError occurred: {str(e)}")
-#         return JsonResponse({"error": str(e)}, status=400)
-#     except Exception as e:
-#         logger.error(f"An unexpected error occurred: {str(e)}")
-#         return JsonResponse({"error": str(e)}, status=500)
-
-#     # If not a POST request, return an error
-#     return JsonResponse({"error": "Only POST method is allowed."}, status=405)
-
-# @require_POST
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def generate_blog_view(request):
-#     try:
-#         # Load and decode the request body
-#         body = request.body.decode('utf-8')
-#         logger.debug(f"Request body received: {body}")
-
-#         # Extract and decrypt the incoming payload
-#         data = json.loads(body)
-#         encrypted_content = data.get('encrypted_content')
-#         if not encrypted_content:
-#             logger.warning("No encrypted content found in the request.")
-#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#         logger.debug(f"Encrypted content received: {encrypted_content}")
-#         decrypted_content = decrypt_data(encrypted_content)
-#         logger.debug(f"Decrypted content: {decrypted_content}")
-
-#         # Parse the decrypted JSON
-#         data = json.loads(decrypted_content)
-
-#         # Define the Indian languages mapping
-#         indian_languages = {
-#             "English": "en",
-#             "Hindi": "hi",
-#             "Tamil": "ta",
-#             "Telugu": "te",
-#             "Marathi": "mr",
-#             "Kannada": "kn",
-#             "Bengali": "bn",
-#             "Odia": "or",
-#             "Assamese": "as",
-#             "Punjabi": "pa",
-#             "Malayalam": "ml",
-#             "Gujarati": "gu",
-#             "Urdu": "ur",
-#             "Sanskrit": "sa",
-#             "Nepali": "ne",
-#             "Bodo": "brx",
-#             "Maithili": "mai",
-#             "Sindhi": "sd",
-#             "Kashmiri": "ks",
-#             "Konkani": "kok",
-#             "Dogri": "doi",
-#             "Goan Konkani": "gom",
-#             "Santali": "sat",
-#         }
-
-
-#         # Fields that require language detection and potential translation
-#         fields_to_check = ['title', 'tone', 'keywords', 'customTone']
-
-#         # Translate only non-English content
-#         for field in fields_to_check:
-#             value = data.get(field)
-#             if value:
-#                 try:
-#                     # Detect language of the field value
-#                     detected_language, confidence = classify(value)
-#                     language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
-#                     logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
-
-#                     # Translate if the detected language is not English
-#                     if detected_language != 'en':
-#                         translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
-#                         logger.debug(f"Translated {field}: {translated_text}")
-#                         data[field] = translated_text
-#                 except Exception as e:
-#                     logger.error(f"Error processing field {field}: {str(e)}")
-
-#         logger.debug(f"Data after translation: {data}")
-
-#         # Extract the required fields
-#         title = data.get('title')
-#         tone = data.get('tone')
-#         custom_tone = data.get('customTone')  # Extract the custom tone
-#         keywords = data.get('keywords', None) 
-
-#         # Ensure required fields are present
-#         if not title or not tone:
-#             return JsonResponse({"error": "Missing 'title' or 'tone'."}, status=400)
-
-#         # Generate blog content
-#         logger.info("Generating blog content...")
-#         blog_content = generate_blog(title, tone, custom_tone, keywords)
-
-#         # Generate image
-#         logger.info("Fetching related image...")
-#         query = title if not keywords else f"{title}, {', '.join(keywords)}"
-#         image = fetch_single_image(query, width=800, height=600)
-#         print(image)
-#         if blog_content:
-#             logger.info("Blog content generated successfully.")
-#             response_data = {
-#                 'blog_content': blog_content,
-#                 'image_url': image['url'] if image and 'url' in image else None
-#             }
-#             encrypted_response_content = encrypt_data(response_data)
-#             return JsonResponse({
-#                 'encrypted_content': encrypted_response_content,
-#                 'language': 'en'
-#             }, status=200)
-
-#         logger.error("Failed to generate blog content.")
-#         return JsonResponse({'error': 'Failed to generate blog content. Please try again.'}, status=500)
-
-#     except json.JSONDecodeError:
-#         logger.error("Invalid JSON format received.")
-#         return JsonResponse({"error": "Invalid JSON format. Please provide valid JSON data."}, status=400)
-#     except ValueError as e:
-#         logger.error(f"ValueError occurred: {str(e)}")
-#         return JsonResponse({"error": str(e)}, status=400)
-#     except Exception as e:
-#         logger.error(f"An unexpected error occurred: {str(e)}")
-#         return JsonResponse({"error": str(e)}, status=500)
-
-#     # If not a POST request, return an error
-#     return JsonResponse({"error": "Only POST method is allowed."}, status=405)
 
 @require_POST
 @api_view(['POST'])
@@ -4506,19 +4356,20 @@ def generate_blog_view(request):
         logger.info("Fetching related image...")
         query = title + ","+ keywords if keywords else title
         image = fetch_single_image(query, width=800, height=600)
-
         if blog_content:
             logger.info("Blog content generated successfully.")
             response_data = {
                 'blog_content': blog_content,
-                'image_url': image['url'] if image and 'url' in image else None,
-                'image_base64': image['base64_image'] if image and 'base64_image' in image else None
+                'image_url': image['image_url'] if image and 'image_url' in image else None,
+                'image_base64': image['base64_image'] if image and 'base64_image' in image else None,
+                'photographer_name': image['photographer'] if image and 'photographer' in image else None  # Added photographer image
             }
             encrypted_response_content = encrypt_data(response_data)
             return JsonResponse({
                 'encrypted_content': encrypted_response_content,
                 'language': 'en'
             }, status=200)
+
 
         logger.error("Failed to generate blog content.")
         return JsonResponse({'error': 'Failed to generate blog content. Please try again.'}, status=500)
@@ -4576,8 +4427,12 @@ def regenerate_image(request):
         if image:
             logger.info("Image fetched successfully.")
             response_data = {
-                'imagebase64': image['base64_image'] if 'base64_image' in image else None
+                'imagebase64': image['base64_image'] if 'base64_image' in image else None,
+                'image_url': image['image_url'] if image and 'image_url' in image else None,
+                'photographer_name': image['photographer'] if image and 'photographer' in image else None
+
             }
+            print(response_data)
             encrypted_response_content = encrypt_data(response_data)
             return JsonResponse({
                 'encrypted_content': encrypted_response_content
@@ -5440,6 +5295,7 @@ def generate_blog_view_guest(request):
 
         # Call the generate_blog function
         blog_content = generate_blog(title, tone, keywords)
+        print(blog_content)
 
         # Calculate word count of generated blog content
         word_count = len(blog_content.split())
@@ -7964,77 +7820,6 @@ indian_languages = {
 #     else:
 #         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
-# @csrf_exempt
-# def translate_json_files_new(request):
-#     global line_number
-#     if request.method == 'POST':
-#         try:
-#             json_file = request.FILES.get('file')
-#             target_languages = request.POST.getlist('translate_to')
-
-#             if not json_file:
-#                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
-
-#             if not target_languages:
-#                 return JsonResponse({'error': 'No target languages provided.'}, status=400)
-
-#             file_content = json_file.read().decode('utf-8')
-#             original_json = json.loads(file_content)
-
-#             response_files = []
-
-#             for language in target_languages:
-#                 translated_json = {}
-#                 translation_tasks = [
-#                     (key, value) for key, value in original_json.items() if isinstance(value, str)
-#                 ]
-#                 translated_json = {
-#                     key: value for key, value in original_json.items() if not isinstance(value, str)
-#                 }
-
-#                 async def translate_key_value(key, value, target_lang):
-#                     global line_number
-#                     try:
-#                         print(f"Line {line_number}: Translating key '{key}' with value '{value}'")
-#                         translation_result = bhashini_translate(value, target_lang)
-#                         translated_json[key] = translation_result["translated_content"]
-#                         print(f"Line {line_number}: Translated value '{translated_json[key]}'")
-#                         line_number += 1
-#                     except Exception as e:
-#                         print(f"Line {line_number}: Error translating key '{key}' - {str(e)}")
-#                         translated_json[key] = f"Translation Error: {str(e)}"
-
-#                 async def trans_main(translation_tasks, translate_to):
-#                     tasks = [translate_key_value(key, value, translate_to) for key, value in translation_tasks]
-#                     await asyncio.gather(*tasks)
-
-#                 asyncio.run(trans_main(translation_tasks, language))
-
-#                 # Sort and save
-#                 translated_json = dict(sorted(translated_json.items()))
-#                 translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
-#                 translated_file_name = f"translated_{language}.json"
-#                 response_files.append((translated_file_name, translated_json_str))
-
-#             zip_buffer = BytesIO()
-#             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
-#                 for file_name, file_content in response_files:
-#                     zip_archive.writestr(file_name, file_content)
-
-#             zip_buffer.seek(0)
-#             response = HttpResponse(zip_buffer, content_type='application/zip')
-#             response['Content-Disposition'] = 'attachment; filename="translated_files.zip"'
-#             return response
-
-#         except json.JSONDecodeError:
-#             return JsonResponse({'error': 'Invalid JSON file format.'}, status=400)
-#         except Exception as e:
-#             return JsonResponse({'error': f'Error during translation: {str(e)}'}, status=500)
-#     else:
-#         return JsonResponse({'error': 'Invalid request method'}, status=400)
-
-import re
-# Leaves anything between {{}}
 @csrf_exempt
 def translate_json_files_new(request):
     global line_number
@@ -8066,23 +7851,9 @@ def translate_json_files_new(request):
                 async def translate_key_value(key, value, target_lang):
                     global line_number
                     try:
-                        pattern = r'{{(.*?)}}'
-                        parts_to_translate = re.split(pattern, value)  
-
-                        translated_parts = []
-                        for i, part in enumerate(parts_to_translate):
-                            if i % 2 == 0: 
-                                if part.strip(): 
-                                    translation_result = bhashini_translate(part, target_lang)
-                                    translated_parts.append(translation_result["translated_content"])
-                                else:
-                                    translated_parts.append(part)  
-                            else:
-                                translated_parts.append("{{" + part + "}}") 
-
-                        reconstructed_value = ''.join(translated_parts)
-
-                        translated_json[key] = reconstructed_value
+                        print(f"Line {line_number}: Translating key '{key}' with value '{value}'")
+                        translation_result = bhashini_translate(value, target_lang)
+                        translated_json[key] = translation_result["translated_content"]
                         print(f"Line {line_number}: Translated value '{translated_json[key]}'")
                         line_number += 1
                     except Exception as e:
@@ -8117,6 +7888,175 @@ def translate_json_files_new(request):
             return JsonResponse({'error': f'Error during translation: {str(e)}'}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+@csrf_exempt
+def translate_json_with_language(request):
+    if request.method == 'POST':
+        try:
+            print("Received a POST request for translation.")
+            json_file = request.FILES.get('file')
+            source_language = request.POST.get('source_language')
+            target_language = request.POST.get('translate_to')
+
+            if not json_file:
+                print("Error: No JSON file provided.")
+                return JsonResponse({'error': 'No JSON file provided.'}, status=400)
+
+            if not source_language or not target_language:
+                print("Error: Source or target language not provided.")
+                return JsonResponse({'error': 'Source or target language not provided.'}, status=400)
+
+            print(f"Source Language: {source_language}, Target Language: {target_language}")
+
+            file_content = json_file.read().decode('utf-8')
+            print("JSON file read successfully.")
+
+            try:
+                original_json = json.loads(file_content)
+                print("JSON file parsed successfully.")
+            except json.JSONDecodeError as e:
+                print(f"Error: Invalid JSON file format. Details: {str(e)}")
+                return JsonResponse({'error': 'Invalid JSON file format.'}, status=400)
+
+            translated_json = {}
+            translation_tasks = [
+                (key, value) for key, value in original_json.items() if isinstance(value, str)
+            ]
+            print(f"Found {len(translation_tasks)} string values to translate.")
+
+            # Copy non-string values directly to the translated JSON
+            translated_json = {
+                key: value for key, value in original_json.items() if not isinstance(value, str)
+            }
+            print("Non-string values copied to translated JSON.")
+
+            async def translate_key_value(key, value, source_lang, target_lang):
+                try:
+                    print(f"Translating key '{key}' with value '{value}' from {source_lang} to {target_lang}.")
+                    translation_result = bhashini_translate(value, source_lang, target_lang)
+                    if translation_result["status_code"] == 200:
+                        translated_json[key] = translation_result["translated_content"]
+                        print(f"Successfully translated key '{key}' to '{translated_json[key]}'.")
+                    else:
+                        translated_json[key] = f"Translation Error: {translation_result['message']}"
+                        print(f"Translation failed for key '{key}'. Error: {translation_result['message']}")
+                except Exception as e:
+                    translated_json[key] = f"Translation Error: {str(e)}"
+                    print(f"Exception occurred while translating key '{key}'. Error: {str(e)}")
+
+            async def trans_main(translation_tasks, source_lang, target_lang):
+                print(f"Starting translation tasks for {len(translation_tasks)} items.")
+                tasks = [translate_key_value(key, value, source_lang, target_lang) for key, value in translation_tasks]
+                await asyncio.gather(*tasks)
+                print("All translation tasks completed.")
+
+            print("Starting asynchronous translation process.")
+            asyncio.run(trans_main(translation_tasks, source_language, target_language))
+
+            # Sort and save
+            translated_json = dict(sorted(translated_json.items()))
+            print("Translated JSON sorted successfully.")
+
+            translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
+            translated_file_name = f"translated_{target_language}.json"
+            print(f"Translated JSON saved to file: {translated_file_name}")
+
+            response = HttpResponse(translated_json_str, content_type='application/json')
+            response['Content-Disposition'] = f'attachment; filename="{translated_file_name}"'
+            print("Sending response with translated JSON file.")
+            return response
+
+        except Exception as e:
+            print(f"Unexpected error during translation: {str(e)}")
+            return JsonResponse({'error': f'Error during translation: {str(e)}'}, status=500)
+    else:
+        print("Error: Invalid request method. Only POST requests are allowed.")
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+# import re
+# # Leaves anything between {{}}
+# @csrf_exempt
+# def translate_json_files_new(request):
+#     global line_number
+#     if request.method == 'POST':
+#         try:
+#             json_file = request.FILES.get('file')
+#             target_languages = request.POST.getlist('translate_to')
+
+#             if not json_file:
+#                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
+
+#             if not target_languages:
+#                 return JsonResponse({'error': 'No target languages provided.'}, status=400)
+
+#             file_content = json_file.read().decode('utf-8')
+#             original_json = json.loads(file_content)
+
+#             response_files = []
+
+#             for language in target_languages:
+#                 translated_json = {}
+#                 translation_tasks = [
+#                     (key, value) for key, value in original_json.items() if isinstance(value, str)
+#                 ]
+#                 translated_json = {
+#                     key: value for key, value in original_json.items() if not isinstance(value, str)
+#                 }
+
+#                 async def translate_key_value(key, value, target_lang):
+#                     global line_number
+#                     try:
+#                         pattern = r'{{(.*?)}}'
+#                         parts_to_translate = re.split(pattern, value)  
+
+#                         translated_parts = []
+#                         for i, part in enumerate(parts_to_translate):
+#                             if i % 2 == 0: 
+#                                 if part.strip(): 
+#                                     translation_result = bhashini_translate(part, target_lang)
+#                                     translated_parts.append(translation_result["translated_content"])
+#                                 else:
+#                                     translated_parts.append(part)  
+#                             else:
+#                                 translated_parts.append("{{" + part + "}}") 
+
+#                         reconstructed_value = ''.join(translated_parts)
+
+#                         translated_json[key] = reconstructed_value
+#                         print(f"Line {line_number}: Translated value '{translated_json[key]}'")
+#                         line_number += 1
+#                     except Exception as e:
+#                         print(f"Line {line_number}: Error translating key '{key}' - {str(e)}")
+#                         translated_json[key] = f"Translation Error: {str(e)}"
+
+#                 async def trans_main(translation_tasks, translate_to):
+#                     tasks = [translate_key_value(key, value, translate_to) for key, value in translation_tasks]
+#                     await asyncio.gather(*tasks)
+
+#                 asyncio.run(trans_main(translation_tasks, language))
+
+#                 # Sort and save
+#                 translated_json = dict(sorted(translated_json.items()))
+#                 translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
+#                 translated_file_name = f"translated_{language}.json"
+#                 response_files.append((translated_file_name, translated_json_str))
+
+#             zip_buffer = BytesIO()
+#             with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_archive:
+#                 for file_name, file_content in response_files:
+#                     zip_archive.writestr(file_name, file_content)
+
+#             zip_buffer.seek(0)
+#             response = HttpResponse(zip_buffer, content_type='application/zip')
+#             response['Content-Disposition'] = 'attachment; filename="translated_files.zip"'
+#             return response
+
+#         except json.JSONDecodeError:
+#             return JsonResponse({'error': 'Invalid JSON file format.'}, status=400)
+#         except Exception as e:
+#             return JsonResponse({'error': f'Error during translation: {str(e)}'}, status=500)
+#     else:
+#         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
 @csrf_exempt

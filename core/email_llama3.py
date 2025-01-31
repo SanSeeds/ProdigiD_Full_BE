@@ -779,24 +779,65 @@ def update_presentation_with_generated_content(template_path, output_path,docume
     print(f"Presentation saved as '{output_path}'")
     return presentation
 
+# def fetch_single_image(query, width, height): 
+#     headers = {"Authorization": PEXELS_API_KEY}
+#     params = {"query": query, "per_page": 10}  # Request up to 5 images
+#     response = requests.get(PEXELS_BASE_URL, headers=headers, params=params)
+#     if response.status_code == 200:
+#         data = response.json()
+#         photos = data.get("photos", [])
+    
+#         if photos:
+#             random_photo = random.choice(photos)  # Ensure 'photos' is a list
+#             original_url = random_photo['src']['landscape']
+#             resized_url = f"{original_url}?auto=compress&cs=tinysrgb&h={height}&w={width}"
+
+#             # Fetch the image data
+#             image_response = requests.get(resized_url)
+#             if image_response.status_code == 200:
+#                 image_data = base64.b64encode(image_response.content).decode('utf-8')  # Encode image as base64
+#                 return {
+#                     "url": resized_url,
+#                     "base64_image": image_data
+#                 }
+#             else:
+#                 print(f"Error fetching image: {image_response.status_code}")
+#                 return None
+#         else:
+#             print("No images found for the given query.")
+#             return None
+#     else:
+#         print(f"Error: {response.status_code} - {response.text}")
+#         return None
+   
 def fetch_single_image(query, width, height): 
     headers = {"Authorization": PEXELS_API_KEY}
-    params = {"query": query, "per_page": 10}  # Request up to 5 images
+    params = {"query": query, "per_page": 10}  # Request up to 10 images
     response = requests.get(PEXELS_BASE_URL, headers=headers, params=params)
+    
     if response.status_code == 200:
         data = response.json()
         photos = data.get("photos", [])
+        
         if photos:
-            random_photo = random.choice(photos)  # Ensure 'photos' is a list
+            random_photo = random.choice(photos)  # Select a random photo
             original_url = random_photo['src']['landscape']
             resized_url = f"{original_url}?auto=compress&cs=tinysrgb&h={height}&w={width}"
-
+            
+            # Extract additional details
+            photo_url = random_photo['url']
+            photographer_name = random_photo['photographer']
+            photographer_url = random_photo['photographer_url']
+            
             # Fetch the image data
             image_response = requests.get(resized_url)
             if image_response.status_code == 200:
                 image_data = base64.b64encode(image_response.content).decode('utf-8')  # Encode image as base64
                 return {
-                    "url": resized_url,
+                    "image_url": resized_url,
+                    "photo_url": photo_url,
+                    "photographer": photographer_name,
+                    "photographer_url": photographer_url,
                     "base64_image": image_data
                 }
             else:
@@ -808,7 +849,7 @@ def fetch_single_image(query, width, height):
     else:
         print(f"Error: {response.status_code} - {response.text}")
         return None
-    
+   
 def generate_blog(title, tone, custom_tone, keywords=None):
     # Ensure all fields are checked for inappropriate language
     fields_to_check = [title, keywords]

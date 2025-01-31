@@ -88,6 +88,8 @@ urlpatterns = [
     path('summarize_document_android/', views.summarize_document_android, name='summarize_document_android'),
     path('fix_null_values_in_translation/', views.fix_null_values_in_translation, name='fix_null_values_in_translation'),
 
+    path('translate_json_with_language/', views.translate_json_with_language, name='translate_json_with_language'),
+
 
 
 
@@ -106,7 +108,6 @@ urlpatterns = [
     path('profile_android/', views.profile_android, name='profile_android'),
     path('profile_info_android/', views.profile_info_android, name='profile_info_android'),
     path('speech_api_android/', views.speech_api_android, name='speech_api_android'),
-
 
 
 

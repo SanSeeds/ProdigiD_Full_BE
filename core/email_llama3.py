@@ -1032,6 +1032,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 # Cache for storing translation results
 translation_cache = {}
+
 def retry(func, retries=3, delay=1):
     """Retries a function call a specified number of times with a delay."""
     for attempt in range(retries):
@@ -1043,6 +1044,7 @@ def retry(func, retries=3, delay=1):
                 continue
             else:
                 raise e
+
 def bhashini_translate_json(text: str, to_code: str = "Hindi", from_code: str = "English",
                        user_id: str = BHASHINI_USER_ID, api_key: str = BHASHINI_API_KEY) -> dict:
     """Translates text from source language to target language using the Bhashini API."""
@@ -1105,6 +1107,7 @@ def bhashini_translate_json(text: str, to_code: str = "Hindi", from_code: str = 
     translation_cache[cache_key] = {"status_code": 200, "message": "Translation successful", "translated_content": translated_content}
     
     return translation_cache[cache_key]
+
 def translate_multiple_texts(text_list: List[str], from_code: str, to_code: str,
                               user_id: str, api_key: str) -> List[dict]:
     """Translates multiple texts concurrently using Bhashini API."""

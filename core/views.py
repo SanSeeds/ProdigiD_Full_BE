@@ -1646,86 +1646,6 @@ The ProdigiDesk Team
     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
 
 
-# @csrf_exempt
-# @api_view(['POST'])
-# @permission_classes([])
-# def reset_password_with_otp(request):
-#     if request.method == 'POST':
-#         try:
-#             # Extract and decrypt the incoming payload
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             logger.debug(f"Encrypted content received: {encrypted_content}")
-
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             logger.debug(f"Decrypted content: {decrypted_content}")
-#             data = json.loads(decrypted_content)
-
-#             email = data.get('email')
-#             otp = data.get('otp')
-#             new_password = data.get('new_password')
-#             confirm_new_password = data.get('confirm_new_password')
-
-#             logger.debug(f"Received password reset request for email: {email} with OTP: {otp}")
-
-#             try:
-#                 user = User.objects.get(email=email)
-#             except User.DoesNotExist:
-#                 logger.warning(f"Email does not exist: {email}")
-#                 encrypted_response = encrypt_data({'error': 'Email does not exist'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=404)
-
-#             # Verify OTP
-#             try:
-#                 reset_request = PasswordResetRequest.objects.get(user=user, otp=otp)
-#                 if reset_request.expiry_time < timezone.now():
-#                     logger.warning(f"OTP expired for user {user.username}")
-#                     encrypted_response = encrypt_data({'error': 'OTP expired'})
-#                     return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-#             except PasswordResetRequest.DoesNotExist:
-#                 logger.warning(f"Invalid OTP for user {user.username}")
-#                 encrypted_response = encrypt_data({'error': 'Invalid OTP'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-
-#             # Ensure new password is not the same as the current password
-#             if user.check_password(new_password):
-#                 logger.warning(f"User {user.username} tried to use the same new password as the current password.")
-#                 encrypted_response = encrypt_data({'error': 'New password cannot be the same as the current password.'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-
-#             # Check if new passwords match
-#             if new_password != confirm_new_password:
-#                 logger.warning(f"User {user.username} provided non-matching new passwords.")
-#                 encrypted_response = encrypt_data({'error': 'New passwords do not match.'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-
-#             # Update password
-#             user.set_password(new_password)
-#             user.save()
-#             logger.info(f"User {user.username} successfully reset their password.")
-
-#             # Remove the OTP request after successful password reset
-#             reset_request.delete()
-
-#             encrypted_response = encrypt_data({'success': 'Password reset successfully'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#         except json.JSONDecodeError:
-#             logger.error("Invalid JSON format in request")
-#             encrypted_response = encrypt_data({'error': 'Invalid JSON format'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-#         except Exception as e:
-#             logger.error(f"Unexpected error: {str(e)}")
-#             encrypted_response = encrypt_data({'error': str(e)})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=500)
-
-#     logger.error("Invalid request method")
-#     encrypted_response = encrypt_data({'error': 'Invalid request method'})
-#     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
-
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([])
@@ -2116,85 +2036,6 @@ def session_logout(request):
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
-#Encrypted API to Reset the user's password
-# @csrf_exempt
-# @require_POST
-# def reset_password(request):
-#     if request.method == 'POST':
-#         try:
-#             # Extract and decrypt the incoming payload
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             logger.debug(f"Encrypted content received: {encrypted_content}")
-
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 encrypted_response = encrypt_data({'error': 'No encrypted content found in the request.'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             logger.debug(f"Decrypted content: {decrypted_content}")
-#             data = json.loads(decrypted_content)
-            
-#             email = data.get('email')
-#             otp = data.get('otp')
-#             new_password = data.get('new_password')
-#             confirm_password = data.get('confirm_password')
-
-#             if not all([email, otp, new_password, confirm_password]):
-#                 logger.warning('All fields are required')
-#                 encrypted_response = encrypt_data({'error': 'All fields are required'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-
-#             if new_password != confirm_password:
-#                 logger.warning('Passwords do not match')
-#                 encrypted_response = encrypt_data({'error': 'Passwords do not match'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-
-#             try:
-#                 user = User.objects.get(email=email)
-#                 logger.info(f'User found: {user.username}')
-#             except User.DoesNotExist:
-#                 logger.warning(f'User with email {email} does not exist')
-#                 encrypted_response = encrypt_data({'error': 'User with this email does not exist'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=404)
-
-#             try:
-#                 password_reset_request = PasswordResetRequest.objects.get(user=user, otp=otp)
-#                 logger.info('Password reset request found')
-#             except PasswordResetRequest.DoesNotExist:
-#                 logger.warning('Invalid OTP')
-#                 encrypted_response = encrypt_data({'error': 'Invalid OTP'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-
-#             if password_reset_request.expiry_time < timezone.now():
-#                 logger.warning('OTP has expired')
-#                 encrypted_response = encrypt_data({'error': 'OTP has expired'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-
-#             user.set_password(new_password)
-#             user.save()
-#             logger.info(f'Password for user {user.username} reset successfully')
-
-#             password_reset_request.delete()
-#             logger.info('Password reset request deleted')
-
-#             encrypted_response = encrypt_data({'success': 'Password reset successfully'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#         except json.JSONDecodeError:
-#             logger.error('Invalid JSON format in request')
-#             encrypted_response = encrypt_data({'error': 'Invalid JSON format'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-#         except Exception as e:
-#             logger.error(f"Unexpected error: {str(e)}")
-#             encrypted_response = encrypt_data({'error': str(e)})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=500)
-
-#     else:
-#         logger.error('Invalid request method')
-#         encrypted_response = encrypt_data({'error': 'Invalid request method'})
-#         return JsonResponse({'encrypted_content': encrypted_response}, status=405)
-
 @csrf_exempt
 @require_POST
 def reset_password(request):
@@ -2576,80 +2417,6 @@ MAX_WORKERS = 50  # Number of threads for concurrent processing
 RETRY_LIMIT = 1000  # Maximum retries for translation API
 MAX_SENTENCES_PER_CHUNK = 30  # Number of sentences to process in a single chunk
 
-# @require_POST
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def translate_content_formatted(request):
-#     if request.method != 'POST':
-#         return JsonResponse({'error': 'Method not allowed.'}, status=405)
-
-#     try:
-#         # Extract and decrypt the incoming payload
-#         encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#         if not encrypted_content:
-#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#         decrypted_content = decrypt_data(encrypted_content)
-#         data = json.loads(decrypted_content)
-
-#         generated_content = data.get('generated_content')
-#         language = data.get('language')
-
-#         if not generated_content or not language:
-#             return JsonResponse({'error': 'Both generated_content and language are required fields.'}, status=400)
-
-#         # Initialize the translated content list
-#         translated_paragraphs = []
-
-#         # Break content into paragraphs or smaller chunks
-#         paragraphs = generated_content.split('\n\n')  # Split by paragraphs
-
-#         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-#             futures = []
-#             for paragraph in paragraphs:
-#                 sentences = paragraph.split('. ')  # Split paragraph into sentences
-#                 chunked_sentences = [
-#                     sentences[i:i + MAX_SENTENCES_PER_CHUNK]
-#                     for i in range(0, len(sentences), MAX_SENTENCES_PER_CHUNK)
-#                 ]
-
-#                 for chunk in chunked_sentences:
-#                     futures.append(
-#                         executor.submit(
-#                             lambda c: '. '.join([translate_with_retry(s, language) for s in c]),
-#                             chunk
-#                         )
-#                     )
-
-#             # Process completed translations
-#             for future in as_completed(futures):
-#                 try:
-#                     translated_paragraphs.append(future.result())
-#                 except ValueError as e:
-#                     return JsonResponse({'error': str(e)}, status=500)
-
-#         # Combine the translated paragraphs back into the full content
-#         translated_content = '\n\n'.join(translated_paragraphs)
-
-#         # Log the translated content
-#         logger.info(f'Translated content: {translated_content}')
-
-#         # Encrypt the response content
-#         encrypted_response = encrypt_data({
-#             'generated_content': generated_content,
-#             'translated_content': translated_content,
-#             'selected_language': language
-#         })
-
-#         return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#     except json.JSONDecodeError:
-#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-#     except ValueError as e:
-#         return JsonResponse({'error': str(e)}, status=400)
-#     except Exception as e:
-#         logger.error(f"Unexpected error: {str(e)}")
-#         return JsonResponse({'error': str(e)}, status=500)
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -2736,8 +2503,6 @@ def translate_content_formatted(request):
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
-
-
 
 
 import concurrent.futures
@@ -3372,69 +3137,6 @@ def profile_info(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
-# @csrf_exempt
-# @require_POST
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated, HasAPIKey])
-# def change_password(request):
-#     if request.method == 'POST':
-#         try:
-#             # Decrypt incoming request body
-#             encrypted_content = json.loads(request.body.decode('utf-8')).get('encrypted_content')
-#             if not encrypted_content:
-#                 logger.warning('No encrypted content found in the request.')
-#                 return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#             decrypted_content = decrypt_data(encrypted_content)
-#             data = json.loads(decrypted_content)
-#             logger.debug(f"Decrypted content: {data}")
-
-#             current_password = data.get('current_password')
-#             new_password = data.get('new_password')
-#             confirm_new_password = data.get('confirm_new_password')
-
-#             # Validate the current password
-#             if not request.user.check_password(current_password):
-#                 logger.warning(f"User {request.user.username} provided incorrect current password.")
-#                 encrypted_response = encrypt_data({'error': 'Current password is incorrect.'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-
-#             # Check if new passwords match
-#             if new_password != confirm_new_password:
-#                 logger.warning(f"User {request.user.username} provided non-matching new passwords.")
-#                 encrypted_response = encrypt_data({'error': 'New passwords do not match.'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-
-#             # Prevent using the same new password as the current password
-#             if new_password == current_password:
-#                 logger.warning(f"User {request.user.username} attempted to use the same new password as the current password.")
-#                 encrypted_response = encrypt_data({'error': 'New password cannot be the same as the current password.'})
-#                 return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-
-#             # Update password
-#             request.user.set_password(new_password)
-#             request.user.save()
-
-#             # Keep the user logged in after password change
-#             update_session_auth_hash(request, request.user)
-#             logger.info(f"User {request.user.username} successfully changed their password.")
-
-#             encrypted_response = encrypt_data({'message': 'Password changed successfully.'})
-#             return JsonResponse({'encrypted_content': encrypted_response})
-
-#         except json.JSONDecodeError:
-#             logger.error("Invalid JSON received.")
-#             encrypted_response = encrypt_data({'error': 'Invalid JSON.'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=400)
-
-#         except Exception as e:
-#             logger.error(f'Internal server error: {str(e)}')
-#             encrypted_response = encrypt_data({'error': 'Internal server error.'})
-#             return JsonResponse({'encrypted_content': encrypted_response}, status=500)
-
-#     logger.error("Invalid request method used.")
-#     encrypted_response = encrypt_data({'error': 'Invalid request method.'})
-#     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
 
 @csrf_exempt
 @require_POST
@@ -3510,140 +3212,6 @@ def change_password(request):
     logger.error("Invalid request method used.")
     encrypted_response = encrypt_data({'error': 'Invalid request method.'})
     return JsonResponse({'encrypted_content': encrypted_response}, status=405)
-
-# @require_POST
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated, HasAPIKey])
-# def summarize_document(request):
-#     try:
-#         # Extract encrypted content from request.POST
-#         encrypted_content = request.POST.get('encrypted_content')
-#         if not encrypted_content:
-#             logger.warning('No encrypted content found in the request.')
-#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-#         # Decrypt the JSON payload
-#         decrypted_content = decrypt_data(encrypted_content)
-#         data = json.loads(decrypted_content)
-#         logger.debug(f'Decrypted content: {data}')
-
-#         # Define Indian languages mapping
-#         indian_languages = {
-#             "English": "en",
-#             "Hindi": "hi",
-#             "Tamil": "ta",
-#             "Telugu": "te",
-#             "Marathi": "mr",
-#             "Kannada": "kn",
-#             "Bengali": "bn",
-#             "Odia": "or",
-#             "Assamese": "as",
-#             "Punjabi": "pa",
-#             "Malayalam": "ml",
-#             "Gujarati": "gu",
-#             "Urdu": "ur",
-#             "Sanskrit": "sa",
-#             "Nepali": "ne",
-#             "Bodo": "brx",
-#             "Maithili": "mai",
-#             "Sindhi": "sd",
-#             "Kashmiri": "ks",
-#             "Konkani": "kok",
-#             "Dogri": "doi",
-#             "Goan Konkani": "gom",
-#             "Santali": "sat",
-#         }
-
-#         # Fields to check for language detection and translation
-#         fields_to_check = [
-#             'documentContext', 'mainSubject', 'summaryPurpose', 'lengthDetail',
-#             'importantElements', 'audience', 'tone', 'format', 'additionalInstructions', 'text'
-#         ]
-
-#         # Translate only non-English content
-#         for field in fields_to_check:
-#             value = data.get(field)
-#             if value:
-#                 try:
-#                     # Detect language
-#                     detected_language, confidence = classify(value)
-#                     language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
-#                     logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
-#                     logger.debug(f"Original Value: {value}")
-
-#                     # Translate if not English
-#                     if detected_language != 'en':
-#                         logger.info(f"Translating {field} from {language_name} to English.")
-#                         translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
-#                         logger.debug(f"Translated {field}: {translated_text}")
-#                         data[field] = translated_text
-#                     else:
-#                         logger.info(f"{field} is already in English. No translation needed.")
-#                 except Exception as e:
-#                     logger.error(f"Error processing field {field}: {str(e)}")
-
-#         # Extract form fields from decrypted data
-#         document_context = data.get('documentContext')
-#         main_subject = data.get('mainSubject')
-#         summary_purpose = data.get('summaryPurpose')
-#         length_detail = data.get('lengthDetail')
-#         important_elements = data.get('importantElements')
-#         audience = data.get('audience')
-#         tone = data.get('tone')
-#         format_ = data.get('format')
-#         additional_instructions = data.get('additionalInstructions')
-
-#         # Extract the uploaded file or text from request
-#         document_file = request.FILES.get('documentFile')
-        
-#         text = data.get('text')
-
-#         # Ensure we have either documentFile or text
-#         if not document_file and not text:
-#             logger.warning('No document file or text provided.')
-#             return JsonResponse({'error': 'No document file or text provided.'}, status=400)
-
-#         # If documentFile is provided, use it for summarization
-#         if document_file:
-#             logger.info('Using uploaded document file for summarization.')
-#             summary = generate_summary(
-#                 document_context, main_subject, summary_purpose, length_detail,
-#                 important_elements, audience, tone, format_, additional_instructions, document_file
-#             )
-
-#         # If only text is provided, use it for summarization
-#         elif text:
-#             logger.info('Using provided text for summarization.')
-#             summary = generate_summary(
-#                 document_context, main_subject, summary_purpose, length_detail,
-#                 important_elements, audience, tone, format_, additional_instructions, text=text
-#             )
-
-#         # Handle specific error scenarios from generate_summary
-#         if summary.startswith("Error:"):
-#             if "Uploaded file too large" in summary:
-#                 logger.warning(summary)
-#                 return JsonResponse({'error': summary}, status=413)
-#             else:
-#                 logger.error(summary)
-#                 return JsonResponse({'error': summary}, status=500)
-
-#         # Encrypt the response content
-#         encrypted_response = encrypt_data({'summary': summary})
-#         logger.info('Summary generated and encrypted successfully.')
-
-#         return JsonResponse({'encrypted_content': encrypted_response}, status=200)
-
-#     except json.JSONDecodeError:
-#         logger.error('Invalid JSON format received.')
-#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-#     except ValueError as e:
-#         logger.error(f'ValueError: {str(e)}')
-#         return JsonResponse({'error': str(e)}, status=400)
-#     except Exception as e:
-#         logger.error(f'Exception: {str(e)}')
-#         return JsonResponse({'error': str(e)}, status=500)
-
 
 @require_POST
 @api_view(['POST'])
@@ -3802,6 +3370,17 @@ def summarize_document(request):
     except Exception as e:
         logger.error(f'Exception: {str(e)}')
         return JsonResponse({'error': str(e)}, status=500)
+
+def get_language_name(lang_code):
+    lang_map = {
+        "en": "English", "hi": "Hindi", "ta": "Tamil", "te": "Telugu", "mr": "Marathi",
+        "kn": "Kannada", "bn": "Bengali", "or": "Odia", "as": "Assamese", "pa": "Punjabi",
+        "ml": "Malayalam", "gu": "Gujarati", "ur": "Urdu", "sa": "Sanskrit", "ne": "Nepali",
+        "brx": "Bodo", "mai": "Maithili", "sd": "Sindhi", "ks": "Kashmiri", "kok": "Konkani",
+        "doi": "Dogri", "gom": "Goan Konkani", "sat": "Santali"
+    }
+    return lang_map.get(lang_code)    
+
 
 #Encrypted API For contnet generation Service
 @require_POST
@@ -4157,7 +3736,7 @@ def create_presentation(request):
 
 @require_POST
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, HasAPIKey])
 def create_presentation_english(request):
     try:
         # Handle the multipart form data
@@ -4264,6 +3843,91 @@ def create_presentation_english(request):
     except Exception as e:
         logger.error(f"An unexpected error occurred: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@require_POST
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_presentation_custom(request):
+    try:
+        # Read encrypted content from form-data
+        encrypted_content = request.POST.get('encrypted_content')
+        if not encrypted_content:
+            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+        # Decrypt the content
+        decrypted_content = decrypt_data(encrypted_content)
+
+        # Parse decrypted JSON data
+        try:
+            data = json.loads(decrypted_content)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON format in decrypted content.'}, status=400)
+
+        # Extract necessary fields from decrypted data
+        title = data.get('title')
+        num_slides = int(data.get('num_slides', 0))  # Convert to integer safely
+        special_instructions = data.get('special_instructions', '')
+        template_name = data.get('template_name', 'default')
+        generated_ppt_language = data.get('generated_ppt_language', 'English')
+
+        if not title or not num_slides:
+            return JsonResponse({'error': 'Title and number of slides are required.'}, status=400)
+
+        # Handle document content
+        document = request.FILES.get('document')
+        document_content = extract_document_content(document) if document else ""
+
+        word_count = len(document_content.split())
+        if word_count > 2000:
+            return JsonResponse({'error': 'Document content exceeds the word limit of 2000 words.'}, status=413)
+
+        # Get template path
+        templates = get_templates()
+        template_path = templates.get(template_name, templates['default'])
+        output_path = "SmartAssistant_Presentation.pptx"
+
+        # Generate presentation
+        prs = update_presentation_with_generated_content(
+            template_path, output_path, document_content, title, num_slides, special_instructions
+        )
+
+        # Translate final presentation content if required
+        MAX_WORKERS = 25
+
+        if generated_ppt_language and generated_ppt_language != "English":
+            for slide in prs.slides:
+                for shape in slide.shapes:
+                    if hasattr(shape, "text"):
+                        lines = shape.text.split("\n")  # Split into individual points
+
+                        # Use ThreadPoolExecutor to translate multiple lines at once
+                        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+                            translated_lines = list(executor.map(
+                                lambda line: bhashini_translate(line, to_code=generated_ppt_language).get("translated_content", line) if line.strip() else "",
+                                lines
+                            ))
+
+                        shape.text = "\n".join(translated_lines)  # Reconstruct text with formatting preserved
+
+
+
+        # Save presentation to a BytesIO object
+        buffer = BytesIO()
+        prs.save(buffer)
+        buffer.seek(0)
+
+        # Return file response
+        response = FileResponse(buffer, as_attachment=True, filename='SmartOffice_Assistant_Presentation.pptx')
+        return response
+
+    except ValueError:
+        return JsonResponse({'error': 'Invalid data format. Ensure num_slides is a number.'}, status=400)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 
 @require_POST
 @api_view(['POST'])
@@ -4570,7 +4234,78 @@ GREETING_MESSAGES = [
     "Hey, awesome human! 🎉 I’m Advika, your go-to AI for all things related to our services. Got a question? Let’s make it happen—go champion! You can also check out our [Resource Hub here](https://prodigidesk.ai/ProdigiDesk)."
 ]
 
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, HasAPIKey])
+def translate_and_download_document(request):
+    try:
+        # Decode request body
+        body = request.body.decode('utf-8')
+        data = json.loads(body)
 
+        # Extract and decrypt the payload
+        encrypted_content = data.get('encrypted_content')
+        if not encrypted_content:
+            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+        decrypted_content = decrypt_data(encrypted_content)
+        data = json.loads(decrypted_content)
+
+        # Extract document and language parameters
+        document = request.FILES.get('document')
+        languages = data.get('languages')
+
+        if not document or not languages:
+            return JsonResponse({'error': 'Both document and target languages are required.'}, status=400)
+
+        target_languages = [lang.strip() for lang in languages.split(',')]
+
+        document.seek(0)
+        if not document.name.endswith('.docx'):
+            return JsonResponse({'error': 'Only .docx files are supported.'}, status=400)
+
+        doc = Document(document)
+        full_text = " ".join([para.text for para in doc.paragraphs if para.text.strip()])
+        detected_lang_code, _ = identifier.classify(full_text)
+
+        source_lang = get_language_name(detected_lang_code)
+        if not source_lang:
+            return JsonResponse({'error': 'Could not detect source language.'}, status=400)
+
+        temp_dir = tempfile.mkdtemp()
+        zip_path = os.path.join(temp_dir, "translated_documents.zip")
+
+        with zipfile.ZipFile(zip_path, 'w') as zip_file:
+            for lang in target_languages:
+                document.seek(0)
+                translated_doc = Document()
+
+                for para in doc.paragraphs:
+                    if para.text.strip():
+                        response = bhashini_translate(para.text, from_code=source_lang, to_code=lang)
+                        if response["status_code"] != 200:
+                            return JsonResponse({'error': f'Translation failed for {lang}.'}, status=500)
+                        translated_doc.add_paragraph(response["translated_content"])
+                    else:
+                        translated_doc.add_paragraph('')
+
+                filename = f'translated_{lang}.docx'
+                file_path = os.path.join(temp_dir, filename)
+                translated_doc.save(file_path)
+                zip_file.write(file_path, filename)
+
+        # Read the zip file and encrypt the response
+        with open(zip_path, 'rb') as f:
+            zip_content = f.read()
+
+        encrypted_response_content = encrypt_data(zip_content)
+
+        return JsonResponse({'encrypted_content': encrypted_response_content}, status=200)
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 require_http_methods(["GET", "POST"])
 @api_view(['GET', 'POST'])
@@ -7889,51 +7624,53 @@ def translate_json_files_new(request):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+import json
+import asyncio
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+
 @csrf_exempt
 def translate_json_with_language(request):
     if request.method == 'POST':
         try:
-            print("Received a POST request for translation.")
             json_file = request.FILES.get('file')
-            source_language = request.POST.get('source_language')
-            target_language = request.POST.get('translate_to')
+            translated_json_language = request.POST.get('translated_json_language')
+            translate_to_language = request.POST.get('translate_to')
 
             if not json_file:
                 print("Error: No JSON file provided.")
                 return JsonResponse({'error': 'No JSON file provided.'}, status=400)
 
-            if not source_language or not target_language:
-                print("Error: Source or target language not provided.")
-                return JsonResponse({'error': 'Source or target language not provided.'}, status=400)
+            if not translated_json_language or not translate_to_language:
+                print("Error: Translated JSON language or target language not provided.")
+                return JsonResponse({'error': 'Translated JSON language or target language not provided.'}, status=400)
 
-            print(f"Source Language: {source_language}, Target Language: {target_language}")
+            print(f"Translated JSON Language: {translated_json_language}, Target Language: {translate_to_language}")
 
             file_content = json_file.read().decode('utf-8')
-            print("JSON file read successfully.")
 
             try:
                 original_json = json.loads(file_content)
-                print("JSON file parsed successfully.")
             except json.JSONDecodeError as e:
                 print(f"Error: Invalid JSON file format. Details: {str(e)}")
                 return JsonResponse({'error': 'Invalid JSON file format.'}, status=400)
 
-            translated_json = {}
-            translation_tasks = [
-                (key, value) for key, value in original_json.items() if isinstance(value, str)
-            ]
-            print(f"Found {len(translation_tasks)} string values to translate.")
-
-            # Copy non-string values directly to the translated JSON
+            # Initialize translated_json with non-string values
             translated_json = {
                 key: value for key, value in original_json.items() if not isinstance(value, str)
             }
             print("Non-string values copied to translated JSON.")
 
+            # Prepare translation tasks for string values
+            translation_tasks = [
+                (key, value) for key, value in original_json.items() if isinstance(value, str)
+            ]
+            print(f"Found {len(translation_tasks)} string values to translate.")
+
             async def translate_key_value(key, value, source_lang, target_lang):
                 try:
                     print(f"Translating key '{key}' with value '{value}' from {source_lang} to {target_lang}.")
-                    translation_result = bhashini_translate(value, source_lang, target_lang)
+                    translation_result = bhashini_translate(value, to_code=target_lang, from_code=source_lang)
                     if translation_result["status_code"] == 200:
                         translated_json[key] = translation_result["translated_content"]
                         print(f"Successfully translated key '{key}' to '{translated_json[key]}'.")
@@ -7950,17 +7687,20 @@ def translate_json_with_language(request):
                 await asyncio.gather(*tasks)
                 print("All translation tasks completed.")
 
+            # Run the asynchronous translation process
             print("Starting asynchronous translation process.")
-            asyncio.run(trans_main(translation_tasks, source_language, target_language))
+            asyncio.run(trans_main(translation_tasks, translated_json_language, translate_to_language))
 
-            # Sort and save
+            # Sort the translated JSON
             translated_json = dict(sorted(translated_json.items()))
             print("Translated JSON sorted successfully.")
 
+            # Convert the translated JSON to a string
             translated_json_str = json.dumps(translated_json, ensure_ascii=False, indent=4)
-            translated_file_name = f"translated_{target_language}.json"
+            translated_file_name = f"translated_{translate_to_language}.json"
             print(f"Translated JSON saved to file: {translated_file_name}")
 
+            # Return the translated JSON as a downloadable file
             response = HttpResponse(translated_json_str, content_type='application/json')
             response['Content-Disposition'] = f'attachment; filename="{translated_file_name}"'
             print("Sending response with translated JSON file.")
@@ -7972,6 +7712,7 @@ def translate_json_with_language(request):
     else:
         print("Error: Invalid request method. Only POST requests are allowed.")
         return JsonResponse({'error': 'Invalid request method'}, status=400)
+
 
 # import re
 # # Leaves anything between {{}}
@@ -8180,61 +7921,218 @@ from docx import Document
 import zipfile
 import asyncio
 
-@csrf_exempt
+# @csrf_exempt
+# def translate_and_download_document(request):
+#     if request.method != 'POST':
+#         return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+#     try:
+#         # Extract the uploaded file and target languages from the request
+#         document = request.FILES.get('document')
+#         languages = request.POST.get('languages')
+
+#         if not document or not languages:
+#             return JsonResponse({'error': 'Both document and target languages are required.'}, status=400)
+
+#         # Parse languages into a list
+#         target_languages = [lang.strip() for lang in languages.split(',')]
+
+#         # Set up a temporary directory and zip file to store translated files
+#         temp_dir = tempfile.mkdtemp()
+#         zip_path = os.path.join(temp_dir, "translated_documents.zip")
+
+#         with zipfile.ZipFile(zip_path, 'w') as zip_file:
+#             for lang in target_languages:
+#                 # Reset file pointer and read content based on file type
+#                 document.seek(0)
+
+#                 if document.name.endswith('.docx'):
+#                     # Load the .docx document
+#                     doc = Document(document)
+#                     translated_doc = Document()  # New doc for translated content
+
+#                     # Translate each paragraph
+#                     for para in doc.paragraphs:
+#                         if para.text.strip():  # Avoid translating empty paragraphs
+#                             response = bhashini_translate(para.text, to_code=lang)
+#                             if response["status_code"] != 200:
+#                                 return JsonResponse({'error': f'Translation failed for {lang}.'}, status=500)
+#                             translated_text = response["translated_content"]
+#                             translated_doc.add_paragraph(translated_text)
+#                         else:
+#                             translated_doc.add_paragraph('')  # Keep empty paragraphs
+
+#                     # Save translated document to temporary directory
+#                     filename = f'translated_{lang}.docx'
+#                     file_path = os.path.join(temp_dir, filename)
+#                     translated_doc.save(file_path)
+#                     zip_file.write(file_path, filename)
+
+#                 else:
+#                     return JsonResponse({'error': 'Only .docx files are supported.'}, status=400)
+
+#         # Return the zip file as a response
+#         with open(zip_path, 'rb') as f:
+#             response = HttpResponse(f.read(), content_type='application/zip')
+#             response['Content-Disposition'] = 'attachment; filename="translated_documents.zip"'
+#             return response
+
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
+    
+
+import os
+import zipfile
+import tempfile
+import requests
+import langid
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from langid.langid import LanguageIdentifier, model
+from docx import Document
+
+# Initialize langid
+identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
+
+# @csrf_exempt
+# def translate_and_download_document(request):
+#     if request.method != 'POST':
+#         return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+#     try:
+#         document = request.FILES.get('document')
+#         languages = request.POST.get('languages')
+
+#         if not document or not languages:
+#             return JsonResponse({'error': 'Both document and target languages are required.'}, status=400)
+
+#         target_languages = [lang.strip() for lang in languages.split(',')]
+
+#         document.seek(0)
+#         if not document.name.endswith('.docx'):
+#             return JsonResponse({'error': 'Only .docx files are supported.'}, status=400)
+
+#         doc = Document(document)
+#         full_text = " ".join([para.text for para in doc.paragraphs if para.text.strip()])
+#         detected_lang_code, _ = identifier.classify(full_text)
+
+#         source_lang = get_language_name(detected_lang_code)
+#         if not source_lang:
+#             return JsonResponse({'error': 'Could not detect source language.'}, status=400)
+
+#         temp_dir = tempfile.mkdtemp()
+#         zip_path = os.path.join(temp_dir, "translated_documents.zip")
+
+#         with zipfile.ZipFile(zip_path, 'w') as zip_file:
+#             for lang in target_languages:
+#                 document.seek(0)
+#                 translated_doc = Document()
+
+#                 for para in doc.paragraphs:
+#                     if para.text.strip():
+#                         response = bhashini_translate(para.text, from_code=source_lang, to_code=lang)
+#                         if response["status_code"] != 200:
+#                             return JsonResponse({'error': f'Translation failed for {lang}.'}, status=500)
+#                         translated_doc.add_paragraph(response["translated_content"])
+#                     else:
+#                         translated_doc.add_paragraph('')
+
+#                 filename = f'translated_{lang}.docx'
+#                 file_path = os.path.join(temp_dir, filename)
+#                 translated_doc.save(file_path)
+#                 zip_file.write(file_path, filename)
+
+#         with open(zip_path, 'rb') as f:
+#             response = HttpResponse(f.read(), content_type='application/zip')
+#             response['Content-Disposition'] = 'attachment; filename="translated_documents.zip"'
+#             return response
+
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=500)
+
+
+@require_POST
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, HasAPIKey])
 def translate_and_download_document(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
     try:
-        # Extract the uploaded file and target languages from the request
-        document = request.FILES.get('document')
-        languages = request.POST.get('languages')
+        # Decrypt the payload if it contains encrypted data
+        encrypted_content = request.POST.get('encrypted_content')
+        if encrypted_content:
+            decrypted_content = decrypt_data(encrypted_content)
+            data = json.loads(decrypted_content)
+        else:
+            data = {}
+
+        # Handle document and languages from decrypted content if available
+        document = request.FILES.get('document') or data.get('document')
+        languages = request.POST.get('languages') or data.get('languages')
 
         if not document or not languages:
             return JsonResponse({'error': 'Both document and target languages are required.'}, status=400)
 
-        # Parse languages into a list
         target_languages = [lang.strip() for lang in languages.split(',')]
 
-        # Set up a temporary directory and zip file to store translated files
+        document.seek(0)
+        if not document.name.endswith('.docx'):
+            return JsonResponse({'error': 'Only .docx files are supported.'}, status=400)
+
+        doc = Document(document)
+        full_text = " ".join([para.text for para in doc.paragraphs if para.text.strip()])
+        detected_lang_code, _ = identifier.classify(full_text)
+
+        source_lang = get_language_name(detected_lang_code)
+        if not source_lang:
+            return JsonResponse({'error': 'Could not detect source language.'}, status=400)
+
         temp_dir = tempfile.mkdtemp()
         zip_path = os.path.join(temp_dir, "translated_documents.zip")
 
         with zipfile.ZipFile(zip_path, 'w') as zip_file:
             for lang in target_languages:
-                # Reset file pointer and read content based on file type
                 document.seek(0)
+                translated_doc = Document()
 
-                if document.name.endswith('.docx'):
-                    # Load the .docx document
-                    doc = Document(document)
-                    translated_doc = Document()  # New doc for translated content
+                for para in doc.paragraphs:
+                    if para.text.strip():
+                        response = bhashini_translate(para.text, from_code=source_lang, to_code=lang)
+                        if response["status_code"] != 200:
+                            return JsonResponse({'error': f'Translation failed for {lang}.'}, status=500)
+                        translated_doc.add_paragraph(response["translated_content"])
+                    else:
+                        translated_doc.add_paragraph('')
 
-                    # Translate each paragraph
-                    for para in doc.paragraphs:
-                        if para.text.strip():  # Avoid translating empty paragraphs
-                            response = bhashini_translate(para.text, to_code=lang)
-                            if response["status_code"] != 200:
-                                return JsonResponse({'error': f'Translation failed for {lang}.'}, status=500)
-                            translated_text = response["translated_content"]
-                            translated_doc.add_paragraph(translated_text)
-                        else:
-                            translated_doc.add_paragraph('')  # Keep empty paragraphs
+                filename = f'translated_{lang}.docx'
+                file_path = os.path.join(temp_dir, filename)
+                translated_doc.save(file_path)
+                zip_file.write(file_path, filename)
 
-                    # Save translated document to temporary directory
-                    filename = f'translated_{lang}.docx'
-                    file_path = os.path.join(temp_dir, filename)
-                    translated_doc.save(file_path)
-                    zip_file.write(file_path, filename)
-
-                else:
-                    return JsonResponse({'error': 'Only .docx files are supported.'}, status=400)
-
-        # Return the zip file as a response
         with open(zip_path, 'rb') as f:
             response = HttpResponse(f.read(), content_type='application/zip')
             response['Content-Disposition'] = 'attachment; filename="translated_documents.zip"'
             return response
 
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON format in decrypted content.'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -89,6 +89,7 @@ urlpatterns = [
     path('fix_null_values_in_translation/', views.fix_null_values_in_translation, name='fix_null_values_in_translation'),
 
     path('translate_json_with_language/', views.translate_json_with_language, name='translate_json_with_language'),
+    path('create_presentation_custom/', views.create_presentation_custom, name='create_presentation_custom'),
 
 
 

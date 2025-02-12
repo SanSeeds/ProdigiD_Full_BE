@@ -10,7 +10,7 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.http import FileResponse, HttpResponse, JsonResponse
 from gtts import gTTS
-from .email_llama3 import BHASHINI_API_KEY, BHASHINI_USER_ID, ask_question_chatbot, fetch_single_image, generate_blog, extract_document_content, generate_email, bhashini_translate,generate_bus_pro, generate_offer_letter, generate_summary, generate_content, generate_sales_script, get_templates, rephrasely, translate_multiple_texts, translate_with_retry, update_presentation_with_generated_content  
+from .email_llama3 import BHASHINI_API_KEY, BHASHINI_USER_ID, ask_question_chatbot, fetch_single_image, generate_blog, extract_document_content, generate_email, bhashini_translate,generate_bus_pro,business_proposal_with_agents, generate_offer_letter, generate_summary, generate_content, generate_sales_script, get_templates, rephrasely, translate_multiple_texts, translate_with_retry, update_presentation_with_generated_content  
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from django.utils import timezone
@@ -2713,129 +2713,146 @@ def translate_international(request):
 
     return JsonResponse({'encrypted_content': encrypted_response}, status=200)
 
+# @require_POST
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated, HasAPIKey])
+# def business_proposal_generator(request):
+#     try:
+#         # Load and decode the request body
+#         body = request.body.decode('utf-8')
+#         logger.debug(f"Request body received: {body}")
+
+#         # Extract and decrypt the incoming payload
+#         data = json.loads(body)
+#         encrypted_content = data.get('encrypted_content')
+#         if not encrypted_content:
+#             logger.warning("No encrypted content found in the request.")
+#             return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
+
+#         logger.debug(f"Encrypted content received: {encrypted_content}")
+#         decrypted_content = decrypt_data(encrypted_content)
+#         logger.debug(f"Decrypted content: {decrypted_content}")
+
+#         # Parse decrypted JSON
+#         data = json.loads(decrypted_content)
+#         logger.debug(f"Parsed decrypted JSON: {data}")
+
+#         # Define Indian languages mapping
+#         indian_languages = {
+#             "English": "en",
+#             "Hindi": "hi",
+#             "Tamil": "ta",
+#             "Telugu": "te",
+#             "Marathi": "mr",
+#             "Kannada": "kn",
+#             "Bengali": "bn",
+#             "Odia": "or",
+#             "Assamese": "as",
+#             "Punjabi": "pa",
+#             "Malayalam": "ml",
+#             "Gujarati": "gu",
+#             "Urdu": "ur",
+#             "Sanskrit": "sa",
+#             "Nepali": "ne",
+#             "Bodo": "brx",
+#             "Maithili": "mai",
+#             "Sindhi": "sd",
+#             "Kashmiri": "ks",
+#             "Konkani": "kok",
+#             "Dogri": "doi",
+#             "Goan Konkani": "gom",
+#             "Santali": "sat",
+#         }
+
+#         # Fields to check for language detection and translation
+#         fields_to_check = [
+#             'businessIntroduction', 'proposalObjective','otherObjective', 'scopeOfWork', 'projectPhases',
+#             'expectedOutcomes', 'technologiesAndInnovations', 'targetAudience',
+#             'budgetInformation', 'timeline', 'benefitsToRecipient', 'closingRemarks'
+#         ]
+
+#         # Translate only non-English content
+#         for field in fields_to_check:
+#             value = data.get(field)
+#             if value:
+#                 try:
+#                     # Detect language
+#                     detected_language, confidence = classify(value)
+#                     language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
+#                     logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
+#                     logger.debug(f"Original Value: {value}")
+
+#                     # Translate if not English
+#                     if detected_language != 'en':
+#                         logger.info(f"Translating {field} from {language_name} to English.")
+#                         translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
+#                         logger.debug(f"Translated {field}: {translated_text}")
+#                         data[field] = translated_text
+#                     else:
+#                         logger.info(f"{field} is already in English. No translation needed.")
+#                 except Exception as e:
+#                     logger.error(f"Error processing field {field}: {str(e)}")
+
+#         # Extract processed fields
+#         business_intro = data.get('businessIntroduction')
+#         proposal_objective = data.get('proposalObjective')
+#         other_objective = data.get('otherObjective')
+
+#         # Handle 'Other' objective
+#         if proposal_objective == 'Others' and other_objective:
+#             proposal_objective = other_objective
+
+#         num_words = data.get('numberOfWords')
+#         scope_of_work = data.get('scopeOfWork')
+#         project_phases = data.get('projectPhases')
+#         expected_outcomes = data.get('expectedOutcomes')
+#         tech_innovations = data.get('technologiesAndInnovations')
+#         target_audience = data.get('targetAudience')
+#         budget_info = data.get('budgetInformation')
+#         timeline = data.get('timeline')
+#         benefits = data.get('benefitsToRecipient')
+#         closing_remarks = data.get('closingRemarks')
+
+#         # Generate the business proposal
+#         logger.info("Generating business proposal content.")
+#         proposal_content = generate_bus_pro(
+#             business_intro, proposal_objective, num_words, scope_of_work,
+#             project_phases, expected_outcomes, tech_innovations, target_audience,
+#             budget_info, timeline, benefits, closing_remarks
+#         )
+
+#         # Encrypt the response content
+#         encrypted_content = encrypt_data({'generated_content': proposal_content})
+#         logger.info("Business proposal content generated successfully.")
+
+#         return JsonResponse({'encrypted_content': encrypted_content}, status=200)
+
+#     except json.JSONDecodeError:
+#         logger.error("Invalid JSON format received.")
+#         return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
+#     except ValueError as e:
+#         logger.error(f"ValueError occurred: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=400)
+#     except Exception as e:
+#         logger.error(f"An unexpected error occurred: {str(e)}")
+#         return JsonResponse({'error': str(e)}, status=500)
+
 @require_POST
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, HasAPIKey])
+@permission_classes([])
 def business_proposal_generator(request):
+    
     try:
-        # Load and decode the request body
-        body = request.body.decode('utf-8')
-        logger.debug(f"Request body received: {body}")
+        data=json.loads(request)
+        all_fields=json.dumps(data)
 
-        # Extract and decrypt the incoming payload
-        data = json.loads(body)
-        encrypted_content = data.get('encrypted_content')
-        if not encrypted_content:
-            logger.warning("No encrypted content found in the request.")
-            return JsonResponse({'error': 'No encrypted content found in the request.'}, status=400)
-
-        logger.debug(f"Encrypted content received: {encrypted_content}")
-        decrypted_content = decrypt_data(encrypted_content)
-        logger.debug(f"Decrypted content: {decrypted_content}")
-
-        # Parse decrypted JSON
-        data = json.loads(decrypted_content)
-        logger.debug(f"Parsed decrypted JSON: {data}")
-
-        # Define Indian languages mapping
-        indian_languages = {
-            "English": "en",
-            "Hindi": "hi",
-            "Tamil": "ta",
-            "Telugu": "te",
-            "Marathi": "mr",
-            "Kannada": "kn",
-            "Bengali": "bn",
-            "Odia": "or",
-            "Assamese": "as",
-            "Punjabi": "pa",
-            "Malayalam": "ml",
-            "Gujarati": "gu",
-            "Urdu": "ur",
-            "Sanskrit": "sa",
-            "Nepali": "ne",
-            "Bodo": "brx",
-            "Maithili": "mai",
-            "Sindhi": "sd",
-            "Kashmiri": "ks",
-            "Konkani": "kok",
-            "Dogri": "doi",
-            "Goan Konkani": "gom",
-            "Santali": "sat",
-        }
-
-        # Fields to check for language detection and translation
-        fields_to_check = [
-            'businessIntroduction', 'proposalObjective','otherObjective', 'scopeOfWork', 'projectPhases',
-            'expectedOutcomes', 'technologiesAndInnovations', 'targetAudience',
-            'budgetInformation', 'timeline', 'benefitsToRecipient', 'closingRemarks'
-        ]
-
-        # Translate only non-English content
-        for field in fields_to_check:
-            value = data.get(field)
-            if value:
-                try:
-                    # Detect language
-                    detected_language, confidence = classify(value)
-                    language_name = next((k for k, v in indian_languages.items() if v == detected_language), "Unknown")
-                    logger.info(f"Field: {field} - Detected Language: {language_name} (Confidence: {confidence:.2f})")
-                    logger.debug(f"Original Value: {value}")
-
-                    # Translate if not English
-                    if detected_language != 'en':
-                        logger.info(f"Translating {field} from {language_name} to English.")
-                        translated_text = GoogleTranslator(source=detected_language, target='en').translate(value)
-                        logger.debug(f"Translated {field}: {translated_text}")
-                        data[field] = translated_text
-                    else:
-                        logger.info(f"{field} is already in English. No translation needed.")
-                except Exception as e:
-                    logger.error(f"Error processing field {field}: {str(e)}")
-
-        # Extract processed fields
-        business_intro = data.get('businessIntroduction')
-        proposal_objective = data.get('proposalObjective')
-        other_objective = data.get('otherObjective')
-
-        # Handle 'Other' objective
-        if proposal_objective == 'Others' and other_objective:
-            proposal_objective = other_objective
-
-        num_words = data.get('numberOfWords')
-        scope_of_work = data.get('scopeOfWork')
-        project_phases = data.get('projectPhases')
-        expected_outcomes = data.get('expectedOutcomes')
-        tech_innovations = data.get('technologiesAndInnovations')
-        target_audience = data.get('targetAudience')
-        budget_info = data.get('budgetInformation')
-        timeline = data.get('timeline')
-        benefits = data.get('benefitsToRecipient')
-        closing_remarks = data.get('closingRemarks')
-
-        # Generate the business proposal
-        logger.info("Generating business proposal content.")
-        proposal_content = generate_bus_pro(
-            business_intro, proposal_objective, num_words, scope_of_work,
-            project_phases, expected_outcomes, tech_innovations, target_audience,
-            budget_info, timeline, benefits, closing_remarks
-        )
-
-        # Encrypt the response content
-        encrypted_content = encrypt_data({'generated_content': proposal_content})
-        logger.info("Business proposal content generated successfully.")
-
-        return JsonResponse({'encrypted_content': encrypted_content}, status=200)
-
-    except json.JSONDecodeError:
-        logger.error("Invalid JSON format received.")
-        return JsonResponse({'error': 'Invalid JSON format. Please provide valid JSON data.'}, status=400)
-    except ValueError as e:
-        logger.error(f"ValueError occurred: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=400)
+        proposal_content=business_proposal_with_agents(all_fields)
+        return JsonResponse({'proposal_ouput':proposal_content}, status=200)
     except Exception as e:
-        logger.error(f"An unexpected error occurred: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
+
+
+        
 
 #Encrypted API For Offer Letter Service
 @require_POST

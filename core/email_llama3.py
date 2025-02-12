@@ -24,6 +24,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain.indexes import VectorstoreIndexCreator
 from langchain_groq import ChatGroq
 import base64
+from crewai import Agent, Task, Crew, LLM
 
 # from prodigidusk.settings import VECTOR_STORE
 
@@ -169,61 +170,237 @@ def generate_email(purpose='Request Information', num_words=100, subject=None, r
 
     return chat_completion.choices[0].message.content 
 
-def generate_bus_pro(business_intro, proposal_objective, num_words, scope_of_work, project_phases, expected_outcomes, tech_innovations, target_audience, budget_info, timeline, benefits, closing_remarks):
-    # Collect all fields to check for inappropriate language
-    fields_to_check = [business_intro, proposal_objective, scope_of_work, project_phases, expected_outcomes, tech_innovations, target_audience, budget_info, timeline, benefits, closing_remarks]
+# def generate_bus_pro(business_intro, proposal_objective, num_words, scope_of_work, project_phases, expected_outcomes, tech_innovations, target_audience, budget_info, timeline, benefits, closing_remarks):
+#     # Collect all fields to check for inappropriate language
+#     fields_to_check = [business_intro, proposal_objective, scope_of_work, project_phases, expected_outcomes, tech_innovations, target_audience, budget_info, timeline, benefits, closing_remarks]
     
-    # Check if any field contains inappropriate language
-    if any(contains_inappropriate_language(str(field)) for field in fields_to_check if field is not None):
-        return "Error: Input contains inappropriate language."
+#     # Check if any field contains inappropriate language
+#     if any(contains_inappropriate_language(str(field)) for field in fields_to_check if field is not None):
+#         return "Error: Input contains inappropriate language."
     
-    # Sanitize input (if needed)
-    sanitized_fields = [sanitize_input(str(field)) if field else '' for field in fields_to_check]
+#     # Sanitize input (if needed)
+#     sanitized_fields = [sanitize_input(str(field)) if field else '' for field in fields_to_check]
 
-    # Reconstruct the prompt with sanitized input
+#     # Reconstruct the prompt with sanitized input
     
-    prompt = f"Write a professional business proposal with a well-structured format. The proposal must strictly contain at least {num_words} words and may exceed slightly to ensure coherence and completeness. Follow this structure:\n\n"
+#     prompt = f"Write a professional business proposal with a well-structured format. The proposal must strictly contain at least {num_words} words and may exceed slightly to ensure coherence and completeness. Follow this structure:\n\n"
 
-    # Add inputs into the prompt
-    if sanitized_fields[0]:
-        prompt += f"**Introduction**: {sanitized_fields[0]}.\n"
-    if sanitized_fields[1]:
-        prompt += f"**Objective**: The purpose of this proposal is {sanitized_fields[1]}.\n"
-    if sanitized_fields[2]:
-        prompt += f"**Scope of Work**: {sanitized_fields[2]}.\n"
-    if sanitized_fields[3]:
-        prompt += f"**Project Phases**: The project will proceed as follows: {sanitized_fields[3]}.\n"
-    if sanitized_fields[4]:
-        prompt += f"**Expected Outcomes**: The anticipated results include {sanitized_fields[4]}.\n"
-    if sanitized_fields[5]:
-        prompt += f"**Technologies and Innovations**: Highlighting these key technologies and innovative approaches: {sanitized_fields[5]}.\n"
-    if sanitized_fields[6]:
-        prompt += f"**Target Audience**: This proposal is tailored for {sanitized_fields[6]}.\n"
-    if sanitized_fields[7]:
-        prompt += f"**Budget**: Provide an estimate or breakdown: {sanitized_fields[7]}.\n"
-    if sanitized_fields[8]:
-        prompt += f"**Timeline**: The expected duration and milestones are: {sanitized_fields[8]}.\n"
-    if sanitized_fields[9]:
-        prompt += f"**Benefits to Recipient**: These benefits are offered: {sanitized_fields[9]}.\n"
-    if sanitized_fields[10]:
-        prompt += f"**Closing Remarks**: {sanitized_fields[10]}.\n"
+#     # Add inputs into the prompt
+#     if sanitized_fields[0]:
+#         prompt += f"**Introduction**: {sanitized_fields[0]}.\n"
+#     if sanitized_fields[1]:
+#         prompt += f"**Objective**: The purpose of this proposal is {sanitized_fields[1]}.\n"
+#     if sanitized_fields[2]:
+#         prompt += f"**Scope of Work**: {sanitized_fields[2]}.\n"
+#     if sanitized_fields[3]:
+#         prompt += f"**Project Phases**: The project will proceed as follows: {sanitized_fields[3]}.\n"
+#     if sanitized_fields[4]:
+#         prompt += f"**Expected Outcomes**: The anticipated results include {sanitized_fields[4]}.\n"
+#     if sanitized_fields[5]:
+#         prompt += f"**Technologies and Innovations**: Highlighting these key technologies and innovative approaches: {sanitized_fields[5]}.\n"
+#     if sanitized_fields[6]:
+#         prompt += f"**Target Audience**: This proposal is tailored for {sanitized_fields[6]}.\n"
+#     if sanitized_fields[7]:
+#         prompt += f"**Budget**: Provide an estimate or breakdown: {sanitized_fields[7]}.\n"
+#     if sanitized_fields[8]:
+#         prompt += f"**Timeline**: The expected duration and milestones are: {sanitized_fields[8]}.\n"
+#     if sanitized_fields[9]:
+#         prompt += f"**Benefits to Recipient**: These benefits are offered: {sanitized_fields[9]}.\n"
+#     if sanitized_fields[10]:
+#         prompt += f"**Closing Remarks**: {sanitized_fields[10]}.\n"
 
-    # Add final instructions for tone and presentation
-    prompt += (
-        "\nEnsure the proposal is professional, concise, and action-oriented. "
-        "Use clear headings and subheadings for easy readability. Avoid generic language, "
-        "and make the proposal feel tailored to the recipient's needs. "
-        "Focus on measurable outcomes, value propositions, and collaboration opportunities."
+#     # Add final instructions for tone and presentation
+#     prompt += (
+#         "\nEnsure the proposal is professional, concise, and action-oriented. "
+#         "Use clear headings and subheadings for easy readability. Avoid generic language, "
+#         "and make the proposal feel tailored to the recipient's needs. "
+#         "Focus on measurable outcomes, value propositions, and collaboration opportunities."
+#     )
+
+#     client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
+#     chat_completion = client.chat.completions.create(
+#         messages=[{"role": "user", "content": prompt}],
+#         model="llama-3.3-70b-versatile",
+
+#     )
+
+#     return chat_completion.choices[0].message.content
+def business_proposal_with_agents(all_fields):
+    
+
+    
+
+    # Set your Groq API key in the environment variable
+    os.environ['GROQ_API_KEY'] = "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"
+
+    # Initialize the Groq LLM via the Crew AI LLM wrapper
+    llm = LLM(model="groq/llama-3.3-70b-versatile")
+
+
+    # -------------------------------
+    # Agent 1: Proposal Strategist
+    # -------------------------------
+    proposal_strategist = Agent(
+        role="Proposal Strategist",
+        goal=(
+            "Based on the user inputs {all_fields}, determine the essential sections that will make a top-notch business proposal. "
+            "Always include 'Introduction' and 'Executive Summary', and then decide on 6 to 8 additional sections (e.g., 'Business Description', "
+            "'Market Analysis', 'Financial Overview', 'Implementation Roadmap', etc.)."
+        ),
+        backstory=(
+            "You are  a senior business proposal strategist with over 10 years of experience. "
+            "You have worked with numerous Fortune 500 companies and startups, and you know exactly what makes a proposal persuasive and comprehensive. "
+            "Your task is to analyze the provided inputs and determine the ideal structure for the proposal."
+        ),
+        llm=llm,
+        allow_delegation=False,
+        verbose=True
     )
 
-    client = Groq(api_key=GROQ_SECRET_ACCESS_KEY)
-    chat_completion = client.chat.completions.create(
-        messages=[{"role": "user", "content": prompt}],
-        model="llama-3.3-70b-versatile",
-
+    task_determine_sections = Task(
+        description=(
+            "Analyze the following inputs: {all_fields} and use all inputs provided in proposal "
+            "Decide on the essential sections for a professional business proposal. Always include 'Introduction' and 'Executive Summary'. "
+            "Then, based on the inputs, determine 6 to 8 additional sections that would make the proposal excellent. "
+            "Return the section names as a comma-separated list."
+        ),
+        expected_output=(
+            "A list of section names, for example: 'Introduction, Executive Summary, Business Description, Market Analysis, Financial Overview, Implementation Roadmap, Conclusion & Call to Action'."
+        ),
+        agent=proposal_strategist,
     )
 
-    return chat_completion.choices[0].message.content
+    # -------------------------------
+    # Agent 2: Content Architect
+    # -------------------------------
+    content_architect = Agent(
+        role="Senior AI Solution Architect & Business Proposal Writer",
+        goal=(
+            "Craft an enterprise-grade, highly technical business proposal based on user inputs {all_fields}"
+            "Your writing should demonstrate deep technical expertise, "
+            "detailing industry-standard best practices, real-world applications, "
+            "challenges, and implementation strategies."
+        ),
+        backstory=(
+            "You are a senior AI solutions architect with over 15 years of experience "
+            "in developing and deploying AI/ML solutions for Fortune 500 companies. "
+            "You have extensive knowledge of deep learning, predictive modeling, cloud architectures, "
+            "big data pipelines, and software engineering best practices."
+            "Your goal is to write proposals that contain deep technical insights, "
+            "justifications for technology choices, real-world examples, and references to best practices."
+        ),
+        llm=llm,
+        allow_delegation=False,
+        verbose=True
+    )
+
+    task_write_sections = Task(
+        description=(
+            "Generate highly detailed, technical, and real-world applicable content for each section of the proposal "
+            "based on the project details provided.\n\n"
+
+            "### Key Requirements:\n"
+            "- **Depth:** Ensure every section includes industry-standard best practices, methodologies, and implementation details.\n"
+            "- **Technical Accuracy:** Mention specific ML models, AI frameworks, cloud services, and programming languages.\n"
+            "- **Comparisons:** Compare multiple approaches (e.g., different ML algorithms for prediction, pros & cons of each choice).\n"
+            "- **Scalability & Optimization:** Discuss performance tuning, model efficiency, hyperparameter tuning, and cloud scalability.\n"
+            "- **Real-World Relevance:** Provide case studies or examples from AI industry applications.\n\n"
+
+            "### Expected Output Format:\n"
+            "**[Section Title]**\n"
+            "- Detailed introduction to the topic.\n"
+            "- Technical explanation of the implementation strategy.\n"
+            "- Breakdown of technical choices with justifications.\n"
+            "-  architectures  (if applicable).\n"
+            "- Challenges and solutions.\n"
+            "- Conclusion summarizing the section's importance.\n\n"
+
+            "**Write as if you're preparing a proposal for a highly technical executive team evaluating the feasibility of this project.**"
+        ),
+        expected_output=(
+            "A highly detailed technical proposal, with each section written in-depth (200-350 words per section), "
+            "covering all relevant technical, strategic, and business aspects of the proposal."
+        ),
+        agent=content_architect,
+    )
+
+
+
+    # -------------------------------
+    # Agent 3: Proposal Finalizer
+    # -------------------------------
+    proposal_finalizer = Agent(
+        role="Senior Proposal Editor & Review Specialist",
+        goal=(
+            "Refine, structure, and enhance the business proposal to be professional, "
+            "impactful, and free of redundancies. Ensure logical flow, technical clarity, and a compelling call to action."
+        ),
+        backstory=(
+            "You are a senior business proposal editor with over 15 years of experience in refining high-stakes "
+            "proposals for Fortune 500 companies, investors, and decision-makers. You have a deep understanding "
+            "of structuring proposals that effectively communicate value, ensuring readability, coherence, and engagement."
+        ),
+        llm=llm,
+        allow_delegation=False,
+        verbose=True
+    )
+
+    task_finalize_proposal = Task(
+        description=(
+            "### **Task: Finalize & Polish the Business Proposal**\n"
+            "Your job is to take the draft sections generated by the Content Architect and refine them to produce a "
+            "**clear, structured, and professional** final business proposal. Follow these strict guidelines:\n\n"
+
+            "** Structural Refinements:**\n"
+            "- Ensure a logical flow between sections, avoiding abrupt transitions.\n"
+            "- Standardize headings and subheadings for consistency.\n"
+            "- Summarize key points concisely without losing depth.\n\n"
+
+            "** Technical & Business Enhancements:**\n"
+            "- Ensure that all technical explanations (e.g., AI models, financial data, project timelines) are accurate and well-articulated.\n"
+            "- Eliminate any repetitive content or over-explained sections.\n"
+            "- Improve clarity in complex sections by restructuring explanations.\n"
+            "- Highlight the **business impact** of every section (e.g., ROI benefits, efficiency gains, scalability advantages).\n\n"
+
+            "** Quality & Language Refinements:**\n"
+            "- Eliminate redundant phrasing and improve sentence structure.\n"
+            "- Use **persuasive, professional, and technically sound** language.\n"
+            "- Keep the writing **formal yet engaging**, avoiding generic business jargon.\n"
+            "- Ensure industry-standard terminology and clarity for expert readers (CTOs, CFOs, Investors, Consultants).\n\n"
+
+            "** Final Section: Conclusion & Call to Action (CTA)**\n"
+            "Craft a strong **conclusion (max 250 words)** that:\n"
+            "- Summarizes key insights from the proposal.\n"
+            "- Clearly states the next steps (e.g., schedule a meeting, sign a contract, approve the project).\n"
+            "- Avoids excessive repetition of previously mentioned points.\n"
+            "- Ensures a compelling closing statement to encourage action.\n\n"
+
+            "** Important:**\n"
+            "- Do NOT add unnecessary filler content.\n"
+            "- Ensure the final document is structured as a **cohesive, flowing, and well-formatted proposal**.\n"
+            "- Output must be **formatted with section headings** and **a professional tone**."
+        ),
+        expected_output=(
+            "A refined and well-structured final business proposal that seamlessly integrates all sections, "
+            "eliminates redundancies, and delivers a strong conclusion with a compelling call to action."
+        ),
+        agent=proposal_finalizer,
+    )
+
+
+    # -------------------------------
+    # Create the Crew with Agents and Tasks
+    # -------------------------------
+    crew = Crew(
+        agents=[proposal_strategist, content_architect, proposal_finalizer],
+        tasks=[task_determine_sections, task_write_sections, task_finalize_proposal],
+        verbose=True
+    )
+
+
+    result = crew.kickoff(inputs=all_fields)
+
+    return result.raw 
 
 
 def generate_offer_letter(company_details, candidate_name, position_title, department, status, location,
